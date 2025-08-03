@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '@/lib/supabase'
-import { formatCurrency } from '@/lib/helpers'
+import { formatCurrency, uploadImageToStorage } from '@/lib/helpers'
 
 interface AddPropertyFormProps {
   onBack: () => void
@@ -374,6 +374,19 @@ export default function AddPropertyForm({ onBack, onSuccess }: AddPropertyFormPr
         return
       }
 
+      // Upload main image to storage if provided
+      let uploadedImageUrl = null
+      if (mainImage) {
+        try {
+          uploadedImageUrl = await uploadImageToStorage(mainImage)
+          console.log('Image uploaded successfully:', uploadedImageUrl)
+        } catch (error) {
+          console.error('Failed to upload image:', error)
+          Alert.alert('Ikosa', 'Ntiyashoboye kohereza ifoto. Ongera ugerageze.')
+          return
+        }
+      }
+
       // Prepare property data
       const propertyData = {
         name: formData.name.trim(),
@@ -384,7 +397,7 @@ export default function AddPropertyForm({ onBack, onSuccess }: AddPropertyFormPr
         property_type: formData.property_type,
         description: formData.description.trim(),
         landlord_id: user.id,
-        featured_image_url: mainImage,
+        featured_image_url: uploadedImageUrl,
         // Set default visibility flags
         is_public: true,
         is_available: true,

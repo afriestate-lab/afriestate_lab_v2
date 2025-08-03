@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import IshyuraModal from './ishyura-modal'
 import PropertyDetailsModal from './property-details-modal'
 import { supabase, mobileUtils } from '@/lib/supabase'
-import { formatCurrency } from '@/lib/helpers'
+import { formatCurrency, isLocalFileUri, getFallbackPropertyImage } from '@/lib/helpers'
 import { BlurView } from 'expo-blur';
 import SignInScreen from './auth/sign-in'
 import SignUpScreen from './auth/sign-up'
@@ -176,7 +176,19 @@ export default function PropertiesScreen() {
           izina: property.name || 'Property Name',
           aho: property.city || property.address || 'Location',
           igiciro: property.price_range_min ? formatRWF(property.price_range_min) : 'Price on request',
-          ifoto: property.featured_image_url || property.property_images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop',
+          ifoto: (() => {
+            // Check if featured_image_url exists and is not a local file URI
+            if (property.featured_image_url && !isLocalFileUri(property.featured_image_url)) {
+              return property.featured_image_url
+            }
+            // Check if property_images array has valid URLs
+            if (property.property_images && property.property_images.length > 0) {
+              const validImage = property.property_images.find(img => img && !isLocalFileUri(img))
+              if (validImage) return validImage
+            }
+            // Return fallback image
+            return getFallbackPropertyImage()
+          })(),
           amanota: 4.5,
           ubwoko: property.property_type || 'apartment',
           irimo: false, // Default to available
@@ -530,11 +542,20 @@ export default function PropertiesScreen() {
     </Surface>
   )
 
-  const renderCitySection = ({ item }: { item: { city: string; properties: Property[] } }) => (
+  const renderCitySection = ({ item }: { item: { city: string; properties: Property[]; propertyCount?: number } }) => (
     <View style={styles.citySection}>
-      <Text variant="titleLarge" style={[styles.cityTitle, { color: theme.primary }]}>
-        {item.city}
-      </Text>
+      <View style={styles.cityHeader}>
+        <Text variant="titleLarge" style={[styles.cityTitle, { color: theme.primary }]}>
+          {item.city}
+        </Text>
+        {item.propertyCount && (
+          <View style={[styles.propertyCountBadge, { backgroundColor: theme.surfaceVariant }]}>
+            <Text variant="bodySmall" style={[styles.propertyCount, { color: theme.textSecondary }]}>
+              {item.propertyCount} {item.propertyCount === 1 ? 'inyubako' : 'inyubako'}
+            </Text>
+          </View>
+        )}
+      </View>
       <FlatList
         data={item.properties}
         renderItem={renderPropertyCard}
@@ -549,10 +570,14 @@ export default function PropertiesScreen() {
     </View>
   )
 
-  const citySections = Object.entries(grouped).map(([city, properties]) => ({
-    city,
-    properties
-  }))
+  // Sort cities by number of properties (descending order)
+  const citySections = Object.entries(grouped)
+    .map(([city, properties]) => ({
+      city,
+      properties,
+      propertyCount: properties.length
+    }))
+    .sort((a, b) => b.propertyCount - a.propertyCount) // Sort by property count descending
 
   // Show loading screen only if auth is loading OR properties are loading with no data
   if (authLoading || (loading && properties.length === 0)) {
@@ -933,11 +958,25 @@ const styles = StyleSheet.create({
   citySection: {
     marginBottom: 24,
   },
+  cityHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
   cityTitle: {
     fontWeight: 'bold',
     color: '#667eea',
-    marginBottom: 12,
-    paddingHorizontal: 16,
+  },
+  propertyCount: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  propertyCountBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   horizontalList: {
     paddingHorizontal: 16,

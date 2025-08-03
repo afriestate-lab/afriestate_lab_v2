@@ -18,6 +18,7 @@ import { Modal, Portal, Button, Card, Chip, Divider, IconButton } from 'react-na
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+import { isLocalFileUri, getFallbackPropertyImage } from '@/lib/helpers'
 import { BlurView } from 'expo-blur';
 import DatePicker from './date-picker';
 
@@ -154,21 +155,40 @@ export default function PropertyDetailsModal({
         .order('room_number', { ascending: true })
       // Collect all images: featured, property_images, and all room images
       let images: string[] = []
-      if (propertyData.featured_image_url) {
+      
+      // Add featured image if it's a valid URL (not local file URI)
+      if (propertyData.featured_image_url && !isLocalFileUri(propertyData.featured_image_url)) {
         images.push(propertyData.featured_image_url)
       }
+      
+      // Add property images array if they're valid URLs
       if (Array.isArray(propertyData.property_images)) {
-        images = images.concat(propertyData.property_images.filter(Boolean))
+        const validPropertyImages = propertyData.property_images.filter(img => 
+          img && !isLocalFileUri(img)
+        )
+        images = images.concat(validPropertyImages)
       }
+      
+      // Add room images if they're valid URLs
       if (roomsData && Array.isArray(roomsData)) {
         roomsData.forEach(room => {
           if (Array.isArray(room.images)) {
-            images = images.concat(room.images.filter(Boolean))
+            const validRoomImages = room.images.filter(img => 
+              img && !isLocalFileUri(img)
+            )
+            images = images.concat(validRoomImages)
           }
         })
       }
-      if (images.length === 0 && property.ifoto) {
+      
+      // Fallback to property.ifoto if no valid images found
+      if (images.length === 0 && property.ifoto && !isLocalFileUri(property.ifoto)) {
         images = [property.ifoto]
+      }
+      
+      // If still no images, use fallback
+      if (images.length === 0) {
+        images = [getFallbackPropertyImage()]
       }
       console.log('[PROPERTY MODAL] Images to display:', images)
       const fullPropertyData: PropertyDetails = {
@@ -178,7 +198,18 @@ export default function PropertyDetailsModal({
         igiciro: propertyData.price_range_min 
           ? `Rwf ${propertyData.price_range_min.toLocaleString()} - ${propertyData.price_range_max?.toLocaleString()}`
           : property.igiciro,
-        ifoto: propertyData.featured_image_url || property.ifoto,
+        ifoto: (() => {
+          // Use featured_image_url if it's a valid URL
+          if (propertyData.featured_image_url && !isLocalFileUri(propertyData.featured_image_url)) {
+            return propertyData.featured_image_url
+          }
+          // Use property.ifoto if it's a valid URL
+          if (property.ifoto && !isLocalFileUri(property.ifoto)) {
+            return property.ifoto
+          }
+          // Use fallback image
+          return getFallbackPropertyImage()
+        })(),
         amanota: property.amanota || 4.5,
         ubwoko: propertyData.property_type || property.ubwoko,
         code: property.code,

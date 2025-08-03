@@ -298,3 +298,83 @@ export const isValidRwandaPhone = (phone: string): boolean => {
   
   return patterns.some(pattern => pattern.test(cleanPhone))
 } 
+
+/**
+ * Upload image to Supabase Storage and return public URL
+ * @param uri - Local file URI from image picker
+ * @param bucket - Storage bucket name
+ * @param path - File path in bucket
+ * @returns Promise<string> - Public URL of uploaded image
+ */
+export const uploadImageToStorage = async (
+  uri: string,
+  bucket: string = 'property-images',
+  path?: string
+): Promise<string> => {
+  try {
+    // Validate input
+    if (!uri) {
+      throw new Error('No image URI provided')
+    }
+
+    // Generate unique filename if path not provided
+    const timestamp = Date.now()
+    const randomId = Math.random().toString(36).substring(7)
+    const filename = path || `property-${timestamp}-${randomId}.jpg`
+    
+    console.log('Uploading image:', { uri, filename, bucket })
+    
+    // Convert local URI to blob
+    const response = await fetch(uri)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.status}`)
+    }
+    
+    const blob = await response.blob()
+    console.log('Image blob size:', blob.size, 'bytes')
+    
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(filename, blob, {
+        contentType: 'image/jpeg',
+        cacheControl: '3600',
+        upsert: false
+      })
+    
+    if (error) {
+      console.error('Upload error:', error)
+      throw new Error(`Failed to upload image: ${error.message}`)
+    }
+    
+    console.log('Upload successful:', data)
+    
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filename)
+    
+    console.log('Public URL:', urlData.publicUrl)
+    return urlData.publicUrl
+  } catch (error) {
+    console.error('Image upload failed:', error)
+    throw new Error(`Failed to upload image to storage: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
+/**
+ * Check if a URL is a local file URI
+ * @param url - URL to check
+ * @returns boolean
+ */
+export const isLocalFileUri = (url: string): boolean => {
+  return url.startsWith('file://') || url.startsWith('content://')
+}
+
+/**
+ * Get a fallback image URL for properties without images
+ * @returns string - Fallback image URL
+ */
+export const getFallbackPropertyImage = (): string => {
+  return 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop'
+} 
