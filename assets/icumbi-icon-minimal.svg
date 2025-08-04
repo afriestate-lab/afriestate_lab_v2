@@ -1,0 +1,23 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Geometric House Logo -->
+  <g transform="translate(25, 20)">
+    <!-- Main triangular house structure -->
+    <polygon points="0,50 25,0 50,50" fill="#3498db" stroke="#3498db" stroke-width="1"/>
+    
+    <!-- Inner roof detail -->
+    <polygon points="10,40 25,10 40,40" fill="none" stroke="#3498db" stroke-width="2.5"/>
+    
+    <!-- Vertical bar (chimney/door) -->
+    <rect x="22" y="30" width="6" height="20" fill="#3498db"/>
+    
+    <!-- Three parallel diagonal lines on the right -->
+    <line x1="55" y1="10" x2="75" y2="30" stroke="#3498db" stroke-width="2.5"/>
+    <line x1="55" y1="18" x2="75" y2="38" stroke="#3498db" stroke-width="2.5"/>
+    <line x1="55" y1="26" x2="75" y2="46" stroke="#3498db" stroke-width="2.5"/>
+  </g>
+  
+  <!-- ICUMBI Text -->
+  <text x="60" y="105" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#3498db" letter-spacing="1px">
+    ICUMBI
+  </text>
+</svg> 

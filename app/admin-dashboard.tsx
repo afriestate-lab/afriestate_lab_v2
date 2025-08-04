@@ -20,6 +20,7 @@ import { supabase } from '../src/lib/supabase'
 import { formatCurrency, formatDate } from '../src/lib/helpers'
 import { LineChart } from 'react-native-chart-kit'
 import { useTheme } from './_layout'
+import IcumbiLogo from './components/IcumbiLogo'
 
 const chartConfig = {
   backgroundGradientFrom: '#f8fafc',
@@ -1600,7 +1601,10 @@ export default function AdminDashboard() {
           />
           <View style={styles.sidebarMenu}>
             <View style={styles.sidebarHeader}>
-              <Text style={styles.sidebarTitle}>Icumbi Hub</Text>
+              <View style={styles.sidebarLogo}>
+                <IcumbiLogo width={32} height={32} />
+                <Text style={styles.sidebarTitle}>Icumbi Hub</Text>
+              </View>
               <TouchableOpacity onPress={() => setIsMenuOpen(false)}>
                 <Ionicons name="close" size={24} color="#6b7280" />
               </TouchableOpacity>
@@ -2073,6 +2077,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb'
+  },
+  sidebarLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   sidebarTitle: {
     fontSize: 18,

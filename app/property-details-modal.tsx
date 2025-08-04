@@ -21,6 +21,7 @@ import { supabase } from '@/lib/supabase'
 import { isLocalFileUri, getFallbackPropertyImage } from '@/lib/helpers'
 import { BlurView } from 'expo-blur';
 import DatePicker from './date-picker';
+import { useLanguage } from '@/lib/languageContext';
 
 const { width, height } = Dimensions.get('window')
 
@@ -85,6 +86,7 @@ export default function PropertyDetailsModal({
   property, 
   onBookNow 
 }: PropertyDetailsModalProps) {
+  const { t } = useLanguage();
   const [fullProperty, setFullProperty] = useState<PropertyDetails | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   // Removed autoSlideTimer - now using enhanced autoPlayInterval
@@ -366,7 +368,7 @@ export default function PropertyDetailsModal({
   }
 
   const handleShare = () => {
-    const shareText = `Check out this property: ${fullProperty?.izina} - ${fullProperty?.igiciro}`
+    const shareText = `${t('shareProperty')} ${fullProperty?.izina} - ${fullProperty?.igiciro}`
     // You can implement actual sharing here
     Alert.alert('Share', shareText)
   }
@@ -577,7 +579,7 @@ export default function PropertyDetailsModal({
             style={[styles.textInput, styles.messageInput]}
             value={inquiryData.message}
             onChangeText={(text) => setInquiryData({ ...inquiryData, message: text })}
-            placeholder="Andika ibibazo byawe, ibibazo ku giciro, amahoro, n'ibindi..."
+            placeholder={t('inquiryPlaceholder')}
             multiline
             numberOfLines={5}
             textAlignVertical="top"
@@ -786,7 +788,7 @@ export default function PropertyDetailsModal({
             <View style={styles.authBanner}>
               <Ionicons name="information-circle" size={20} color="#3b82f6" />
               <Text style={styles.authBannerText}>
-                Injira kugira ngo ushobore kubaza, gufata booking, cyangwa kwishyura 👤
+                {t('loginToBook')}
               </Text>
             </View>
           )}
@@ -796,23 +798,23 @@ export default function PropertyDetailsModal({
             <View style={styles.statItem}>
               <Ionicons name="business" size={20} color="#8b5cf6" />
               <Text style={styles.statValue}>{fullProperty?.floors_count || 1}</Text>
-              <Text style={styles.statLabel}>Amagorofa</Text>
+              <Text style={styles.statLabel}>{t('floors')}</Text>
             </View>
             <View style={styles.statItem}>
               <Ionicons name="bed" size={20} color="#10b981" />
               <Text style={styles.statValue}>{fullProperty?.total_rooms || 0}</Text>
-              <Text style={styles.statLabel}>Ibyumba</Text>
+              <Text style={styles.statLabel}>{t('rooms')}</Text>
             </View>
             <View style={styles.statItem}>
               <Ionicons name="checkmark-circle" size={20} color="#10b981" />
               <Text style={styles.statValue}>{fullProperty?.available_rooms || 0}</Text>
-              <Text style={styles.statLabel}>Bifunguye</Text>
+              <Text style={styles.statLabel}>{t('available')}</Text>
             </View>
           </View>
           <Divider style={{marginVertical: 10}} />
           {/* Description */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ibisobanuro</Text>
+            <Text style={styles.sectionTitle}>{t('description')}</Text>
             <Text style={styles.descriptionText}>
               {fullProperty?.ibisobanuro || 'Iyi nyubako ifite ibisobanuro byiza kandi birambuye. Kubaza byinshi, kanda hasi.'}
             </Text>
@@ -860,7 +862,7 @@ export default function PropertyDetailsModal({
             accessible={true}
             accessibilityLabel="Kubaza ibibazo ku nyubako"
           >
-            {!user ? '🔒 Kubaza' : 'Kubaza'}
+            {!user ? `🔒 ${t('ask')}` : t('ask')}
           </Button>
           <Button
             mode={showBookingForm ? "contained" : "outlined"}
@@ -922,7 +924,7 @@ export default function PropertyDetailsModal({
             accessible={true}
             accessibilityLabel="Kwishyura inyubako"
           >
-            {!user ? '🔒 Ishyura' : 'Ishyura'}
+            {!user ? t('bookNowLocked') : t('bookNow')}
           </Button>
         </View>
       </Modal>

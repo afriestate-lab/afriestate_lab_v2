@@ -14,6 +14,8 @@ import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import TenantActionModal from './tenant-action-modal'
 import AddActionModal from './add-action-modal'
+import { LanguageProvider, useLanguage } from '@/lib/languageContext'
+import IcumbiLogo from './components/IcumbiLogo'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -226,6 +228,28 @@ function DashboardScreen() {
 
       console.log('🔍 [ROLE_CHECK] Checking role for user:', user.id)
       console.log('🔍 [ROLE_CHECK] User metadata role:', user.user_metadata?.role)
+      console.log('🔍 [ROLE_CHECK] User email:', user.email)
+
+      // HARDCODED ADMIN CHECK - Force admin role for admin@icumbi.com
+      if (user.email === 'admin@icumbi.com') {
+        console.log('🔧 [ROLE_CHECK] Hardcoded admin detected - forcing admin role')
+        setUserRole('admin')
+        return
+      }
+
+      // Check for admin mode flag in AsyncStorage (for hardcoded admin credentials)
+      try {
+        const adminMode = await AsyncStorage.getItem('admin_mode')
+        if (adminMode === 'true') {
+          console.log('🔧 [ROLE_CHECK] Admin mode flag detected - forcing admin role')
+          setUserRole('admin')
+          // Clear the flag after use
+          await AsyncStorage.removeItem('admin_mode')
+          return
+        }
+      } catch (storageError) {
+        console.log('⚠️ [ROLE_CHECK] Error checking admin mode flag:', storageError)
+      }
 
       // First check the users table for the definitive role
       const { data: userData, error } = await supabase
@@ -443,9 +467,9 @@ function MessagesScreen() {
 function ProfileScreen() {
   const { user } = useAuth()
   const { theme, themeMode, toggleTheme } = useTheme()
+  const { t, currentLanguage, changeLanguage } = useLanguage()
   const [userProfile, setUserProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [currentLanguage, setCurrentLanguage] = useState('rw')
   
   const loadUserProfile = React.useCallback(async () => {
     if (!user) {
@@ -479,12 +503,12 @@ function ProfileScreen() {
 
   const handleSignOut = async () => {
     Alert.alert(
-      'Sohoka',
-      'Uremeza ko ushaka gusohoka?',
+      t('signOut'),
+      t('logoutConfirm'),
       [
-        { text: 'Reka', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         { 
-          text: 'Sohoka', 
+          text: t('signOut'), 
           style: 'destructive',
           onPress: async () => {
             await supabase.auth.signOut()
@@ -501,27 +525,27 @@ function ProfileScreen() {
 
   const toggleLanguage = () => {
     const newLanguage = currentLanguage === 'rw' ? 'en' : 'rw'
-    setCurrentLanguage(newLanguage)
+    changeLanguage(newLanguage)
     Alert.alert(
-      'Hindura ururimi',
-      `Ururimi ruhindujwe rwaba ${newLanguage === 'rw' ? 'Kinyarwanda' : 'Icyongereza'}`
+      t('languageChanged'),
+      `${t('languageChangedTo')} ${newLanguage === 'rw' ? t('languageKinyarwanda') : t('languageEnglish')}`
     )
   }
 
   const getRoleText = (role: string) => {
     switch (role) {
-      case 'tenant': return 'Umukode'
-      case 'landlord': return "Nyirinyubako"
-      case 'manager': return 'Umuyobozi'
-      case 'admin': return 'Umugenzuzi mukuru'
-      default: return 'Umunyamuryango'
+      case 'tenant': return t('roleTenant')
+      case 'landlord': return t('roleLandlord')
+      case 'manager': return t('roleManager')
+      case 'admin': return t('roleAdmin')
+      default: return t('roleMember')
     }
   }
 
   if (loading) {
     return (
       <View style={[styles.screen, { backgroundColor: theme.background }]}>
-        <Text style={[styles.screenText, { color: theme.text }]}>Gukura amakuru yawe...</Text>
+        <Text style={[styles.screenText, { color: theme.text }]}>{t('loading')}</Text>
       </View>
     )
   }
@@ -531,13 +555,13 @@ function ProfileScreen() {
       <View style={[styles.screen, { backgroundColor: theme.background }]}>
         <View style={[styles.profileCard, { backgroundColor: theme.card, shadowColor: theme.cardShadow }]}>
           <Ionicons name="person-circle" size={120} color={theme.primary} style={styles.profileIcon} />
-          <Text style={[styles.profileTitle, { color: theme.text }]}>Konti yawe</Text>
+          <Text style={[styles.profileTitle, { color: theme.text }]}>{t('myAccount')}</Text>
           <Text style={[styles.profileSubtitle, { color: theme.textSecondary }]}>Injira kugira ngo urebye amakuru yawe</Text>
           <TouchableOpacity 
             onPress={() => router.push('/auth/sign-in')}
             style={[styles.primaryButton, { backgroundColor: theme.primary }]}
           >
-            <Text style={styles.primaryButtonText}>Injira</Text>
+            <Text style={styles.primaryButtonText}>{t('signIn')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -552,22 +576,22 @@ function ProfileScreen() {
           <Ionicons name="person-circle" size={80} color={theme.primary} />
         </View>
         <Text style={[styles.profileName, { color: theme.text }]}>
-          {userProfile?.full_name || userProfile?.phone_number || 'Konti yawe'}
+          {userProfile?.full_name || userProfile?.phone_number || t('myAccount')}
         </Text>
-        <Text style={[styles.profilePhone, { color: theme.textSecondary }]}>{userProfile?.phone_number || 'Ntabwo byashyizwemo'}</Text>
+        <Text style={[styles.profilePhone, { color: theme.textSecondary }]}>{userProfile?.phone_number || t('notSet')}</Text>
       </View>
 
       {/* Basic Information Section */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Amakuru yawe</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('personalInfo')}</Text>
         
         <View style={[styles.infoCard, { backgroundColor: theme.card, shadowColor: theme.cardShadow }]}>
           <View style={styles.infoRow}>
             <Ionicons name="person" size={20} color={theme.textSecondary} />
             <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Amazina</Text>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('fullName')}</Text>
               <Text style={[styles.infoValue, { color: theme.text }]}>
-                {userProfile?.full_name || 'Ntabwo byashyizwemo'}
+                {userProfile?.full_name || t('notSet')}
               </Text>
             </View>
           </View>
@@ -577,9 +601,9 @@ function ProfileScreen() {
           <View style={styles.infoRow}>
             <Ionicons name="call" size={20} color={theme.textSecondary} />
             <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Telefoni</Text>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('phone')}</Text>
               <Text style={[styles.infoValue, { color: theme.text }]}>
-                {userProfile?.phone_number || 'Ntabwo byashyizwemo'}
+                {userProfile?.phone_number || t('notSet')}
               </Text>
             </View>
           </View>
@@ -587,7 +611,7 @@ function ProfileScreen() {
           <View style={styles.infoRow}>
             <Ionicons name="shield" size={20} color={theme.textSecondary} />
             <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Uruhare</Text>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('role')}</Text>
               <Text style={[styles.infoValue, { color: theme.text }]}>
                 {getRoleText(userProfile?.role || 'guest')}
               </Text>
@@ -598,16 +622,16 @@ function ProfileScreen() {
 
       {/* Settings Section */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Igenamiterere</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('settings')}</Text>
         
         <View style={[styles.settingsCard, { backgroundColor: theme.card, shadowColor: theme.cardShadow }]}>
           <TouchableOpacity style={styles.settingRow} onPress={toggleLanguage}>
             <View style={styles.settingLeft}>
               <Ionicons name="language" size={20} color={theme.textSecondary} />
               <View>
-                <Text style={[styles.settingLabel, { color: theme.text }]}>Ururimi</Text>
+                <Text style={[styles.settingLabel, { color: theme.text }]}>{t('language')}</Text>
                 <Text style={[styles.settingValue, { color: theme.textSecondary }]}>
-                  {currentLanguage === 'rw' ? 'Kinyarwanda' : 'English'}
+                  {currentLanguage === 'rw' ? t('languageKinyarwanda') : t('languageEnglish')}
                 </Text>
               </View>
             </View>
@@ -619,12 +643,12 @@ function ProfileScreen() {
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
               <Ionicons name="moon" size={20} color={theme.textSecondary} />
-              <View>
-                <Text style={[styles.settingLabel, { color: theme.text }]}>Dark Mode</Text>
-                <Text style={[styles.settingValue, { color: theme.textSecondary }]}>
-                  {themeMode === 'dark' ? 'Byakoreshejwe' : 'Ntibyakoreshejwe'}
-                </Text>
-              </View>
+                          <View>
+              <Text style={[styles.settingLabel, { color: theme.text }]}>{t('darkMode')}</Text>
+              <Text style={[styles.settingValue, { color: theme.textSecondary }]}>
+                {themeMode === 'dark' ? t('statusActive') : t('statusInactive')}
+              </Text>
+            </View>
             </View>
             <TouchableOpacity onPress={toggleDarkMode}>
               <View style={[
@@ -646,7 +670,7 @@ function ProfileScreen() {
 
       {/* Subscription Section */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Kwishyura</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('subscription')}</Text>
         
         <View style={[styles.subscriptionCard, { backgroundColor: theme.card, shadowColor: theme.cardShadow }]}>
           <View style={styles.subscriptionHeader}>
@@ -657,17 +681,17 @@ function ProfileScreen() {
           <View style={styles.subscriptionInfo}>
             <View style={styles.subscriptionRow}>
               <Text style={[styles.subscriptionLabel, { color: theme.textSecondary }]}>Amafaranga wishyuye</Text>
-              <Text style={[styles.subscriptionValue, { color: theme.text }]}>Kubuntu (0 RWF)</Text>
+              <Text style={[styles.subscriptionValue, { color: theme.text }]}>{t('freeTier')}</Text>
             </View>
 
             <View style={styles.subscriptionRow}>
               <Text style={[styles.subscriptionLabel, { color: theme.textSecondary }]}>Uburyo bw&apos;kwishyura</Text>
-              <Text style={[styles.subscriptionValue, { color: theme.text }]}>Ntabwo byashyizwemo</Text>
+              <Text style={[styles.subscriptionValue, { color: theme.text }]}>{t('notSet')}</Text>
             </View>
 
             <View style={styles.subscriptionRow}>
               <Text style={[styles.subscriptionLabel, { color: theme.textSecondary }]}>Igihe gikurikiyeho cyo kwishyura</Text>
-              <Text style={[styles.subscriptionValue, { color: theme.text }]}>Kubuntu - ntacyo gisabwa</Text>
+              <Text style={[styles.subscriptionValue, { color: theme.text }]}>{t('nothingRequired')}</Text>
             </View>
           </View>
         </View>
@@ -677,13 +701,16 @@ function ProfileScreen() {
       <View style={styles.section}>
         <TouchableOpacity style={[styles.logoutButton, { backgroundColor: theme.card, shadowColor: theme.cardShadow, borderColor: theme.error }]} onPress={handleSignOut}>
           <Ionicons name="log-out" size={20} color={theme.error} />
-          <Text style={[styles.logoutText, { color: theme.error }]}>Sohoka</Text>
+          <Text style={[styles.logoutText, { color: theme.error }]}>{t('signOut')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={[styles.footerText, { color: theme.textTertiary }]}>Icumbi © 2025</Text>
+        <View style={styles.footerBrand}>
+          <IcumbiLogo width={24} height={24} />
+          <Text style={[styles.footerText, { color: theme.textTertiary }]}>Icumbi © 2025</Text>
+        </View>
         <Text style={[styles.footerVersion, { color: theme.textTertiary }]}>Version 1.0.0</Text>
       </View>
     </ScrollView>
@@ -703,6 +730,7 @@ function HomeScreen() {
 function CustomTabBar({ state, descriptors, navigation, onShowSignIn }: BottomTabBarProps & { onShowSignIn: () => void }) {
   const { user } = useAuth()
   const { theme } = useTheme()
+  const { t } = useLanguage()
   
   return (
     <View style={[styles.tabBar, { backgroundColor: theme.tabBar }]}>
@@ -764,6 +792,19 @@ function CustomTabBar({ state, descriptors, navigation, onShowSignIn }: BottomTa
         } else {
           labelText = label as string
         }
+        
+        // Translate tab labels
+        const getTranslatedLabel = (routeName: string) => {
+          switch (routeName) {
+            case 'Home': return t('home')
+            case 'Dashboard': return t('dashboard')
+            case 'Messages': return t('messages')
+            case 'Profile': return t('profile')
+            default: return labelText
+          }
+        }
+        
+        labelText = getTranslatedLabel(route.name)
         return (
           <TouchableOpacity
             key={route.key}
@@ -793,44 +834,46 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PaperProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <NavigationContainer>
-              <Tab.Navigator
-                initialRouteName="Home"
-                tabBar={props => <CustomTabBar {...props} onShowSignIn={() => setShowSignIn(true)} />}
-                screenOptions={{ headerShown: false }}
-              >
-                <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Ahabanza' }} />
+        <LanguageProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <NavigationContainer>
+                <Tab.Navigator
+                  initialRouteName="Home"
+                  tabBar={props => <CustomTabBar {...props} onShowSignIn={() => setShowSignIn(true)} />}
+                  screenOptions={{ headerShown: false }}
+                >
+                                  <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Ahabanza' }} />
                 <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Dashibodi' }} />
                 <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
                 <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: 'Ubutumwa' }} />
                 <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Konti' }} />
-              </Tab.Navigator>
-              <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
-                <SignInScreen 
-                  onSuccess={() => setShowSignIn(false)} 
-                  onClose={() => setShowSignIn(false)}
-                  onShowSignUp={() => {
-                    setShowSignIn(false);
-                    setShowSignUp(true);
-                  }}
-                />
-              </Modal>
-              <Modal visible={showSignUp} animationType="slide" onRequestClose={() => setShowSignUp(false)}>
-                <SignUpScreen 
-                  onSuccess={() => setShowSignUp(false)} 
-                  onClose={() => setShowSignUp(false)}
-                  onShowSignIn={() => {
-                    setShowSignUp(false);
-                    setShowSignIn(true);
-                  }}
-                />
-              </Modal>
-            </NavigationContainer>
-          </AuthProvider>
-          <StatusBarWrapper />
-        </ThemeProvider>
+                </Tab.Navigator>
+                <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
+                  <SignInScreen 
+                    onSuccess={() => setShowSignIn(false)} 
+                    onClose={() => setShowSignIn(false)}
+                    onShowSignUp={() => {
+                      setShowSignIn(false);
+                      setShowSignUp(true);
+                    }}
+                  />
+                </Modal>
+                <Modal visible={showSignUp} animationType="slide" onRequestClose={() => setShowSignUp(false)}>
+                  <SignUpScreen 
+                    onSuccess={() => setShowSignUp(false)} 
+                    onClose={() => setShowSignUp(false)}
+                    onShowSignIn={() => {
+                      setShowSignUp(false);
+                      setShowSignIn(true);
+                    }}
+                  />
+                </Modal>
+              </NavigationContainer>
+            </AuthProvider>
+            <StatusBarWrapper />
+          </ThemeProvider>
+        </LanguageProvider>
       </PaperProvider>
     </GestureHandlerRootView>
   )
@@ -1113,10 +1156,15 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     marginBottom: 20,
   },
+  footerBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   footerText: {
     fontSize: 14,
     color: '#9ca3af',
-    marginBottom: 4,
   },
   footerVersion: {
     fontSize: 12,

@@ -14,9 +14,10 @@ import SignInScreen from './auth/sign-in'
 import SignUpScreen from './auth/sign-up'
 import { useNavigation } from '@react-navigation/native'
 import AddActionModal from './add-action-modal'
-
+import IcumbiLogo from './components/IcumbiLogo'
 
 import { useTheme } from './_layout'
+import { useLanguage } from '@/lib/languageContext'
 
 const { width, height } = Dimensions.get('window')
 
@@ -80,6 +81,9 @@ export default function PropertiesScreen() {
   
   // Get theme from context
   const { theme } = useTheme()
+  
+  // Get language from context
+  const { t } = useLanguage()
   
   // Get navigation
   const navigation = useNavigation()
@@ -475,13 +479,13 @@ export default function PropertiesScreen() {
             <Text style={styles.statusText}>
               {(() => {
                 if (item.total_rooms === 0) {
-                  return 'Nta byumba'; // No rooms configured
+                  return t('noRooms');
                 } else if (item.irimo) {
-                  return 'Yarafashwe'; // Fully occupied
+                  return t('fullyOccupied');
                 } else if (item.available_rooms === item.total_rooms) {
-                  return 'Byose bihari'; // All rooms available
+                  return t('allAvailable');
                 } else {
-                  return `${item.available_rooms} bihari`; // X rooms available
+                  return `${item.available_rooms} ${t('roomsAvailable')}`;
                 }
               })()}
             </Text>
@@ -519,10 +523,10 @@ export default function PropertiesScreen() {
             labelStyle={styles.bookButtonLabel}
             compact
             accessible={true}
-            accessibilityLabel={`Ishyura ${item.izina}`}
+            accessibilityLabel={`${t('pay')} ${item.izina}`}
             accessibilityHint="Kanda kugira ngo utangire ubwishyu bw'inyubako"
           >
-            Ishyura
+            {t('pay')}
           </Button>
           <Button
             mode="outlined"
@@ -531,10 +535,10 @@ export default function PropertiesScreen() {
             labelStyle={[styles.viewButtonLabel, { color: theme.primary }]}
             compact
             accessible={true}
-            accessibilityLabel={`Reba amakuru ya ${item.izina}`}
+            accessibilityLabel={`${t('view')} amakuru ya ${item.izina}`}
             accessibilityHint="Kanda kugira ngo urebye amakuru arambuye y'inyubako"
           >
-            Reba
+            {t('view')}
           </Button>
         </View>
       </View>
@@ -551,7 +555,7 @@ export default function PropertiesScreen() {
         {item.propertyCount && (
           <View style={[styles.propertyCountBadge, { backgroundColor: theme.surfaceVariant }]}>
             <Text variant="bodySmall" style={[styles.propertyCount, { color: theme.textSecondary }]}>
-              {item.propertyCount} {item.propertyCount === 1 ? 'inyubako' : 'inyubako'}
+              {item.propertyCount} {t('properties')}
             </Text>
           </View>
         )}
@@ -585,7 +589,7 @@ export default function PropertiesScreen() {
       <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color={theme.primary} />
         <Text variant="bodyLarge" style={[styles.loadingText, { color: theme.textSecondary }]}>
-          {authLoading ? 'Gukura...' : 'Gukura inyubako...'}
+          {authLoading ? t('loading') : t('loadingProperties')}
         </Text>
         <StatusBar style={theme.themeMode === 'dark' ? 'light' : 'dark'} />
       </View>
@@ -602,9 +606,12 @@ export default function PropertiesScreen() {
       
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-        <Text variant="headlineMedium" style={[styles.headerTitle, { color: theme.primary }]}>
-          Icumbi
-        </Text>
+        <View style={styles.headerLogo}>
+          <IcumbiLogo width={40} height={40} />
+          <Text variant="headlineMedium" style={[styles.headerTitle, { color: theme.primary }]}>
+            Icumbi
+          </Text>
+        </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {!authLoading && (
             user ? (
@@ -637,7 +644,7 @@ export default function PropertiesScreen() {
                 style={[styles.loginButton, { backgroundColor: theme.primary }]}
                 labelStyle={styles.loginButtonLabel}
               >
-                Injira
+                {t('signIn')}
               </Button>
             )
           )}
@@ -650,7 +657,7 @@ export default function PropertiesScreen() {
       <View style={[styles.searchContainer, { backgroundColor: theme.surface }]}>
         <View style={[styles.customSearchBar, { backgroundColor: theme.surfaceVariant }]}>
           <TextInput
-            placeholder="Shakisha inyubako... (Ahantu, ubwoko, igiciro)"
+            placeholder={t('searchPlaceholder')}
             onChangeText={setSearch}
             value={search}
             style={[styles.customSearchInput, { color: theme.text }]}
@@ -677,7 +684,7 @@ export default function PropertiesScreen() {
             style={[styles.sortChip, { backgroundColor: sortBy === 'newest' ? theme.primary : theme.surfaceVariant }]}
             textStyle={[styles.sortChipText, { color: sortBy === 'newest' ? 'white' : theme.text }]}
           >
-            Inshyashya Cyane
+            {t('newest')}
           </Chip>
           <Chip
             selected={sortBy === 'oldest'}
@@ -685,7 +692,7 @@ export default function PropertiesScreen() {
             style={[styles.sortChip, { backgroundColor: sortBy === 'oldest' ? theme.primary : theme.surfaceVariant }]}
             textStyle={[styles.sortChipText, { color: sortBy === 'oldest' ? 'white' : theme.text }]}
           >
-            Iyakera cyane
+            {t('oldest')}
           </Chip>
           <Chip
             selected={sortBy === 'price_low'}
@@ -693,7 +700,7 @@ export default function PropertiesScreen() {
             style={[styles.sortChip, { backgroundColor: sortBy === 'price_low' ? theme.primary : theme.surfaceVariant }]}
             textStyle={[styles.sortChipText, { color: sortBy === 'price_low' ? 'white' : theme.text }]}
           >
-            Igiciro gito
+            {t('lowPrice')}
           </Chip>
           <Chip
             selected={sortBy === 'price_high'}
@@ -701,7 +708,7 @@ export default function PropertiesScreen() {
             style={[styles.sortChip, { backgroundColor: sortBy === 'price_high' ? theme.primary : theme.surfaceVariant }]}
             textStyle={[styles.sortChipText, { color: sortBy === 'price_high' ? 'white' : theme.text }]}
           >
-            Ihenze cyane
+            {t('highPrice')}
           </Chip>
         </ScrollView>
       </View>
@@ -719,10 +726,10 @@ export default function PropertiesScreen() {
         ListHeaderComponent={
           <View style={styles.heroSection}>
             <Text variant="headlineLarge" style={[styles.heroTitle, { color: theme.primary }]}>
-              Murakaza neza
+              {t('welcome')}
             </Text>
             <Text variant="bodyLarge" style={[styles.heroSubtitle, { color: theme.textSecondary }]}>
-              Hitamo icumbi rikunogeye 🤗 inzu yo gukoreramo mu nyubako zikunzwe mu Rwanda ku giciro gito 😍
+              {t('welcomeSubtitle')}
             </Text>
           </View>
         }
@@ -731,10 +738,10 @@ export default function PropertiesScreen() {
             <View style={styles.emptyContainer}>
               <Ionicons name="search" size={64} color={theme.textTertiary} />
               <Text variant="titleMedium" style={[styles.emptyTitle, { color: theme.text }]}>
-                Nta nyubako ibonetse
+                {t('noPropertiesFound')}
               </Text>
               <Text variant="bodyMedium" style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
-                Shakisha inyubako ukoresha amagambo atandukanye
+                {t('searchDifferentTerms')}
               </Text>
             </View>
           ) : null
@@ -743,10 +750,10 @@ export default function PropertiesScreen() {
           <View style={[styles.footerSection, { backgroundColor: theme.background, borderTopColor: theme.border }]}>
             <View style={[styles.addPropertyCard, { backgroundColor: theme.primary }]}>
               <Text variant="headlineSmall" style={[styles.addPropertyTitle, { color: 'white' }]}>
-                Ufite inyubako?
+                {t('haveProperty')}
               </Text>
               <Text variant="bodyMedium" style={[styles.addPropertySubtitle, { color: 'rgba(255, 255, 255, 0.9)' }]}>
-                Ongeramo inyubako yawe kuri Icumbi ukore ubukode bworoshye
+                {t('addPropertySubtitle')}
               </Text>
               <TouchableOpacity
                 onPress={() => {
@@ -762,14 +769,14 @@ export default function PropertiesScreen() {
                   } else {
                     // Show message for non-landlord/admin users
                     Alert.alert(
-                      'Ongeramo Inyubako',
-                      'Kugira ngo wongeramo inyubako, ugomba kujya kuri website ya Icumbi.com cyangwa ukoreshe dashboard ya landlord.',
+                      t('addPropertyAlert'),
+                      t('addPropertyAlertMessage'),
                       [
-                        { text: 'Siba', style: 'cancel' },
+                        { text: t('cancel'), style: 'cancel' },
                         { 
-                          text: 'Jya kuri Dashibodi',
+                          text: t('goToDashboard'),
                           onPress: () => {
-                            Alert.alert('Menya', 'Jya kuri Dashibodi kugira ngo ukoreshe amahitamo yo kongeramo inyubako.')
+                            Alert.alert(t('alertInfo'), t('dashboardInfo'))
                           }
                         }
                       ]
@@ -780,14 +787,14 @@ export default function PropertiesScreen() {
               >
                 <View style={styles.gradientButton}>
                   <Text style={styles.addPropertyButtonLabel}>
-                    Ongeramo Inyubako
+                    {t('addPropertyButton')}
                   </Text>
                 </View>
               </TouchableOpacity>
             </View>
             <View style={styles.appFooter}>
               <Text variant="bodySmall" style={[styles.footerText, { color: theme.textSecondary }]}>
-                Icumbi © 2025 — &ldquo;Ubukode bworoshye, ubuzima bwiza.&rdquo;
+                {t('appFooter')}
               </Text>
             </View>
           </View>
@@ -885,6 +892,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+  },
+  headerLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   headerTitle: {
     fontWeight: 'bold',

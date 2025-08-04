@@ -1,0 +1,40 @@
+<svg width="300" height="120" viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Grid pattern for background -->
+    <pattern id="gridPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="none" stroke="#e67e22" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+    
+    <!-- Orange gradient background -->
+    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f39c12;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e67e22;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with grid pattern -->
+  <rect width="300" height="120" fill="url(#orangeGradient)"/>
+  <rect width="300" height="120" fill="url(#gridPattern)"/>
+  
+  <!-- Geometric House Logo -->
+  <g transform="translate(50, 30)">
+    <!-- Main triangular house structure -->
+    <polygon points="0,40 20,0 40,40" fill="#3498db" stroke="#3498db" stroke-width="1"/>
+    
+    <!-- Inner roof detail -->
+    <polygon points="8,32 20,8 32,32" fill="none" stroke="#3498db" stroke-width="2"/>
+    
+    <!-- Vertical bar (chimney/door) -->
+    <rect x="18" y="25" width="4" height="15" fill="#3498db"/>
+    
+    <!-- Three parallel diagonal lines on the right -->
+    <line x1="45" y1="8" x2="65" y2="25" stroke="#3498db" stroke-width="2"/>
+    <line x1="45" y1="15" x2="65" y2="32" stroke="#3498db" stroke-width="2"/>
+    <line x1="45" y1="22" x2="65" y2="39" stroke="#3498db" stroke-width="2"/>
+  </g>
+  
+  <!-- ICUMBI Text -->
+  <text x="150" y="85" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#3498db" letter-spacing="2px">
+    ICUMBI
+  </text>
+</svg> 

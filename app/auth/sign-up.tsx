@@ -4,6 +4,7 @@ import { Text, TextInput, Button, HelperText, ActivityIndicator } from 'react-na
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { API_ENDPOINTS } from '@/config';
+import IcumbiLogo from '../components/IcumbiLogo';
 
 const ROLES = [
   { label: 'Umukodesha', value: 'tenant' },
@@ -14,6 +15,8 @@ const ROLES = [
 const { width, height } = Dimensions.get('window');
 
 export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onSuccess?: () => void, onClose?: () => void, onShowSignIn?: () => void } = {}) {
+  // Debug mode - set to true to enable detailed logging
+  const DEBUG_MODE = true;
   const [role, setRole] = useState<string>('tenant'); // Set default role to tenant
   const [roleModal, setRoleModal] = useState(false);
   const [identifierType, setIdentifierType] = useState<'phone' | 'email'>('phone');
@@ -37,6 +40,27 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
   const [selectedLandlord, setSelectedLandlord] = useState<Landlord | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Test function for debugging
+  const testSignUpFlow = async () => {
+    if (DEBUG_MODE) {
+      console.log('🧪 Testing sign-up flow...');
+      console.log('🧪 Current form data:', formData);
+      console.log('🧪 Current role:', role);
+      console.log('🧪 API endpoints:', API_ENDPOINTS);
+      
+      // Test API connectivity
+      try {
+        const response = await fetch(API_ENDPOINTS.SIGNUP, {
+          method: 'OPTIONS',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        console.log('🧪 API connectivity test:', response.status);
+      } catch (error) {
+        console.error('🧪 API connectivity test failed:', error);
+      }
+    }
+  };
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -124,6 +148,7 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
   };
 
   const handleSignUp = async () => {
+    if (DEBUG_MODE) console.log('🚀 Starting sign-up process...');
     setError('');
     setSuccess('');
     if (!validateForm()) return;
@@ -152,6 +177,11 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
         } : {})
       };
 
+      console.log('📤 Signup payload:', {
+        ...signupPayload,
+        password: '[HIDDEN]' // Don't log password
+      });
+
       // Additional validation before sending
       if (!signupPayload.full_name || !signupPayload.email || !signupPayload.phone_number || !signupPayload.password) {
         setError('Uzuza amakuru yose asabwa (amazina, imeri, telefoni, ijambo ry\'ibanga).');
@@ -165,17 +195,38 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
       // Both email and phone are required for signup
 
       // Use the signup API endpoint instead of direct Supabase auth
+      console.log('🌐 Calling signup API:', API_ENDPOINTS.SIGNUP);
+      
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(API_ENDPOINTS.SIGNUP, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(signupPayload),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
-      console.log('Signup response status:', response.status);
-      const data = await response.json();
-      console.log('Signup response data:', data);
+      console.log('📡 Signup response status:', response.status);
+      console.log('📡 Signup response headers:', response.headers);
+      
+      let data;
+      try {
+        data = await response.json();
+        console.log('📡 Signup response data:', data);
+      } catch (parseError) {
+        console.error('❌ Failed to parse signup response:', parseError);
+        const responseText = await response.text();
+        console.error('❌ Raw response:', responseText);
+        setError('Habaye ikosa mu gufungura konti. Gerageza ongera.');
+        setLoading(false);
+        return;
+      }
 
       if (!response.ok) {
         const errorMsg = data.error || 'Fungura konti byanze. Gerageza ongera.';
@@ -191,27 +242,121 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
         return;
       }
 
+      // Check if signup was successful
+      if (!data.success) {
+        const errorMsg = data.error || 'Fungura konti byanze. Gerageza ongera.';
+        setError(errorMsg);
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ Signup successful, user created:', data.user?.id)
       setSuccess('Konti yawe yafunguwe neza! Ubu urimo kwinjira...')
       
-      // Attempt auto-login after successful signup
-      const loginPayload = {
-        identifier: signupPayload.email || signupPayload.phone_number,
-        password: signupPayload.password,
-        role: signupPayload.role,
+      // Verify user exists in database and create tenant records if needed
+      try {
+        console.log('🔍 Verifying user in database...');
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('id, email, role')
+          .eq('email', signupPayload.email)
+          .single();
+          
+        if (userError || !userData) {
+          console.error('❌ User verification failed:', userError);
+          throw new Error('User not found in database after creation');
+        }
+        
+        console.log('✅ User verified in database:', userData.id);
+        
+        // If user is a tenant, create tenant_users and tenants records
+        if (userData.role === 'tenant') {
+          console.log('🔧 Creating tenant records for user:', userData.id);
+          
+          // First, try to create tenant_users record
+          const { data: tenantUserData, error: tenantUserError } = await supabase
+            .from('tenant_users')
+            .insert({
+              auth_user_id: userData.id,
+              full_name: signupPayload.full_name,
+              email: signupPayload.email,
+              phone_number: signupPayload.phone_number,
+              status: 'active'
+            })
+            .select()
+            .single();
+            
+          if (tenantUserError) {
+            console.error('❌ Failed to create tenant_users record:', tenantUserError);
+            // Continue anyway, as the table might not exist
+          } else {
+            console.log('✅ Created tenant_users record:', tenantUserData.id);
+            
+            // Then create tenants record
+            const { data: tenantData, error: tenantError } = await supabase
+              .from('tenants')
+              .insert({
+                tenant_user_id: tenantUserData.id,
+                full_name: signupPayload.full_name,
+                phone_number: signupPayload.phone_number,
+                email: signupPayload.email,
+                id_number: '', // Will be filled later
+                emergency_contact: null,
+                landlord_id: null // Will be set when assigned to a property
+              })
+              .select()
+              .single();
+              
+            if (tenantError) {
+              console.error('❌ Failed to create tenants record:', tenantError);
+            } else {
+              console.log('✅ Created tenants record:', tenantData.id);
+            }
+          }
+        }
+      } catch (verifyError) {
+        console.error('❌ User verification error:', verifyError);
+        // Continue with auto-login anyway, as the user might still be created
       }
       
+      // Attempt auto-login after successful signup using Supabase directly
       try {
-        const loginResponse = await fetch(API_ENDPOINTS.AUTH, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(loginPayload),
-        })
-        const loginData = await loginResponse.json()
+        console.log('🔐 Attempting auto-login with email:', signupPayload.email)
         
-        if (!loginResponse.ok || !loginData.success) {
-          setError('Konti yafunguwe ariko kwinjira byanze: ' + (loginData.error || 'Gerageza kwinjira ukoresheje konti yawe.'))
-          setLoading(false)
-          return
+        // Add a small delay to ensure the user is fully created in the database
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Use Supabase auth directly for auto-login with retry
+        let signInData = null;
+        let signInError = null;
+        
+        // Try up to 3 times with increasing delays
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          console.log(`🔐 Auto-login attempt ${attempt}/3`);
+          
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: signupPayload.email,
+            password: signupPayload.password,
+          });
+          
+          if (!error && data?.user) {
+            signInData = data;
+            console.log(`✅ Auto-login successful on attempt ${attempt}:`, data.user.id);
+            break;
+          } else {
+            signInError = error;
+            console.log(`❌ Auto-login attempt ${attempt} failed:`, error?.message);
+            
+            if (attempt < 3) {
+              // Wait before retrying (1s, 2s, 3s)
+              await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+            }
+          }
+        }
+        
+        if (signInError || !signInData?.user) {
+          console.error('❌ All auto-login attempts failed:', signInError)
+          throw new Error(signInError?.message || 'Auto-login failed after all attempts')
         }
         
         // Successfully logged in, redirect to main app
@@ -240,14 +385,44 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
         }, 1500)
         
       } catch (loginError) {
-        setError('Konti yafunguwe ariko kwinjira byanze. Gerageza kwinjira ukoresheje konti yawe.')
+        console.error('❌ Auto-login exception:', loginError)
+        // Show success message but inform user to login manually
+        setSuccess('Konti yawe yafunguwe neza! Nyamuneka injira ukoresheje imeri/telefoni yawe n\'ijambo ry\'ibanga.')
         setLoading(false)
+        
+        // Clear form data
+        setFormData({
+          full_name: '',
+          phone_number: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          landlord_pin: '',
+        })
+        setRole('tenant') // Reset to default role
+        setSelectedLandlord(null)
+        
+        // Navigate to sign-in after a delay
+        setTimeout(() => {
+          if (onShowSignIn) {
+            onShowSignIn()
+          } else {
+            router.replace('/auth/sign-in')
+          }
+        }, 3000)
         return
       }
       
-    } catch (error) {
-      console.error('Signup error:', error);
-      setError('Habaye ikosa mu gufungura konti. Gerageza ongera.');
+    } catch (error: any) {
+      console.error('❌ Signup error:', error);
+      
+      if (error.name === 'AbortError') {
+        setError('Ntibyashoboye gufata serivisi. Nyamuneka reba internet yawe hanyuma ugerageze ongera.');
+      } else if (error.message?.includes('Network request failed')) {
+        setError('Ntibyashoboye gufata serivisi. Nyamuneka reba internet yawe hanyuma ugerageze ongera.');
+      } else {
+        setError('Habaye ikosa mu gufungura konti. Gerageza ongera.');
+      }
       setLoading(false);
     }
   };
@@ -269,7 +444,10 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           }}>
             <Image source={{uri: 'https://img.icons8.com/ios-filled/50/2563eb/left.png'}} style={styles.backIcon} />
           </TouchableOpacity>
-          {/* Title */}
+          {/* Logo and Title */}
+          <View style={styles.logoContainer}>
+            <IcumbiLogo width={60} height={60} />
+          </View>
           <Text style={styles.title}>Fungura Konti</Text>
           {/* Role Dropdown */}
           <TouchableOpacity style={styles.dropdown} onPress={() => setRoleModal(true)}>
@@ -385,6 +563,19 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           >
             Fungura Konti
           </Button>
+          
+          {/* Debug button - only visible in debug mode */}
+          {DEBUG_MODE && (
+            <Button
+              mode="outlined"
+              onPress={testSignUpFlow}
+              style={[styles.gradientBtn, { marginTop: 8, backgroundColor: 'transparent', borderColor: '#2563eb' }]}
+              contentStyle={styles.gradientBtnContent}
+              labelStyle={[styles.gradientBtnLabel, { color: '#2563eb' }]}
+            >
+              Test Sign-up Flow
+            </Button>
+          )}
         </View>
       </ScrollView>
       {/* Sign In Link */}
@@ -406,11 +597,37 @@ const styles = StyleSheet.create({
   outer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f8fa' },
   bgGradient: { position: 'absolute', top: 0, left: 0, width, height, backgroundColor: 'rgba(37,99,235,0.07)' },
   cardShadow: { shadowColor: '#a21caf', shadowOpacity: 0.18, shadowRadius: 24, elevation: 12, borderRadius: 32 },
-  card: { width: width * 0.92, maxWidth: 400, backgroundColor: '#fff', borderRadius: 32, padding: 24, alignItems: 'center', marginVertical: 16 },
+  card: { 
+    width: width * 0.92, 
+    maxWidth: 400, 
+    backgroundColor: '#fff', 
+    borderRadius: width <= 768 ? 20 : 32, 
+    padding: width <= 768 ? 20 : 24, 
+    alignItems: 'center', 
+    marginVertical: width <= 768 ? 12 : 16 
+  },
   backBtn: { position: 'absolute', top: 14, left: 14, zIndex: 10, padding: 4 },
   backIcon: { width: 24, height: 24, tintColor: '#2563eb' },
-  title: { fontWeight: 'bold', fontSize: 22, color: '#2563eb', marginBottom: 12 },
-  dropdown: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#2563eb', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 12, backgroundColor: '#f3f6fd', width: '100%', justifyContent: 'space-between' },
+  logoContainer: { alignItems: 'center', marginBottom: 20 },
+  title: { 
+    fontWeight: 'bold', 
+    fontSize: width <= 768 ? 20 : 22, 
+    color: '#2563eb', 
+    marginBottom: width <= 768 ? 10 : 12 
+  },
+  dropdown: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 1, 
+    borderColor: '#2563eb', 
+    borderRadius: width <= 768 ? 16 : 20, 
+    paddingHorizontal: width <= 768 ? 14 : 16, 
+    paddingVertical: width <= 768 ? 6 : 8, 
+    marginBottom: width <= 768 ? 10 : 12, 
+    backgroundColor: '#f3f6fd', 
+    width: '100%', 
+    justifyContent: 'space-between' 
+  },
   dropdownText: { color: '#2563eb', fontWeight: '600', fontSize: 15 },
   dropdownIcon: { width: 18, height: 18, tintColor: '#2563eb' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.18)', justifyContent: 'center', alignItems: 'center' },
@@ -419,11 +636,29 @@ const styles = StyleSheet.create({
   modalOptionActive: { backgroundColor: '#f3f6fd' },
   modalOptionText: { color: '#2563eb', fontWeight: '600', fontSize: 16, textAlign: 'center' },
   modalOptionTextActive: { color: '#a21caf' },
-  input: { width: '100%', marginBottom: 10, backgroundColor: '#fff', borderRadius: 16, color: '#333', borderWidth: 1, borderColor: '#e5e7eb' },
-  gradientBtn: { width: '100%', marginTop: 10, borderRadius: 24, backgroundColor: '#2563eb' },
+  input: { 
+    width: '100%', 
+    marginBottom: width <= 768 ? 8 : 10, 
+    backgroundColor: '#fff', 
+    borderRadius: width <= 768 ? 12 : 16, 
+    color: '#333', 
+    borderWidth: 1, 
+    borderColor: '#e5e7eb',
+    fontSize: width <= 768 ? 14 : 16,
+  },
+  gradientBtn: { 
+    width: '100%', 
+    marginTop: width <= 768 ? 8 : 10, 
+    borderRadius: width <= 768 ? 20 : 24, 
+    backgroundColor: '#2563eb' 
+  },
   btnDisabled: { backgroundColor: '#b3cdfd' },
-  gradientBtnContent: { height: 48 },
-  gradientBtnLabel: { fontWeight: 'bold', fontSize: 16, color: '#fff' },
+  gradientBtnContent: { height: width <= 768 ? 44 : 48 },
+  gradientBtnLabel: { 
+    fontWeight: 'bold', 
+    fontSize: width <= 768 ? 15 : 16, 
+    color: '#fff' 
+  },
   signinLinkRow: { alignItems: 'center', marginTop: 18, marginBottom: 4 },
   signinLink: { color: '#a21caf', fontWeight: 'bold', fontSize: 15 },
   copyright: { color: '#666', fontSize: 12, marginTop: 10, textAlign: 'center' },

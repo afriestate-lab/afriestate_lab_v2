@@ -19,7 +19,9 @@ import {
   formatDate
 } from '@/lib/helpers'
 import { useTheme } from './_layout'
+import { useLanguage } from '@/lib/languageContext'
 import LeaseExtensionFlow from './components/LeaseExtensionFlow'
+import IcumbiLogo from './components/IcumbiLogo'
 
 // Local type definitions
 interface TenantUser {
@@ -209,6 +211,7 @@ type TabType = 'overview' | 'bookings' | 'payments' | 'messages' | 'announcement
 
 export default function TenantDashboard() {
   const { theme } = useTheme()
+  const { t } = useLanguage()
   const [tenantUser, setTenantUser] = useState<TenantUser | null>(null)
   const [currentLease, setCurrentLease] = useState<CurrentLease | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>('overview')
@@ -263,7 +266,7 @@ export default function TenantDashboard() {
       }
 
       // First check if user has a tenant_users record
-      const { data: tenantUserRecord } = await supabase
+      const { data: tenantUserRecord, error: tenantUserError } = await supabase
         .from('tenant_users')
         .select('id, full_name, email, phone_number, status')
         .eq('auth_user_id', user.id)
@@ -285,6 +288,57 @@ export default function TenantDashboard() {
         await loadTenantData(user.id) // Pass auth user id
       } else {
         console.log('❌ [TENANT-DASHBOARD] No tenant_users record found for auth user:', user.id)
+        
+        // Try to create tenant_users record if it doesn't exist
+        try {
+          console.log('🔧 Attempting to create missing tenant_users record...')
+          
+          // Get user data from users table
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('full_name, email, phone_number')
+            .eq('id', user.id)
+            .single()
+            
+          if (userData) {
+            const { data: newTenantUser, error: createError } = await supabase
+              .from('tenant_users')
+              .insert({
+                auth_user_id: user.id,
+                full_name: userData.full_name,
+                email: userData.email || user.email || '',
+                phone_number: userData.phone_number,
+                status: 'active'
+              })
+              .select()
+              .single()
+              
+            if (newTenantUser && !createError) {
+              console.log('✅ Created missing tenant_users record:', newTenantUser.id)
+              
+              // Set tenant info from newly created record
+              const tenantInfo: TenantUser = {
+                id: newTenantUser.id,
+                full_name: newTenantUser.full_name || user.email || 'Tenant',
+                email: newTenantUser.email || user.email || '',
+                phone_number: newTenantUser.phone_number || user.user_metadata?.phone_number || null,
+                auth_user_id: user.id,
+                status: newTenantUser.status || 'active',
+                preferred_language: 'rw',
+                created_at: new Date().toISOString()
+              }
+              setTenantUser(tenantInfo)
+              await loadTenantData(user.id)
+              return
+            } else {
+              console.error('❌ Failed to create tenant_users record:', createError)
+            }
+          }
+        } catch (createError) {
+          console.error('❌ Error creating tenant_users record:', createError)
+        }
+        
+        // If we can't create the record, show error
         Alert.alert('Ikosa', 'Nta makuru ya mukode asanzwe. Nyamuneka vugana nabayobozi.')
         return
       }
@@ -309,8 +363,48 @@ export default function TenantDashboard() {
 
       if (tenantUserError || !tenantUserData) {
         console.error('❌ [TENANT-DASHBOARD] No tenant_user found for auth user:', authUserId, tenantUserError)
-        setCurrentLease(null)
-        return
+        
+        // Try to create the missing tenant_user record
+        try {
+          console.log('🔧 Attempting to create missing tenant_user record in loadTenantData...')
+          
+          const { data: userData } = await supabase
+            .from('users')
+            .select('full_name, email, phone_number')
+            .eq('id', authUserId)
+            .single()
+            
+          if (userData) {
+            const { data: newTenantUser, error: createError } = await supabase
+              .from('tenant_users')
+              .insert({
+                auth_user_id: authUserId,
+                full_name: userData.full_name,
+                email: userData.email || '',
+                phone_number: userData.phone_number,
+                status: 'active'
+              })
+              .select()
+              .single()
+              
+            if (newTenantUser && !createError) {
+              console.log('✅ Created missing tenant_user record in loadTenantData:', newTenantUser.id)
+              // Continue with the newly created record
+              const tenantUserData = newTenantUser
+            } else {
+              console.error('❌ Failed to create tenant_user record in loadTenantData:', createError)
+              setCurrentLease(null)
+              return
+            }
+          } else {
+            setCurrentLease(null)
+            return
+          }
+        } catch (createError) {
+          console.error('❌ Error creating tenant_user record in loadTenantData:', createError)
+          setCurrentLease(null)
+          return
+        }
       }
 
       console.log('✅ [TENANT-DASHBOARD] Found tenant_user:', tenantUserData)
@@ -656,11 +750,11 @@ export default function TenantDashboard() {
       })
       setShowMessageModal(false)
       
-      Alert.alert('Ubutumwa bwoherejwe', 'Ubutumwa bwawe bwoherejwe neza.')
+      Alert.alert(t('messageSent'), t('messageSentSuccess'))
       await loadTenantData(tenantUser.auth_user_id)
     } catch (error) {
       console.error('Error sending message:', error)
-      Alert.alert('Ikosa', 'Ntibyashoboye kohereza ubutumwa. Ongera ugerageze.')
+      Alert.alert(t('error'), t('messageSendError'))
     } finally {
       setSending(false)
     }
@@ -698,7 +792,7 @@ export default function TenantDashboard() {
       })
       setShowExtensionModal(false)
       
-      Alert.alert('Icyifuzo cyoherejwe', 'Icyifuzo cyo kongera igihe cyoherejwe neza.')
+      Alert.alert(t('extensionRequestSent'), t('extensionRequestSuccess'))
       await loadTenantData(tenantUser.auth_user_id)
     } catch (error) {
       console.error('Error requesting extension:', error)
@@ -968,20 +1062,20 @@ export default function TenantDashboard() {
         <View style={[styles.paymentSummaryCard, { backgroundColor: theme.card }]}>
           <View style={styles.cardHeader}>
             <Ionicons name="card" size={24} color="#10b981" />
-            <Text style={styles.cardTitle}>Amakuru y&apos;amafaranga</Text>
+            <Text style={styles.cardTitle}>{t('financialInfo')}</Text>
           </View>
           
           <View style={styles.paymentStats}>
             <View style={[styles.paymentStat, { backgroundColor: theme.surfaceVariant }]}>
-              <Text style={[styles.paymentStatLabel, { color: theme.textSecondary }]}>Yishyuwe yose</Text>
+              <Text style={[styles.paymentStatLabel, { color: theme.textSecondary }]}>{t('totalPaid')}</Text>
               <Text style={[styles.paymentStatValue, { color: theme.text }]}>{formatCurrency(totalPaid)}</Text>
             </View>
             <View style={[styles.paymentStat, { backgroundColor: theme.surfaceVariant }]}>
-              <Text style={[styles.paymentStatLabel, { color: theme.textSecondary }]}>Amezi yishyuwe</Text>
+              <Text style={[styles.paymentStatLabel, { color: theme.textSecondary }]}>{t('monthsPaid')}</Text>
               <Text style={[styles.paymentStatValue, { color: theme.text }]}>{monthsPaid}</Text>
             </View>
             <View style={[styles.paymentStat, { backgroundColor: theme.surfaceVariant }]}>
-              <Text style={[styles.paymentStatLabel, { color: theme.textSecondary }]}>Inyemezabwishyu</Text>
+              <Text style={[styles.paymentStatLabel, { color: theme.textSecondary }]}>{t('receipts')}</Text>
               <Text style={[styles.paymentStatValue, { color: theme.text }]}>{payments.length}</Text>
             </View>
           </View>
@@ -989,7 +1083,7 @@ export default function TenantDashboard() {
           {/* Recent Payments */}
           {payments.length > 0 && (
             <View style={styles.recentPaymentsSection}>
-              <Text style={styles.subsectionTitle}>Kwishyura biheruka</Text>
+              <Text style={styles.subsectionTitle}>{t('recentPayments')}</Text>
                               {payments.slice(0, 3).map((payment, index) => (
                   <View key={`payment-${payment.id}-${index}`} style={[styles.paymentItem, { backgroundColor: theme.surfaceVariant }]}>
                   <View style={styles.paymentItemHeader}>
@@ -1000,7 +1094,7 @@ export default function TenantDashboard() {
                   </View>
                   <Text style={[styles.paymentDate, { color: theme.textSecondary }]}>{formatDate(payment.payment_date)}</Text>
                   {payment.receipt_number && (
-                    <Text style={[styles.receiptNumber, { color: theme.primary }]}>Inyemezabwishyu: {payment.receipt_number}</Text>
+                                          <Text style={[styles.receiptNumber, { color: theme.primary }]}>{t('receiptNumber')} {payment.receipt_number}</Text>
                   )}
                 </View>
               ))}
@@ -1013,28 +1107,28 @@ export default function TenantDashboard() {
           <View style={[styles.statCard, { backgroundColor: theme.card }]}>
             <Ionicons name="calendar" size={24} color="#3b82f6" />
             <Text style={[styles.statNumber, { color: theme.text }]}>{bookings.length}</Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Rezervasiyo</Text>
+                            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('reservations')}</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: theme.card }]}>
             <Ionicons name="chatbubble" size={24} color="#8b5cf6" />
             <Text style={[styles.statNumber, { color: theme.text }]}>{messages.length}</Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Ubutumwa</Text>
+                            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('messages')}</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: theme.card }]}>
             <Ionicons name="megaphone" size={24} color="#f59e0b" />
             <Text style={[styles.statNumber, { color: theme.text }]}>{announcements.length}</Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Amatangazo</Text>
+                            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('announcements')}</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: theme.card }]}>
             <Ionicons name="time" size={24} color="#ef4444" />
             <Text style={[styles.statNumber, { color: theme.text }]}>{extensionRequests.length}</Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Ibyifuzo</Text>
+                            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('extensionRequests')}</Text>
           </View>
         </View>
 
         {/* Recent Activity */}
         <View style={[styles.activityCard, { backgroundColor: theme.card }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Ibikorwa biheruka</Text>
+                      <Text style={[styles.cardTitle, { color: theme.text }]}>{t('recentActivities')}</Text>
                           {payments.slice(0, 2).map((payment, index) => (
                   <View key={`payment-${payment.id}-${index}`} style={styles.activityItem}>
               <Ionicons name="card" size={20} color="#10b981" />
@@ -1080,7 +1174,7 @@ export default function TenantDashboard() {
     return (
       <ScrollView style={styles.tabContent}>
         <View style={styles.sortingHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Amateka ya rezervasiyo</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('reservationHistory')}</Text>
           <Text style={[styles.sortingInfo, { color: theme.textSecondary }]}>
             Ibisobanura: {sortedBookings.length > 0 && sortedBookings[0].preferred_move_in_date ? 'Igihe gisigaye' : 'Bishya'}
           </Text>
@@ -1113,7 +1207,7 @@ export default function TenantDashboard() {
           </View>
         ))}
         {sortedBookings.length === 0 && (
-          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Nta rezervasiyo zihari</Text>
+                      <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{t('noReservations')}</Text>
         )}
       </ScrollView>
     )
@@ -1121,7 +1215,7 @@ export default function TenantDashboard() {
 
   const renderPaymentsTab = () => (
     <ScrollView style={styles.tabContent}>
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Amateka y&apos;amafaranga</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('paymentHistory')}</Text>
       
       {/* Regular Payments */}
       <Text style={[styles.subsectionTitle, { color: theme.text }]}>Kwishyura</Text>
@@ -1141,7 +1235,7 @@ export default function TenantDashboard() {
           </Text>
           {payment.receipt_number && (
             <Text style={[styles.listItemDetail, { color: theme.textSecondary }]}>
-              Inyemezabwishyu: {payment.receipt_number}
+              {t('receiptNumber')} {payment.receipt_number}
             </Text>
           )}
           {payment.payment_methods.length > 0 && (
@@ -1216,10 +1310,10 @@ export default function TenantDashboard() {
         onPress={() => setShowMessageModal(true)}
       >
         <Ionicons name="add" size={24} color="white" />
-        <Text style={styles.addButtonText}>Ohereza ubutumwa</Text>
+                    <Text style={styles.addButtonText}>{t('sendMessage')}</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Amateka y&apos;ubutumwa</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('messageHistory')}</Text>
                       {messages.map((message, index) => (
                   <View key={`message-${message.id}-${index}`} style={[styles.listItem, { backgroundColor: theme.card }]}>
           <View style={styles.listItemHeader}>
@@ -1259,7 +1353,7 @@ export default function TenantDashboard() {
 
   const renderAnnouncementsTab = () => (
     <ScrollView style={styles.tabContent}>
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Amatangazo y&apos;inzu</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('houseAnnouncements')}</Text>
                       {announcements.map((announcement, index) => (
                   <View key={`announcement-${announcement.id}-${index}`} style={[styles.listItem, { backgroundColor: theme.card }]}>
           <View style={styles.listItemHeader}>
@@ -1324,7 +1418,7 @@ export default function TenantDashboard() {
         onPress={() => setShowExtensionFlow(true)}
       >
         <Ionicons name="time" size={24} color="white" />
-        <Text style={styles.addButtonText}>Kongera igihe</Text>
+                    <Text style={styles.addButtonText}>{t('extendTimeButton')}</Text>
       </TouchableOpacity>
 
       {/* Catalog Section */}
@@ -1382,7 +1476,7 @@ export default function TenantDashboard() {
       )}
 
       {/* Extension Requests */}
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Ibyifuzo byo kongera igihe</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('extensionRequests')}</Text>
       {extensionRequests.map((request, index) => (
         <View key={`request-${request.id}-${index}`} style={[styles.listItem, { backgroundColor: theme.card }]}>
           <View style={styles.listItemHeader}>
@@ -1411,7 +1505,7 @@ export default function TenantDashboard() {
         </View>
       ))}
       {extensionRequests.length === 0 && (
-        <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Nta byifuzo byo kongera igihe</Text>
+                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{t('noExtensionRequests')}</Text>
       )}
     </ScrollView>
   )
@@ -1439,8 +1533,13 @@ export default function TenantDashboard() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.surface }]}>
         <View style={styles.headerContent}>
-          <Text style={[styles.welcomeText, { color: theme.textSecondary }]}>Murakaza neza,</Text>
-          <Text style={[styles.nameText, { color: theme.text }]}>{tenantUser.full_name}</Text>
+          <View style={styles.headerLogo}>
+            <IcumbiLogo width={32} height={32} />
+          </View>
+          <View style={styles.headerText}>
+            <Text style={[styles.welcomeText, { color: theme.textSecondary }]}>{t('welcome')}</Text>
+            <Text style={[styles.nameText, { color: theme.text }]}>{tenantUser.full_name}</Text>
+          </View>
         </View>
         {/* Sign out button removed as requested */}
       </View>
@@ -1472,7 +1571,7 @@ export default function TenantDashboard() {
               color={activeTab === 'bookings' ? theme.primary : theme.textSecondary} 
             />
             <Text style={[styles.navLabel, activeTab === 'bookings' && styles.activeNavLabel, { color: activeTab === 'bookings' ? theme.primary : theme.text }]}>
-              Rezervasiyo
+              {t('reservations')}
             </Text>
           </TouchableOpacity>
           
@@ -1486,7 +1585,7 @@ export default function TenantDashboard() {
               color={activeTab === 'payments' ? theme.primary : theme.textSecondary} 
             />
             <Text style={[styles.navLabel, activeTab === 'payments' && styles.activeNavLabel, { color: activeTab === 'payments' ? theme.primary : theme.text }]}>
-              Amafaranga
+              {t('money')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1502,7 +1601,7 @@ export default function TenantDashboard() {
               color={activeTab === 'messages' ? theme.primary : theme.textSecondary} 
             />
             <Text style={[styles.navLabel, activeTab === 'messages' && styles.activeNavLabel, { color: activeTab === 'messages' ? theme.primary : theme.text }]}>
-              Ubutumwa
+              {t('messages')}
             </Text>
           </TouchableOpacity>
           
@@ -1516,7 +1615,7 @@ export default function TenantDashboard() {
               color={activeTab === 'announcements' ? theme.primary : theme.textSecondary} 
             />
             <Text style={[styles.navLabel, activeTab === 'announcements' && styles.activeNavLabel, { color: activeTab === 'announcements' ? theme.primary : theme.text }]}>
-              Amatangazo
+              {t('announcements')}
             </Text>
           </TouchableOpacity>
           
@@ -1530,7 +1629,7 @@ export default function TenantDashboard() {
               color={activeTab === 'extend' ? theme.primary : theme.textSecondary} 
             />
             <Text style={[styles.navLabel, activeTab === 'extend' && styles.activeNavLabel, { color: activeTab === 'extend' ? theme.primary : theme.text }]}>
-              Kongera igihe
+              {t('extendTime')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1551,7 +1650,7 @@ export default function TenantDashboard() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Ohereza ubutumwa</Text>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>{t('sendMessageModal')}</Text>
               <TouchableOpacity onPress={() => setShowMessageModal(false)}>
                 <Ionicons name="close" size={24} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -1567,7 +1666,7 @@ export default function TenantDashboard() {
             
             <TextInput
               style={[styles.input, styles.textArea, { backgroundColor: theme.surfaceVariant, color: theme.text }]}
-              placeholder="Ubutumwa bwawe..."
+                                placeholder={t('messagePlaceholder')}
               placeholderTextColor={theme.textSecondary}
               value={newMessage.message}
               onChangeText={(text) => setNewMessage(prev => ({ ...prev, message: text }))}
@@ -1583,15 +1682,15 @@ export default function TenantDashboard() {
               ]}
               onPress={() => {
                 if (!newMessage.subject.trim() || !newMessage.message.trim()) {
-                  Alert.alert('Ikosa', 'Nyamuneka uzuza insanganyamatsiko n&apos;ubutumwa.')
+                  Alert.alert(t('error'), t('fillSubjectMessage'))
                   return
                 }
                 sendMessage()
               }}
               disabled={!newMessage.subject.trim() || !newMessage.message.trim() || sending}
               accessible={true}
-              accessibilityLabel="Ohereza ubutumwa"
-              accessibilityHint="Kanda kugira ngo wohereze ubutumwa kuri nyirinyubako"
+                              accessibilityLabel={t('sendMessageAccessibility')}
+                accessibilityHint={t('sendMessageHint')}
             >
               {sending ? (
                 <ActivityIndicator color="white" />
@@ -1611,7 +1710,7 @@ export default function TenantDashboard() {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Saba kongera igihe</Text>
+              <Text style={styles.modalTitle}>{t('requestExtensionModal')}</Text>
               <TouchableOpacity onPress={() => setShowExtensionModal(false)}>
                 <Ionicons name="close" size={24} color="#6b7280" />
               </TouchableOpacity>
@@ -1651,8 +1750,8 @@ export default function TenantDashboard() {
               }}
               disabled={sending}
               accessible={true}
-              accessibilityLabel="Ohereza icyifuzo cyo kongera igihe"
-              accessibilityHint="Kanda kugira ngo wohereze icyifuzo cyo kongera igihe kuri nyirinyubako"
+                              accessibilityLabel={t('requestExtensionAccessibility')}
+                accessibilityHint={t('requestExtensionHint')}
             >
               {sending ? (
                 <ActivityIndicator color="white" />
@@ -1798,7 +1897,15 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e5e7eb'
   },
   headerContent: {
-    alignItems: 'center'
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerLogo: {
+    // Logo container styles
+  },
+  headerText: {
+    flex: 1,
   },
   welcomeText: {
     fontSize: 14,

@@ -34,6 +34,18 @@ export interface User {
   updated_at: string
 }
 
+export interface TenantUser {
+  id: string
+  auth_user_id: string
+  full_name: string
+  email: string
+  phone_number: string
+  status: string
+  preferred_language?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Property {
   id: string
   name: string
@@ -93,6 +105,7 @@ export interface Room {
 
 export interface Tenant {
   id: string
+  tenant_user_id: string
   full_name: string
   phone_number: string | null
   email: string | null
@@ -328,6 +341,11 @@ export interface Database {
         Row: User
         Insert: Omit<User, 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>
+      }
+      tenant_users: {
+        Row: TenantUser
+        Insert: Omit<TenantUser, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<TenantUser, 'id' | 'created_at' | 'updated_at'>>
       }
       properties: {
         Row: Property

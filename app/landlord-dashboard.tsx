@@ -20,6 +20,7 @@ import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 import { LineChart } from 'react-native-chart-kit'
 import { useTheme } from './_layout'
+import IcumbiLogo from './components/IcumbiLogo'
 
 const chartConfig = {
   backgroundGradientFrom: '#f8fafc',
@@ -1389,7 +1390,10 @@ export default function LandlordDashboard() {
           />
           <View style={[styles.sidebarMenu, { backgroundColor: theme.surface }]}>
             <View style={styles.sidebarHeader}>
-              <Text style={[styles.sidebarTitle, { color: theme.text }]}>Icumbi Hub</Text>
+              <View style={styles.sidebarLogo}>
+                <IcumbiLogo width={32} height={32} />
+                <Text style={[styles.sidebarTitle, { color: theme.text }]}>Icumbi Hub</Text>
+              </View>
               <TouchableOpacity onPress={() => setIsMenuOpen(false)}>
                 <Ionicons name="close" size={24} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -1887,6 +1891,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb'
+  },
+  sidebarLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   sidebarTitle: {
     fontSize: 18,

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icumbi Logo Preview</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+        }
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .logo-item {
+            text-align: center;
+            padding: 30px;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            background: #fafafa;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .logo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .logo-item h3 {
+            color: #374151;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        .logo-item svg {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .description {
+            margin-top: 20px;
+            color: #6b7280;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        .download-section {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 15px;
+        }
+        .download-section h2 {
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        .download-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .download-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #4A90E2;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        .download-link:hover {
+            background: #2E5BBA;
+        }
+        .featured {
+            border: 3px solid #4A90E2;
+            background: #f0f8ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Icumbi Final Logo</h1>
+        
+        <div class="logo-grid">
+            <div class="logo-item featured">
+                <h3>🎯 Final Logo Design (200x200)</h3>
+                <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <!-- Blue gradient for the icon elements -->
+                    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#2E5BBA;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <!-- Drop shadow filter -->
+                    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.2"/>
+                    </filter>
+                  </defs>
+                  
+                  <!-- Background rounded square with shadow -->
+                  <rect x="20" y="20" width="160" height="160" rx="30" ry="30" 
+                        fill="white" stroke="#e0e0e0" stroke-width="1" filter="url(#dropShadow)"/>
+                  
+                  <!-- House roof -->
+                  <path d="M 50 90 L 100 50 L 150 90 L 145 90 L 100 55 L 55 90 Z" 
+                        fill="#4A90E2"/>
+                  
+                  <!-- Chimney -->
+                  <rect x="135" y="65" width="8" height="25" fill="#4A90E2"/>
+                  
+                  <!-- Key positioned diagonally below the roof -->
+                  <g transform="rotate(30 100 120)">
+                    <!-- Key head (circular) -->
+                    <circle cx="85" cy="120" r="12" fill="#4A90E2"/>
+                    <circle cx="85" cy="120" r="6" fill="white"/>
+                    
+                    <!-- Key shaft -->
+                    <rect x="97" y="117" width="28" height="6" fill="#4A90E2"/>
+                    
+                    <!-- Key teeth -->
+                    <rect x="125" y="123" width="4" height="8" fill="#4A90E2"/>
+                    <rect x="130" y="123" width="4" height="12" fill="#4A90E2"/>
+                    <rect x="135" y="123" width="4" height="6" fill="#4A90E2"/>
+                  </g>
+                  
+                  <!-- Brand name "ICUMBI" -->
+                  <text x="100" y="170" text-anchor="middle" 
+                        font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold"
+                        fill="#4A90E2">
+                    ICUMBI
+                  </text>
+                </svg>
+                <div class="description">
+                    Your final logo design with blue gradient, house roof with chimney, and rotated key. Perfect for all applications!
+                </div>
+            </div>
+
+            <div class="logo-item">
+                <h3>📱 App Icon Version (120x120)</h3>
+                <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <!-- Blue gradient for the icon elements -->
+                    <linearGradient id="blueGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#2E5BBA;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <!-- Drop shadow filter -->
+                    <filter id="dropShadow2" x="-50%" y="-50%" width="200%" height="200%">
+                      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.2"/>
+                    </filter>
+                  </defs>
+                  
+                  <!-- Background rounded square with shadow -->
+                  <rect x="10" y="10" width="100" height="100" rx="18" ry="18" 
+                        fill="white" stroke="#e0e0e0" stroke-width="1" filter="url(#dropShadow2)"/>
+                  
+                  <!-- House roof -->
+                  <path d="M 35 60 L 60 35 L 85 60 L 82 60 L 60 40 L 38 60 Z" 
+                        fill="#4A90E2"/>
+                  
+                  <!-- Chimney -->
+                  <rect x="78" y="45" width="5" height="15" fill="#4A90E2"/>
+                  
+                  <!-- Key positioned diagonally below the roof -->
+                  <g transform="rotate(30 60 75)">
+                    <!-- Key head (circular) -->
+                    <circle cx="50" cy="75" r="7" fill="#4A90E2"/>
+                    <circle cx="50" cy="75" r="3.5" fill="white"/>
+                    
+                    <!-- Key shaft -->
+                    <rect x="57" y="72" width="17" height="4" fill="#4A90E2"/>
+                    
+                    <!-- Key teeth -->
+                    <rect x="74" y="76" width="2.5" height="5" fill="#4A90E2"/>
+                    <rect x="77" y="76" width="2.5" height="7" fill="#4A90E2"/>
+                    <rect x="80" y="76" width="2.5" height="4" fill="#4A90E2"/>
+                  </g>
+                  
+                  <!-- Brand name "ICUMBI" -->
+                  <text x="60" y="100" text-anchor="middle" 
+                        font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold"
+                        fill="#4A90E2">
+                    ICUMBI
+                  </text>
+                </svg>
+                <div class="description">
+                    Optimized app icon version for mobile devices and app stores. Same design, smaller scale.
+                </div>
+            </div>
+
+            <div class="logo-item">
+                <h3>📋 Logo Specifications</h3>
+                <div style="text-align: left; padding: 20px; background: #f8fafc; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="color: #4A90E2; margin-top: 0;">Design Elements:</h4>
+                    <ul style="color: #6b7280; line-height: 1.6;">
+                        <li><strong>House Roof:</strong> Blue gradient fill with clean lines</li>
+                        <li><strong>Chimney:</strong> Positioned on the right side of roof</li>
+                        <li><strong>Key:</strong> Rotated 30° with circular head and teeth details</li>
+                        <li><strong>Background:</strong> White rounded square with shadow</li>
+                        <li><strong>Typography:</strong> Bold Arial font in blue</li>
+                    </ul>
+                    <h4 style="color: #4A90E2;">Colors:</h4>
+                    <ul style="color: #6b7280; line-height: 1.6;">
+                        <li><strong>Primary Blue:</strong> #4A90E2</li>
+                        <li><strong>Dark Blue:</strong> #2E5BBA</li>
+                        <li><strong>Background:</strong> White (#FFFFFF)</li>
+                        <li><strong>Border:</strong> Light gray (#e0e0e0)</li>
+                    </ul>
+                </div>
+                <div class="description">
+                    Complete specifications for your final logo design.
+                </div>
+            </div>
+        </div>
+
+        <div class="download-section">
+            <h2>📥 Download Final Logo Files</h2>
+            <div class="download-links">
+                <a href="assets/icumbi-logo-final.svg" class="download-link" download>Download Main Logo (SVG)</a>
+                <a href="assets/icumbi-icon-final.svg" class="download-link" download>Download App Icon (SVG)</a>
+            </div>
+            <p style="margin-top: 20px; color: #6b7280;">
+                💡 Tip: Right-click on any logo above and select "Save image as..." to download as PNG
+            </p>
+        </div>
+    </div>
+</body>
+</html>

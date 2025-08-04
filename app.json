@@ -4,7 +4,7 @@
     "slug": "icumbi-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icumbi-logo-final.svg",
     "userInterfaceStyle": "automatic",
     "sdkVersion": "53.0.0",
     "splash": {
@@ -27,7 +27,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icumbi-icon-final.svg",
         "backgroundColor": "#ffffff"
       },
       "package": "com.icumbi.app",
@@ -43,7 +43,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "favicon": "./assets/icumbi-icon-final.svg",
       "bundler": "metro"
     },
     "plugins": [

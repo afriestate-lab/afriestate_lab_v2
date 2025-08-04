@@ -1,0 +1,46 @@
+<svg width="300" height="120" viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Grid pattern for background -->
+    <pattern id="gridPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="none" stroke="#e67e22" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+    
+    <!-- Orange gradient background -->
+    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f39c12;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e67e22;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with grid pattern -->
+  <rect width="300" height="120" fill="url(#orangeGradient)"/>
+  <rect width="300" height="120" fill="url(#gridPattern)"/>
+  
+  <!-- House Roof with Key Logo -->
+  <g transform="translate(100, 25)">
+    <!-- House roof triangle -->
+    <polygon points="0,35 20,5 40,35" fill="none" stroke="#4261FF" stroke-width="2"/>
+    
+    <!-- Key inside the roof -->
+    <g transform="translate(15, 15)">
+      <!-- Key head -->
+      <circle cx="10" cy="10" r="3" fill="#4261FF"/>
+      <!-- Key shaft -->
+      <rect x="10" y="7" width="15" height="6" fill="#4261FF"/>
+      <!-- Key teeth -->
+      <rect x="20" y="5" width="2" height="10" fill="#4261FF"/>
+      <rect x="23" y="8" width="2" height="4" fill="#4261FF"/>
+    </g>
+    
+    <!-- Four parallel diagonal lines to the right -->
+    <line x1="45" y1="5" x2="65" y2="25" stroke="#4261FF" stroke-width="1.5"/>
+    <line x1="45" y1="12" x2="65" y2="32" stroke="#4261FF" stroke-width="1.5"/>
+    <line x1="45" y1="19" x2="65" y2="39" stroke="#4261FF" stroke-width="1.5"/>
+    <line x1="45" y1="26" x2="65" y2="46" stroke="#4261FF" stroke-width="1.5"/>
+  </g>
+  
+  <!-- ICUMBI Text -->
+  <text x="150" y="85" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#4261FF" letter-spacing="3px">
+    ICUMBI
+  </text>
+</svg> 

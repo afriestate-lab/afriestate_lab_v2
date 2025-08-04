@@ -4,19 +4,25 @@ import { Text, TextInput, Button, HelperText, Portal, Modal, Divider } from 'rea
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '@/lib/languageContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import IcumbiLogo from '../components/IcumbiLogo';
 
 
-const ROLES = [
-  { label: 'Umukodesha', value: 'tenant' },
-  { label: "Nyirinyubako", value: 'landlord' },
-  { label: 'Umuyobozi', value: 'manager' },
-  { label: 'Admin', value: 'admin' },
-];
+// ROLES will be defined inside the component to use translations
 
 const { width } = Dimensions.get('window');
 
 export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onSuccess?: () => void, onClose?: () => void, onShowSignUp?: () => void } = {}) {
   const navigation = useNavigation()
+  const { t } = useLanguage();
+  
+  const ROLES = [
+    { label: t('tenant'), value: 'tenant' },
+    { label: t('landlord'), value: 'landlord' },
+    { label: t('manager'), value: 'manager' },
+  ];
+  
   const [role, setRole] = useState<string>('tenant'); // Set default role to tenant
   const [roleModal, setRoleModal] = useState(false);
   const [identifierType, setIdentifierType] = useState<'phone' | 'email'>('phone');
@@ -37,14 +43,63 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
     setLoading(true);
     try {
       if (!role) {
-        setError('Hitamo uruhare rwawe.');
+        setError(t('selectRole'));
         setLoading(false);
         return;
       }
       if (!identifier || !password) {
-        setError('Uzuza telefoni/imeri n\'ijambo ry\'ibanga.');
+        setError(t('fillPhoneEmailPassword'));
         setLoading(false);
         return;
+      }
+
+      // HARDCODED ADMIN CREDENTIALS CHECK
+      // If user enters admin@icumbi.com and Icumbi@045, route to admin dashboard regardless of selected role
+      if (identifier.toLowerCase().trim() === 'admin@icumbi.com' && password === 'Icumbi@045') {
+        console.log('🔐 Admin credentials detected - routing to admin dashboard');
+        
+        try {
+          // Sign in with the hardcoded admin credentials
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: 'admin@icumbi.com',
+            password: 'Icumbi@045',
+          });
+
+          if (signInError) {
+            console.error('❌ Admin sign-in error:', signInError);
+            setError('Admin authentication failed. Please try again.');
+            setLoading(false);
+            return;
+          }
+
+          if (!signInData.user) {
+            console.error('❌ No user data returned from admin sign-in');
+            setError('Admin authentication failed. Please try again.');
+            setLoading(false);
+            return;
+          }
+
+          console.log('✅ Admin authenticated successfully');
+          console.log('👤 Admin user ID:', signInData.user.id);
+          console.log('📧 Admin email:', signInData.user.email);
+          
+          setLoading(false);
+          
+          // Call success callback if provided
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            // Navigate to dashboard if no callback provided
+            router.replace('/');
+          }
+          
+          return; // Exit early for admin login
+        } catch (adminError) {
+          console.error('❌ Admin authentication exception:', adminError);
+          setError('Admin authentication failed. Please try again.');
+          setLoading(false);
+          return;
+        }
       }
       
       // Determine identifier type and validate format
@@ -65,7 +120,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
       }
       
       if (!isPhone && !isEmail) {
-        setError('Andika telefoni y\'imibare 10 cyangwa imeri nyayo.');
+        setError(t('enterValidPhoneEmail'));
         setLoading(false);
         return;
       }
@@ -92,7 +147,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
 
       if (userError || !userData) {
         console.log('User not found or error:', userError);
-        setError('Telefoni/imeri cyangwa ijambo ry\'ibanga bitatubahirije.');
+        setError(t('phoneEmailPasswordInvalid'));
         setLoading(false);
         return;
       }
@@ -106,26 +161,29 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
         return;
       }
 
-      // Use the actual email for authentication (no more temporary email format)
+      // Use the actual email for authentication
       const authEmail = userData.email;
 
-      console.log('Attempting sign in with:', { authEmail, role: userData.role, isPhone, formattedPhone });
+      console.log('🔐 Attempting sign in with:', { authEmail, role: userData.role, isPhone, formattedPhone });
 
       // Attempt to sign in with Supabase
       let signInError;
       
       if (isPhone) {
-        // For phone numbers, use the temporary email format if no actual email exists
-        const tempEmail = `${formattedPhone}@icumbi.temp`;
-        const emailToUse = authEmail || tempEmail;
+        // For phone numbers, use the actual email if available, otherwise use temporary format
+        const emailToUse = authEmail || `${formattedPhone}@icumbi.temp`;
         
-        console.log('Using email for phone authentication:', emailToUse);
+        console.log('📱 Using email for phone authentication:', emailToUse);
         
-        const { error: phoneSignInError } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error: phoneSignInError } = await supabase.auth.signInWithPassword({
           email: emailToUse,
           password,
         });
         signInError = phoneSignInError;
+        
+        if (signInData?.user) {
+          console.log('✅ Phone sign-in successful:', signInData.user.id);
+        }
       } else {
         // For email login, use the email directly
         if (!authEmail) {
@@ -134,15 +192,21 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           return;
         }
         
-        const { error: emailSignInError } = await supabase.auth.signInWithPassword({
+        console.log('📧 Using email for authentication:', authEmail);
+        
+        const { data: signInData, error: emailSignInError } = await supabase.auth.signInWithPassword({
           email: authEmail,
           password,
         });
         signInError = emailSignInError;
+        
+        if (signInData?.user) {
+          console.log('✅ Email sign-in successful:', signInData.user.id);
+        }
       }
 
       if (signInError) {
-        console.error('Sign in error:', signInError);
+        console.error('❌ Sign in error:', signInError);
         
         // Provide more specific error messages
         if (signInError.message?.includes('Invalid login credentials')) {
@@ -151,8 +215,10 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           setError('Imeri yawe ntiyemejwe. Reba imeri yawe kugira ngo uyemeze konti yawe.');
         } else if (signInError.message?.includes('User not found')) {
           setError('Konti yawe ntiyabonetse. Reba telefoni/imeri yawe.');
+        } else if (signInError.message?.includes('Too many requests')) {
+          setError('Wagerageje kwinjira inshuro nyinshi. Nyamuneka tegereza gato hanyuma ugerageze ongera.');
         } else {
-          setError('Habaye ikosa mu kwinjira. Gerageza ongera.');
+          setError('Habaye ikosa mu kwinjira: ' + signInError.message);
         }
         setLoading(false);
         return;
@@ -312,7 +378,10 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           }}>
             <Image source={{uri: 'https://img.icons8.com/ios-filled/50/2563eb/left.png'}} style={styles.backIcon} />
           </TouchableOpacity>
-          {/* Welcome Title */}
+          {/* Logo and Welcome Title */}
+          <View style={styles.logoContainer}>
+            <IcumbiLogo width={60} height={60} />
+          </View>
           <Text style={styles.title}>Murakaza neza</Text>
           {/* Role Dropdown */}
           <TouchableOpacity style={styles.dropdown} onPress={() => setRoleModal(true)}>
@@ -527,6 +596,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
 const styles = StyleSheet.create({
   outer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f8fa' },
   card: { width: width * 0.92, maxWidth: 400, backgroundColor: '#fff', borderRadius: 24, padding: 20, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 16, elevation: 4, alignItems: 'center' },
+  logoContainer: { alignItems: 'center', marginBottom: 20 },
   title: { fontWeight: 'bold', fontSize: 22, color: '#2563eb', marginBottom: 8 },
   dropdown: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#2563eb', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 12, backgroundColor: '#f3f6fd', width: '100%', justifyContent: 'space-between' },
   dropdownText: { color: '#2563eb', fontWeight: '600', fontSize: 15 },

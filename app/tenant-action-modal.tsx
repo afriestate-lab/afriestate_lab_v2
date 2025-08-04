@@ -62,34 +62,45 @@ export default function TenantActionModal({ visible, onClose, userRole }: Tenant
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      // Get tenant_user record
+      const { data: tenantUserData } = await supabase
+        .from('tenant_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single()
+
+      if (!tenantUserData) return
+
       // Get tenant profile
       const { data: tenantProfile } = await supabase
         .from('tenants')
         .select('*')
-        .eq('auth_user_id', user.id)
+        .eq('tenant_user_id', tenantUserData.id)
         .single()
 
       if (!tenantProfile) return
 
-      // Get current lease
+      // Get current lease from room_tenants
       const { data: leaseData } = await supabase
-        .from('leases')
+        .from('room_tenants')
         .select(`
           *,
           rooms!inner (
             room_number,
             properties!inner (
-              name
+              name,
+              id
             )
           )
         `)
         .eq('tenant_id', tenantProfile.id)
-        .eq('status', 'active')
+        .eq('is_active', true)
         .single()
 
       if (leaseData) {
         setCurrentLease({
           ...leaseData,
+          property_id: (leaseData.rooms as any).properties.id,
           property_name: (leaseData.rooms as any).properties.name,
           room_number: (leaseData.rooms as any).room_number
         })
@@ -100,7 +111,7 @@ export default function TenantActionModal({ visible, onClose, userRole }: Tenant
         const { data: consumablesData } = await supabase
           .from('consumables_catalog')
           .select('*')
-          .eq('property_id', leaseData.rooms.property_id)
+          .eq('property_id', (leaseData.rooms as any).properties.id)
           .eq('is_available', true)
           .order('category')
           .order('name')
