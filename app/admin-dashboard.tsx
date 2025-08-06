@@ -474,7 +474,7 @@ export default function AdminDashboard() {
     try {
       console.log('Fetching all properties...')
       const { data: properties, error } = await supabase
-        .rpc('get_all_properties_admin')
+        .rpc('get_admin_properties')
 
       if (error) {
         console.error('Error fetching properties:', error)
@@ -608,12 +608,40 @@ export default function AdminDashboard() {
     try {
       console.log('Using fallback admin data fetch method...')
       
-      // Get platform-wide data manually
+      // Use RPC function to get admin dashboard data safely
+      const { data: adminStats, error: adminStatsError } = await supabase
+        .rpc('get_admin_dashboard_data')
+      
+      if (adminStatsError) {
+        console.error('Error fetching admin dashboard data:', adminStatsError)
+        return {
+          totalProperties: 0,
+          totalUnits: 0,
+          occupiedUnits: 0,
+          totalTenants: 0,
+          totalRevenue: 0,
+          previousRevenue: 0,
+          occupancyRate: 0,
+          revenueChangePercent: 0,
+          tenantChangePercent: 0,
+          propertyChangePercent: 0,
+          revenueData: [],
+          paymentStatus: [],
+          upcomingDueDates: [],
+          properties: [],
+          managers: [],
+          landlords: [],
+          tenants: [],
+          urgentPayments: [],
+          recentPayments: [],
+          totalUsers: 0
+        }
+      }
+      
+      const stats = adminStats?.[0] || {}
+      
+      // Get additional data using RPC functions
       const [
-        propertiesData,
-        roomsData, 
-        tenantsData,
-        paymentsData,
         revenueData,
         paymentStatus,
         upcomingDueDates,
@@ -621,10 +649,6 @@ export default function AdminDashboard() {
         allManagers,
         allUsers
       ] = await Promise.all([
-        supabase.from('properties').select('id').eq('deleted_at', null),
-        supabase.from('rooms').select('id').eq('deleted_at', null),
-        supabase.from('room_tenants').select('tenant_id').eq('is_active', true),
-        supabase.from('payments').select('amount, payment_date').eq('deleted_at', null),
         generateAdminRevenueData(),
         getAdminPaymentStatusData(),
         getAdminUpcomingDueDates(),
@@ -633,39 +657,28 @@ export default function AdminDashboard() {
         fetchAllUsers()
       ])
       
-      console.log('Fallback data results:', {
-        properties: propertiesData.data?.length || 0,
-        rooms: roomsData.data?.length || 0,
-        tenants: tenantsData.data?.length || 0,
-        payments: paymentsData.data?.length || 0,
+      console.log('Admin dashboard data results:', {
+        properties: stats.total_properties || 0,
+        rooms: stats.total_rooms || 0,
+        tenants: stats.total_tenants || 0,
+        revenue: stats.total_revenue || 0,
         landlords: allLandlords.length,
         managers: allManagers.length,
         users: allUsers.length
       })
       
-      const currentMonth = new Date()
-      currentMonth.setDate(1)
-      const previousMonth = new Date(currentMonth)
-      previousMonth.setMonth(previousMonth.getMonth() - 1)
-      
-      const currentMonthRevenue = paymentsData.data?.filter(p => 
-        new Date(p.payment_date) >= currentMonth
-      ).reduce((sum, p) => sum + p.amount, 0) || 0
-      
-      const previousMonthRevenue = paymentsData.data?.filter(p => {
-        const paymentDate = new Date(p.payment_date)
-        return paymentDate >= previousMonth && paymentDate < currentMonth
-      }).reduce((sum, p) => sum + p.amount, 0) || 0
+      const currentMonthRevenue = stats.monthly_revenue || 0
+      const previousMonthRevenue = 0 // Would need separate calculation
       
       const fallbackData = {
-        totalProperties: propertiesData.data?.length || 0,
-        totalUnits: roomsData.data?.length || 0,
-        occupiedUnits: tenantsData.data?.length || 0,
-        totalTenants: tenantsData.data?.length || 0,
+        totalProperties: stats.total_properties || 0,
+        totalUnits: stats.total_rooms || 0,
+        occupiedUnits: stats.occupied_rooms || 0,
+        totalTenants: stats.total_tenants || 0,
         totalRevenue: currentMonthRevenue,
         previousRevenue: previousMonthRevenue,
-        occupancyRate: roomsData.data?.length ? Math.round((tenantsData.data?.length || 0) / roomsData.data.length * 100 * 10) / 10 : 0,
-        revenueChangePercent: previousMonthRevenue ? Math.round((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue * 100 * 10) / 10 : 0,
+        occupancyRate: stats.total_rooms ? Math.round((stats.occupied_rooms || 0) / stats.total_rooms * 100 * 10) / 10 : 0,
+        revenueChangePercent: 0, // Would need historical data
         tenantChangePercent: 0,
         propertyChangePercent: 0,
         revenueData,

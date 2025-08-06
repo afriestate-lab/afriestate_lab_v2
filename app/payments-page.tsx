@@ -133,55 +133,40 @@ export default function PaymentsPage({ onBack }: PaymentsPageProps) {
           break
       }
 
-      // Fetch payments with comprehensive data
+      // Fetch payments using RPC function to avoid RLS recursion
+      const filterStartDate = filterPeriod === 'all' ? null : startDate
+      const filterEndDate = filterPeriod === 'all' ? null : new Date()
+      
       const { data: paymentsData, error: paymentsError } = await supabase
-        .from('payments')
-        .select(`
-          id, amount, payment_date, payment_methods, receipt_number,
-          notes, recorded_by, created_at,
-          tenants!inner (
-            id, full_name, phone_number
-          ),
-          rooms!inner (
-            id, room_number, floor_number, rent_amount,
-            properties!inner (
-              id, name, landlord_id
-            )
-          )
-        `)
-        .eq('rooms.properties.landlord_id', userProfile.id)
-        .gte('payment_date', startDate.toISOString())
-        .order('payment_date', { ascending: false })
-
+        .rpc('get_landlord_payments', {
+          p_landlord_id: userProfile.id,
+          p_start_date: filterStartDate,
+          p_end_date: filterEndDate
+        })
+      
       if (paymentsError) throw paymentsError
-
+      
       if (!paymentsData || paymentsData.length === 0) {
         setPayments([])
         setSummary({
-          total_amount: 0,
           total_payments: 0,
-          completed_amount: 0,
-          completed_count: 0,
-          pending_amount: 0,
-          pending_count: 0,
-          overdue_amount: 0,
-          overdue_count: 0,
+          total_amount: 0,
           average_payment: 0,
-          collection_rate: 100,
-          on_time_rate: 100
+          completed_count: 0,
+          pending_count: 0,
+          overdue_count: 0,
+          completed_amount: 0,
+          pending_amount: 0,
+          overdue_amount: 0,
+          collection_rate: 0,
+          on_time_rate: 0
         })
         return
       }
 
-      // Process payments data
-      const processedPayments = paymentsData.map(payment => {
-        const tenant = (payment.tenants as any)
-        const room = (payment.rooms as any)
-        const property = (room.properties as any)
-
+      // Process payments data from RPC function
+      const processedPayments = paymentsData.map((payment: any) => {
         // Determine payment status based on dates
-        const paymentDate = new Date(payment.payment_date)
-        const now = new Date()
         let status: 'completed' | 'pending' | 'overdue' = 'completed'
         
         // For this implementation, we'll consider all fetched payments as completed
@@ -195,35 +180,35 @@ export default function PaymentsPage({ onBack }: PaymentsPageProps) {
           payment_methods: payment.payment_methods || 'Ntabwo byasobanuwe',
           receipt_number: payment.receipt_number || `RCP-${payment.id.slice(-6)}`,
           status,
-          tenant_name: (tenant as any).full_name,
-          tenant_phone: (tenant as any).phone_number,
-          property_name: property.name,
-          room_number: (room as any).room_number,
-          floor_number: (room as any).floor_number,
-          rent_amount: (room as any).rent_amount,
+          tenant_name: payment.tenant_name,
+          tenant_phone: payment.tenant_phone,
+          property_name: payment.property_name,
+          room_number: payment.room_number,
+          floor_number: payment.floor_number,
+          rent_amount: payment.rent_amount,
           late_fee: 0, // Would be calculated based on payment date vs due date
           days_late: 0,
-          recorded_by: payment.recorded_by || 'System',
+          recorded_by: 'System',
           notes: payment.notes || '',
           created_at: payment.created_at
         } as PaymentDetail
       })
 
       // Calculate summary statistics
-      const totalAmount = processedPayments.reduce((sum, p) => sum + p.amount, 0)
+      const totalAmount = processedPayments.reduce((sum: number, p: any) => sum + p.amount, 0)
       const totalPayments = processedPayments.length
-      const completedPayments = processedPayments.filter(p => p.status === 'completed')
-      const pendingPayments = processedPayments.filter(p => p.status === 'pending')
-      const overduePayments = processedPayments.filter(p => p.status === 'overdue')
+      const completedPayments = processedPayments.filter((p: any) => p.status === 'completed')
+      const pendingPayments = processedPayments.filter((p: any) => p.status === 'pending')
+      const overduePayments = processedPayments.filter((p: any) => p.status === 'overdue')
 
       const paymentSummary: PaymentSummary = {
         total_amount: totalAmount,
         total_payments: totalPayments,
-        completed_amount: completedPayments.reduce((sum, p) => sum + p.amount, 0),
+        completed_amount: completedPayments.reduce((sum: number, p: any) => sum + p.amount, 0),
         completed_count: completedPayments.length,
-        pending_amount: pendingPayments.reduce((sum, p) => sum + p.amount, 0),
+        pending_amount: pendingPayments.reduce((sum: number, p: any) => sum + p.amount, 0),
         pending_count: pendingPayments.length,
-        overdue_amount: overduePayments.reduce((sum, p) => sum + p.amount, 0),
+        overdue_amount: overduePayments.reduce((sum: number, p: any) => sum + p.amount, 0),
         overdue_count: overduePayments.length,
         average_payment: totalPayments > 0 ? totalAmount / totalPayments : 0,
         collection_rate: totalPayments > 0 ? (completedPayments.length / totalPayments) * 100 : 100,

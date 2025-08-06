@@ -69,41 +69,41 @@ export default function AddCatalogForm({ onBack, onSuccess }: AddCatalogFormProp
       let propertiesData: any[] = []
 
       if (profile.role === 'landlord') {
-        // Get properties owned by landlord
+        // Get properties owned by landlord using RPC to avoid RLS recursion
         const { data, error } = await supabase
-          .from('properties')
-          .select('id, name, address')
-          .eq('landlord_id', profile.id)
-          .is('deleted_at', null)
-          .order('name')
+          .rpc('get_landlord_properties', {
+            p_landlord_id: profile.id
+          })
 
         if (error) throw error
         propertiesData = data || []
       } else if (profile.role === 'manager') {
-        // Get properties assigned to manager
-        const { data: managerAssignments, error: assignmentError } = await supabase
-          .from('property_managers')
-          .select(`
-            properties!inner (
-              id, name, address
-            )
-          `)
-          .eq('manager_id', profile.id)
-          .eq('status', 'active')
-          .is('deleted_at', null)
+        // Get properties assigned to manager using RPC to avoid RLS recursion
+        const { data, error: assignmentError } = await supabase
+          .rpc('get_manager_properties', {
+            p_manager_id: profile.id
+          })
 
         if (assignmentError) throw assignmentError
-        propertiesData = managerAssignments?.map(assignment => (assignment.properties as any)) || []
-      } else if (profile.role === 'admin') {
-        // Admin can see all properties
-        const { data, error } = await supabase
-          .from('properties')
-          .select('id, name, address')
-          .is('deleted_at', null)
-          .order('name')
-
-        if (error) throw error
         propertiesData = data || []
+      } else if (profile.role === 'admin') {
+        // Admin can see all properties - use a safe admin RPC if available
+        const { data, error } = await supabase
+          .rpc('get_all_properties_admin')
+
+        if (error) {
+          // Fallback to direct query for admin only
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('properties')
+            .select('id, name, address')
+            .is('deleted_at', null)
+            .order('name')
+          
+          if (fallbackError) throw fallbackError
+          propertiesData = fallbackData || []
+        } else {
+          propertiesData = data || []
+        }
       }
 
       setProperties(propertiesData)

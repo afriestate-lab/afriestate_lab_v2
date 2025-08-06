@@ -165,7 +165,7 @@ export default function PropertyDetailsModal({
       
       // Add property images array if they're valid URLs
       if (Array.isArray(propertyData.property_images)) {
-        const validPropertyImages = propertyData.property_images.filter(img => 
+        const validPropertyImages = propertyData.property_images.filter((img: any) => 
           img && !isLocalFileUri(img)
         )
         images = images.concat(validPropertyImages)
@@ -175,7 +175,7 @@ export default function PropertyDetailsModal({
       if (roomsData && Array.isArray(roomsData)) {
         roomsData.forEach(room => {
           if (Array.isArray(room.images)) {
-            const validRoomImages = room.images.filter(img => 
+            const validRoomImages = room.images.filter((img: any) => 
               img && !isLocalFileUri(img)
             )
             images = images.concat(validRoomImages)

@@ -333,6 +333,10 @@ export const uploadImageToStorage = async (
     const blob = await response.blob()
     console.log('Image blob size:', blob.size, 'bytes')
     
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log('User authentication status:', { user: user?.id, authError })
+    
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
       .from(bucket)
@@ -344,6 +348,12 @@ export const uploadImageToStorage = async (
     
     if (error) {
       console.error('Upload error:', error)
+      console.error('Upload error details:', {
+        message: error.message,
+        name: error.name,
+        cause: error.cause,
+        stack: error.stack
+      })
       throw new Error(`Failed to upload image: ${error.message}`)
     }
     

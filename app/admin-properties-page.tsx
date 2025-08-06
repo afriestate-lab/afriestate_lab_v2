@@ -50,7 +50,7 @@ export default function AdminPropertiesPage({ onBack }: AdminPropertiesPageProps
       
       // Use the admin RPC function instead of direct table query
       const { data: propertiesData, error } = await supabase
-        .rpc('get_all_properties_admin')
+        .rpc('get_admin_properties')
 
       if (error) throw error
 

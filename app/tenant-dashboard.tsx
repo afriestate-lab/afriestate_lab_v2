@@ -413,11 +413,11 @@ export default function TenantDashboard() {
       const { data: tenantData, error: tenantError } = await supabase
         .from('tenants')
         .select('id')
-        .eq('tenant_user_id', tenantUserData.id)
+        .eq('tenant_user_id', tenantUserData?.id)
         .single()
 
       if (tenantError || !tenantData) {
-        console.error('❌ [TENANT-DASHBOARD] No tenant found for tenant_user:', tenantUserData.id, tenantError)
+        console.error('❌ [TENANT-DASHBOARD] No tenant found for tenant_user:', tenantUserData?.id, tenantError)
         setCurrentLease(null)
         return
       }

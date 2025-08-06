@@ -99,7 +99,7 @@ export default function PropertiesScreen() {
   const [showSignUp, setShowSignUp] = useState(false)
   const [showAddPropertyModal, setShowAddPropertyModal] = useState(false)
 
-  // Fetch properties from Supabase
+  // Fetch properties from Supabase using RPC function to bypass RLS recursion
   const fetchProperties = async (page = 1, searchQuery = '', sortOrder = 'newest', refresh = false) => {
     try {
       console.log('=== DEBUG: Starting fetchProperties ===')
@@ -111,49 +111,29 @@ export default function PropertiesScreen() {
         setLoading(true)
       }
 
-      // Simplified query first to test basic functionality
-      let query = supabase
-        .from('properties')
-        .select('*')
-        .eq('is_published', true)
-        .is('deleted_at', null)
-
-      // Add search filter if provided
-      if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%`)
-      }
-
-      // Add sorting
-      switch (sortOrder) {
-        case 'newest':
-          query = query.order('created_at', { ascending: false })
-          break
-        case 'oldest':
-          query = query.order('created_at', { ascending: true })
-          break
-        case 'price_low':
-          query = query.order('price_range_min', { ascending: true, nullsFirst: false })
-          break
-        case 'price_high':
-          query = query.order('price_range_max', { ascending: false, nullsFirst: false })
-          break
-        default:
-          query = query.order('created_at', { ascending: false })
-      }
-
-      // Add pagination
-      const itemsPerPage = 10
-      const startIndex = (page - 1) * itemsPerPage
-      query = query.range(startIndex, startIndex + itemsPerPage - 1)
-
-      console.log('=== DEBUG: About to execute query ===')
-      
-      // Use retry mechanism for network requests
+      // Use RPC function to bypass RLS recursion issues
       const { data: propertiesData, error } = await mobileUtils.retryRequest(async () => {
-        return await query
+        // Use different RPC functions based on sort order to avoid type conflicts
+        if (sortOrder === 'price_low' || sortOrder === 'price_high') {
+          return await supabase
+            .rpc('get_public_properties_by_price', {
+              p_search_query: searchQuery || null,
+              p_sort_order: sortOrder,
+              p_page: page,
+              p_items_per_page: 10
+            })
+        } else {
+          return await supabase
+            .rpc('get_public_properties', {
+              p_search_query: searchQuery || null,
+              p_sort_order: sortOrder,
+              p_page: page,
+              p_items_per_page: 10
+            })
+        }
       })
 
-      console.log('=== DEBUG: Query executed ===')
+      console.log('=== DEBUG: RPC Query executed ===')
       console.log('Properties data:', propertiesData)
       console.log('Error:', error)
 
@@ -187,7 +167,7 @@ export default function PropertiesScreen() {
             }
             // Check if property_images array has valid URLs
             if (property.property_images && property.property_images.length > 0) {
-              const validImage = property.property_images.find(img => img && !isLocalFileUri(img))
+              const validImage = property.property_images.find((img: any) => img && !isLocalFileUri(img))
               if (validImage) return validImage
             }
             // Return fallback image
@@ -202,7 +182,7 @@ export default function PropertiesScreen() {
           total_rooms: property.total_rooms || 1,
           available_rooms: property.available_rooms || 1,
           floors: [], // Simplified for now
-          amenities: property.amenities || ['WiFi', 'Parking', 'Security']
+          amenities: Array.isArray(property.amenities) ? property.amenities : ['WiFi', 'Parking', 'Security']
         }
       })
 
@@ -215,7 +195,7 @@ export default function PropertiesScreen() {
         setProperties(prev => [...prev, ...transformedProperties])
       }
 
-      setHasMore(transformedProperties.length === itemsPerPage)
+      setHasMore(transformedProperties.length === 10)
       setCurrentPage(page)
       
       console.log('=== DEBUG: Properties set successfully ===')

@@ -128,7 +128,11 @@ export const mobileUtils = {
   // Check if user is online
   isOnline: async () => {
     try {
-      const { data, error } = await supabase.from('properties').select('count', { count: 'exact', head: true })
+      const { data, error } = await supabase.from('users').select('count', { count: 'exact', head: true })
+      // If it's an RLS error, the network is actually working
+      if (error && (error.code === '42501' || error.message?.includes('policy'))) {
+        return true
+      }
       return !error
     } catch {
       return false
@@ -145,21 +149,30 @@ export const mobileUtils = {
   testConnectivity: async () => {
     try {
       console.log('🔍 [MOBILE] Testing network connectivity...')
-      console.log('🔍 [MOBILE] Supabase URL:', supabaseUrl)
+      console.log('🔍 [MOBILE] Supabase URL:', supabaseUrl?.substring(0, 30) + '...')
       console.log('🔍 [MOBILE] Environment variables loaded:', !!process.env.EXPO_PUBLIC_SUPABASE_URL)
       
-      const { data, error } = await supabase.from('properties').select('count', { count: 'exact', head: true })
+      // Test basic connectivity first with a simple query that doesn't require authentication
+      const { data, error } = await supabase
+        .from('users')
+        .select('count', { count: 'exact', head: true })
       
       if (error) {
         console.error('❌ [MOBILE] Network test failed:', error)
-        return { success: false, error: (error as Error).message }
+        // If it's an RLS error, the network is actually working
+        if (error.code === '42501' || error.message?.includes('policy')) {
+          console.log('✅ [MOBILE] Network is working (RLS policy error is expected)')
+          return { success: true, note: 'Network working, RLS policy triggered' }
+        }
+        return { success: false, error: error.message || 'Unknown database error' }
       }
       
       console.log('✅ [MOBILE] Network test successful')
       return { success: true, count: data }
     } catch (error) {
       console.error('❌ [MOBILE] Network test exception:', error)
-      return { success: false, error: (error as Error).message }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown network error'
+      return { success: false, error: errorMessage }
     }
   },
 

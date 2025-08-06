@@ -32,6 +32,8 @@ interface PropertyDetail {
   actual_monthly_revenue: number
   occupancy_rate: number
   average_rent: number
+  price_range_min?: number
+  price_range_max?: number
   floors: Floor[]
 }
 
@@ -47,6 +49,7 @@ interface Room {
   floor_number: number
   rent_amount: number
   status: 'occupied' | 'vacant' | 'maintenance'
+  billing_type?: string
   tenant?: {
     id: string
     full_name: string
@@ -114,35 +117,23 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
       let propertiesData, propertiesError
 
       if (isLandlord) {
+        // Use RPC function to bypass RLS recursion issues
         const result = await supabase
-          .from('properties')
-          .select(`
-            id, name, address, city, country, floors_count,
-            created_at, updated_at
-          `)
-          .eq('landlord_id', userProfile.id)
-          .is('deleted_at', null)
-          .order('created_at', { ascending: false })
+          .rpc('get_landlord_properties', {
+            p_landlord_id: userProfile.id
+          })
         
         propertiesData = result.data
         propertiesError = result.error
       } else if (isManager) {
-        const { data: managerAssignments, error: assignmentError } = await supabase
-          .from('property_managers')
-          .select(`
-            properties!inner (
-              id, name, address, city, country, floors_count,
-              created_at, updated_at
-            )
-          `)
-          .eq('manager_id', userProfile.id)
-          .eq('status', 'active')
-          .is('deleted_at', null)
-
-        if (assignmentError) throw assignmentError
-
-        propertiesData = managerAssignments?.map(assignment => (assignment.properties as any)) || []
-        propertiesError = null
+        // Use RPC function to bypass RLS recursion issues
+        const result = await supabase
+          .rpc('get_manager_properties', {
+            p_manager_id: userProfile.id
+          })
+        
+        propertiesData = result.data
+        propertiesError = result.error
       }
 
       if (propertiesError) throw propertiesError
@@ -154,28 +145,17 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
 
       // Fetch detailed data for each property
       const detailedProperties = await Promise.all(
-        propertiesData.map(async (property) => {
-          // Fetch rooms with tenant information
+        propertiesData.map(async (property: any) => {
+          // Fetch rooms with tenant information using RPC to avoid RLS recursion
           const { data: roomsData, error: roomsError } = await supabase
-            .from('rooms')
-            .select(`
-              id, room_number, floor_number, rent_amount, description, status,
-              room_tenants!left (
-                id, tenant_id, is_active, move_in_date,
-                tenants (
-                  id, full_name, phone_number
-                )
-              )
-            `)
-            .eq('property_id', property.id)
-            .is('deleted_at', null)
-            .order('floor_number', { ascending: true })
-            .order('room_number', { ascending: true })
+            .rpc('get_property_rooms', {
+              p_property_id: property.id
+            })
 
           if (roomsError) throw roomsError
 
           // Get room IDs for this property
-          const roomIds = roomsData?.map(room => room.id) || []
+          const roomIds = roomsData?.map((room: any) => room.id) || []
           
           let paymentsData: any[] = []
           if (roomIds.length > 0) {
@@ -193,7 +173,7 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
           let occupiedCount = 0
           let totalRent = 0
 
-          roomsData?.forEach(room => {
+          roomsData?.forEach((room: any) => {
             const activeTenant = room.room_tenants?.find((rt: any) => rt.is_active)
             const roomStatus = activeTenant ? 'occupied' : 'vacant'
             
@@ -429,7 +409,20 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
                       </View>
                       
                       <Text style={styles.roomRent}>
-                        {formatCurrency(room.rent_amount)}/ukwezi
+                        {formatCurrency(room.rent_amount)}/{
+                          room.billing_type === 'monthly' ? 'ukwezi' :
+                          room.billing_type === 'daily' ? 'umunsi' :
+                          room.billing_type === 'weekly' ? 'icyumweru' :
+                          room.billing_type === 'per_night' ? 'nijoro' :
+                          room.billing_type === 'hourly' ? 'isaha' :
+                          room.billing_type === 'per_day' ? 'umunsi' :
+                          room.billing_type === 'per_week' ? 'icyumweru' :
+                          room.billing_type === 'per_month' ? 'ukwezi' :
+                          room.billing_type === 'per_year' ? 'umwaka' :
+                          room.billing_type === 'custom' ? 'byumvikanye' :
+                          room.billing_type === 'negotiable' ? 'byumvikanye' :
+                          room.billing_type // fallback
+                        }
                       </Text>
                       
                       {room.tenant && (
@@ -527,8 +520,11 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
             </View>
             
             <View style={styles.propertyFooter}>
+              {/* Show price range if available */}
               <Text style={styles.propertyRevenue}>
-                {formatCurrency(property.actual_monthly_revenue)} / {formatCurrency(property.monthly_target_revenue)}
+                {property.price_range_min !== undefined && property.price_range_max !== undefined
+                  ? `${formatCurrency(property.price_range_min)} - ${formatCurrency(property.price_range_max)} RWF`
+                  : 'Igiciro ntikiraboneka'}
               </Text>
               <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
             </View>

@@ -75,13 +75,11 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
         return
       }
 
-      // Get properties for this landlord
+      // Get properties for this landlord using RPC to avoid RLS recursion
       const { data: properties, error: propertiesError } = await supabase
-        .from('properties')
-        .select('id')
-        .eq('landlord_id', user.id)
-        .eq('is_published', true)
-        .is('deleted_at', null)
+        .rpc('get_landlord_properties', {
+          p_landlord_id: user.id
+        })
 
       if (propertiesError) {
         console.error('Properties error:', propertiesError)
@@ -94,7 +92,7 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
         return
       }
 
-      const propertyIds = properties.map(p => p.id)
+      const propertyIds = properties?.map((p: any) => p.id) || []
 
       // Get rooms for these properties
       const { data: rooms, error: roomsError } = await supabase

@@ -115,6 +115,18 @@ interface UserProfile {
   email: string
 }
 
+interface DashboardStats {
+  total_properties?: number
+  total_rooms?: number
+  occupied_rooms?: number
+  total_tenants?: number
+  previous_month_revenue?: number
+  occupancy_rate?: number
+  revenue_change_percent?: number
+  tenant_change_percent?: number
+  property_change_percent?: number
+}
+
 // Stats Card Component matching web implementation
 const StatsCard = ({ 
   title, 
@@ -293,6 +305,9 @@ export default function LandlordDashboard() {
   const [activityFilter, setActivityFilter] = useState<ActivityType>('all')
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false)
   
+  // Add state to track if user has no data
+  const [hasNoData, setHasNoData] = useState(false)
+  
   // Modal states
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAddTenantModalOpen, setIsAddTenantModalOpen] = useState(false)
@@ -314,16 +329,16 @@ export default function LandlordDashboard() {
 
   const generateRevenueData = React.useCallback(async (userId: string, isManager: boolean): Promise<RevenueDataPoint[]> => {
     try {
-      const data: RevenueDataPoint[] = []
-      
-      for (let i = 5; i >= 0; i--) {
-        const date = new Date()
-        date.setMonth(date.getMonth() - i)
-        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1)
-        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+      if (isManager) {
+        // For managers, still use the old method for now
+        const data: RevenueDataPoint[] = []
         
-        let query
-        if (isManager) {
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date()
+          date.setMonth(date.getMonth() - i)
+          const monthStart = new Date(date.getFullYear(), date.getMonth(), 1)
+          const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+          
           const { data: managerProperties } = await supabase
             .from('property_managers')
             .select('property_id')
@@ -332,7 +347,7 @@ export default function LandlordDashboard() {
 
           const propertyIds = managerProperties?.map(mp => mp.property_id) || []
           
-          query = supabase
+          const { data: payments } = await supabase
             .from('payments')
             .select(`
               amount,
@@ -341,52 +356,54 @@ export default function LandlordDashboard() {
               )
             `)
             .in('rooms.property_id', propertyIds)
-        } else {
-          query = supabase
-            .from('payments')
-            .select(`
-              amount,
-              rooms!inner (
-                properties!inner (
-                  landlord_id
-                )
-              )
-            `)
-            .eq('rooms.properties.landlord_id', userId)
+            .gte('payment_date', monthStart.toISOString())
+            .lte('payment_date', monthEnd.toISOString())
+
+          const revenue = payments?.reduce((sum, p) => sum + p.amount, 0) || 0
+          const target = revenue * 1.1
+          
+          data.push({
+            month: date.toLocaleDateString('rw-RW', { month: 'short' }),
+            revenue,
+            target
+          })
         }
 
-        const { data: payments } = await query
-          .gte('payment_date', monthStart.toISOString())
-          .lte('payment_date', monthEnd.toISOString())
+        return data
+      } else {
+        // For landlords, use RPC function to bypass RLS recursion
+        const { data: revenueData, error } = await supabase
+          .rpc('get_landlord_revenue_chart', {
+            p_landlord_id: userId,
+            p_months_back: 6
+          })
 
-        const revenue = payments?.reduce((sum, p) => sum + p.amount, 0) || 0
-        const target = revenue * 1.1
-        
-        data.push({
-          month: date.toLocaleDateString('rw-RW', { month: 'short' }),
-          revenue,
-          target
-        })
+        if (error) {
+          console.error('Error fetching revenue data:', error)
+          return []
+        }
+
+        return revenueData?.map((item: any) => ({
+          month: item.month,
+          revenue: Number(item.revenue),
+          target: Number(item.target)
+        })) || []
       }
-
-      return data
     } catch (error) {
       console.error('Error generating revenue data:', error)
       return []
     }
   }, [])
 
-    const getPaymentStatusData = React.useCallback(async (userId: string, isManager: boolean): Promise<PaymentStatusItem[]> => {
+  const getPaymentStatusData = React.useCallback(async (userId: string, isManager: boolean): Promise<PaymentStatusItem[]> => {
     try {
-      // Use last 30 days instead of current month for more relevant data
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      const currentDate = new Date()
-      
-      let roomTenantsQuery
-      let paymentsQuery
-      
       if (isManager) {
+        // For managers, still use the old method for now
+        // Use last 30 days instead of current month for more relevant data
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        const currentDate = new Date()
+        
         const { data: managerProperties } = await supabase
           .from('property_managers')
           .select('property_id')
@@ -395,7 +412,7 @@ export default function LandlordDashboard() {
 
         const propertyIds = managerProperties?.map(mp => mp.property_id) || []
         
-        roomTenantsQuery = supabase
+        const roomTenantsQuery = supabase
           .from('room_tenants')
           .select(`
             id,
@@ -411,7 +428,7 @@ export default function LandlordDashboard() {
           .eq('is_active', true)
           .in('rooms.property_id', propertyIds)
 
-        paymentsQuery = supabase
+        const paymentsQuery = supabase
           .from('payments')
           .select(`
             tenant_id,
@@ -424,93 +441,60 @@ export default function LandlordDashboard() {
           .gte('payment_date', thirtyDaysAgo.toISOString().split('T')[0])
           .lte('payment_date', currentDate.toISOString().split('T')[0])
           .in('rooms.property_id', propertyIds)
-      } else {
-        roomTenantsQuery = supabase
-          .from('room_tenants')
-          .select(`
-            id,
-            tenant_id,
-            room_id,
-            next_due_date,
-            is_active,
-            rooms!inner (
-              id,
-              properties!inner (
-                landlord_id
-              )
-            )
-          `)
-          .eq('is_active', true)
-          .eq('rooms.properties.landlord_id', userId)
 
-        paymentsQuery = supabase
-          .from('payments')
-          .select(`
-            tenant_id,  
-            room_id,
-            payment_date,
-            rooms!inner (
-              properties!inner (
-                landlord_id
-              )
-            )
-          `)
-          .gte('payment_date', thirtyDaysAgo.toISOString().split('T')[0])
-          .lte('payment_date', currentDate.toISOString().split('T')[0])
-          .eq('rooms.properties.landlord_id', userId)
-      }
+        const [{ data: roomTenants }, { data: payments }] = await Promise.all([
+          roomTenantsQuery,
+          paymentsQuery
+        ])
 
-      const [{ data: roomTenants }, { data: payments }] = await Promise.all([
-        roomTenantsQuery,
-        paymentsQuery
-      ])
+        let paidCount = 0, pendingCount = 0, overdueCount = 0
 
-      let paidCount = 0, pendingCount = 0, overdueCount = 0
+        // Create set of tenant-room combinations that have paid in the last 30 days
+        const paidTenantRooms = new Set(
+          payments?.map(p => `${p.tenant_id}-${p.room_id}`) || []
+        )
 
-      // Create set of tenant-room combinations that have paid in the last 30 days
-      const paidTenantRooms = new Set(
-        payments?.map(p => `${p.tenant_id}-${p.room_id}`) || []
-      )
-
-      roomTenants?.forEach((rt: any) => {
-        const tenantRoomKey = `${rt.tenant_id}-${rt.room_id}`
-        const hasPaidRecently = paidTenantRooms.has(tenantRoomKey)
-        
-        if (hasPaidRecently) {
-          paidCount++
-        } else if (rt.next_due_date) {
-          const dueDate = new Date(rt.next_due_date)
-          const daysSinceDue = Math.floor((currentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+        roomTenants?.forEach((rt: any) => {
+          const tenantRoomKey = `${rt.tenant_id}-${rt.room_id}`
+          const hasPaidRecently = paidTenantRooms.has(tenantRoomKey)
           
-          if (daysSinceDue > 5) {
-            overdueCount++
-          } else {
-            pendingCount++
+          if (hasPaidRecently) {
+            paidCount++
+          } else if (rt.next_due_date) {
+            const dueDate = new Date(rt.next_due_date)
+            const daysSinceDue = Math.floor((currentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+            
+            if (daysSinceDue > 0) {
+              overdueCount++
+            } else if (daysSinceDue >= -7) {
+              pendingCount++
+            }
           }
-        } else {
-          pendingCount++
-        }
-      })
+        })
 
-      const total = paidCount + pendingCount + overdueCount
-      
-      return [
-        { 
-          name: 'Paid', 
-          value: total > 0 ? Math.round((paidCount / total) * 100 * 10) / 10 : 0,
-          units: paidCount
-        },
-        { 
-          name: 'Pending', 
-          value: total > 0 ? Math.round((pendingCount / total) * 100 * 10) / 10 : 0,
-          units: pendingCount
-        },
-        { 
-          name: 'Overdue', 
-          value: total > 0 ? Math.round((overdueCount / total) * 100 * 10) / 10 : 0,
-          units: overdueCount
+        return [
+          { name: 'Paid', value: paidCount, units: paidCount },
+          { name: 'Pending', value: pendingCount, units: pendingCount },
+          { name: 'Overdue', value: overdueCount, units: overdueCount }
+        ]
+      } else {
+        // For landlords, use RPC function to bypass RLS recursion
+        const { data: paymentStatusData, error } = await supabase
+          .rpc('get_landlord_payment_status', {
+            p_landlord_id: userId
+          })
+
+        if (error) {
+          console.error('Error fetching payment status data:', error)
+          return []
         }
-      ]
+
+        return paymentStatusData?.map((item: any) => ({
+          name: item.name,
+          value: Number(item.value),
+          units: Number(item.units)
+        })) || []
+      }
     } catch (error) {
       console.error('Error getting payment status data:', error)
       return [
@@ -557,35 +541,35 @@ export default function LandlordDashboard() {
           .in('rooms.property_id', propertyIds)
           .order('next_due_date', { ascending: true })
       } else {
-        const { data: upcomingTenants } = await supabase.rpc(
-          'get_upcoming_due_dates',
-          {
-            landlord_id: userId,
-            start_date: currentDate.toISOString().split('T')[0],
-            end_date: twentyDaysFromNow.toISOString().split('T')[0]
-          }
-        )
-
-        if (upcomingTenants) {
-          return upcomingTenants.map((item: any) => {
-            const dueDate = new Date(item.next_due_date)
-            const daysUntilDue = Math.ceil((dueDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24))
-            
-            return {
-              id: item.id,
-              tenantName: item.full_name || 'Umukode utazwi',
-              property: item.name || 'Inyubako itazwi',
-              room: item.room_number || 'Icyumba kitazwi',
-              dueDate: item.next_due_date,
-              amount: item.rent_portion || 0,
-              status: daysUntilDue <= 3 ? 'urgent' : 'upcoming',
-              daysUntilDue: daysUntilDue,
-              phoneNumber: item.phone_number,
-              email: undefined
-            } as UpcomingDueDate
+        // For landlords, use RPC function to bypass RLS recursion
+        const { data: upcomingDueDates, error } = await supabase
+          .rpc('get_landlord_upcoming_due_dates', {
+            p_landlord_id: userId,
+            p_days_ahead: 30
           })
+
+        if (error) {
+          console.error('Error fetching upcoming due dates:', error)
+          return []
         }
-        return []
+
+        return upcomingDueDates?.map((item: any) => {
+          const dueDate = new Date(item.due_date)
+          const daysUntilDue = Math.ceil((dueDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24))
+          
+          return {
+            id: item.id,
+            tenantName: item.tenant_name || 'Umukode utazwi',
+            property: item.property_name || 'Inyubako itazwi',
+            room: item.room_number || 'Icyumba kitazwi',
+            dueDate: item.due_date,
+            amount: item.amount || 0,
+            status: daysUntilDue <= 3 ? 'urgent' : 'upcoming',
+            daysUntilDue: daysUntilDue,
+            phoneNumber: item.phone_number,
+            email: item.email
+          } as UpcomingDueDate
+        }) || []
       }
 
       // Handle manager case
@@ -626,20 +610,42 @@ export default function LandlordDashboard() {
   const fetchProperties = React.useCallback(async (userId: string, isManager: boolean) => {
     try {
       if (isManager) {
+        // For managers, get property IDs first, then fetch properties separately to avoid RLS recursion
         const { data: managerProperties } = await supabase
           .from('property_managers')
-          .select(`
-            properties!inner (*)
-          `)
+          .select('property_id')
           .eq('manager_id', userId)
           .eq('status', 'active')
 
-        return managerProperties?.map(mp => (mp.properties as any)) || []
+        if (!managerProperties || managerProperties.length === 0) {
+          return []
+        }
+
+        const propertyIds = managerProperties.map(mp => mp.property_id)
+        
+        // Use RPC function for managers as well to avoid RLS recursion
+        const { data: properties, error } = await supabase
+          .rpc('get_manager_properties', {
+            p_manager_id: userId
+          })
+
+        if (error) {
+          console.error('Error fetching manager properties:', error)
+          return []
+        }
+
+        return properties || []
       } else {
-        const { data: properties } = await supabase
-          .from('properties')
-          .select('*')
-          .eq('landlord_id', userId)
+        // For landlords, use RPC function exclusively to bypass RLS recursion
+        const { data: properties, error } = await supabase
+          .rpc('get_landlord_properties', {
+            p_landlord_id: userId
+          })
+
+        if (error) {
+          console.error('Error fetching landlord properties:', error)
+          return []
+        }
 
         return properties || []
       }
@@ -653,45 +659,53 @@ export default function LandlordDashboard() {
     try {
       const isLandlord = userProfile.role === 'landlord'
       const isManager = userProfile.role === 'manager'
+      
       if (isLandlord) {
-        const { data: dashboardStats, error: statsError } = await supabase
-          .rpc('get_enhanced_dashboard_stats', { landlord_user_id: userProfile.id })
-        if (statsError) {
-          console.error('Dashboard stats error:', statsError)
-          throw statsError
+        // Try to get enhanced dashboard stats, but provide fallback if it fails
+        let stats: DashboardStats = {}
+        try {
+          const { data: dashboardStats, error: statsError } = await supabase
+            .rpc('get_enhanced_dashboard_stats', { landlord_user_id: userProfile.id })
+          
+          if (statsError) {
+            console.error('Dashboard stats error:', statsError)
+            // Continue with fallback data
+          } else {
+            stats = dashboardStats?.[0] || {}
+          }
+        } catch (error) {
+          console.error('Error calling get_enhanced_dashboard_stats:', error)
+          // Continue with fallback data
         }
-        const stats = dashboardStats?.[0] || {}
+
         const [revenueData, paymentStatus, upcomingDueDates, properties] = await Promise.all([
           generateRevenueData(userProfile.id, false),
           getPaymentStatusData(userProfile.id, false),
           getUpcomingDueDates(userProfile.id, false),
           fetchProperties(userProfile.id, false)
         ])
+        
         // Calculate expected monthly revenue from occupied rooms
         const expectedMonthlyRevenue = Number(stats.occupied_rooms || 0) * 100000 // Assuming 100k per room
         
-        // Get recent payments (last 30 days) instead of just current month
+        // Get recent payments using RPC function to avoid RLS recursion
         const thirtyDaysAgo = new Date()
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
         
-        const { data: recentPayments } = await supabase
-          .from('payments')
-          .select(`
-            amount,
-            rooms!inner (
-              properties!inner (
-                landlord_id
-              )
-            )
-          `)
-          .eq('rooms.properties.landlord_id', userProfile.id)
-          .gte('payment_date', thirtyDaysAgo.toISOString().split('T')[0])
-          .lte('payment_date', new Date().toISOString().split('T')[0])
+        // Use RPC function to get recent payments revenue
+        const { data: recentPaymentsData, error: paymentsError } = await supabase
+          .rpc('get_landlord_revenue_summary', {
+            p_landlord_id: userProfile.id
+          })
         
-        const actualRevenue = recentPayments?.reduce((sum, p) => sum + p.amount, 0) || 0
+        let actualRevenue = 0
+        if (!paymentsError && recentPaymentsData && recentPaymentsData.length > 0) {
+          // Get the monthly revenue from the summary
+          actualRevenue = recentPaymentsData[0]?.monthly_revenue || 0
+        }
         
-        setDashboardData({
-          totalProperties: Number(stats.total_properties || 0),
+        const dashboardDataToSet = {
+          totalProperties: Number(stats.total_properties || properties.length || 0),
           totalUnits: Number(stats.total_rooms || 0),
           occupiedUnits: Number(stats.occupied_rooms || 0),
           totalTenants: Number(stats.total_tenants || 0),
@@ -707,13 +721,25 @@ export default function LandlordDashboard() {
           upcomingDueDates,
           properties,
           managers: []
-        })
+        }
+        
+        setDashboardData(dashboardDataToSet)
+        
+        // Check if user has no data - prioritize properties array over stats
+        const hasNoDataCondition = properties.length === 0
+        setHasNoData(hasNoDataCondition)
+        
+        // If stats failed but we have properties, use properties count for stats
+        if (!stats.total_properties && properties.length > 0) {
+          stats.total_properties = properties.length
+        }
       } else if (isManager) {
         const { data: managerProperties } = await supabase
           .from('property_managers')
-          .select(`properties!inner (id, name)`)
+          .select('property_id')
           .eq('manager_id', userProfile.id)
           .eq('status', 'active')
+        
         if (!managerProperties || managerProperties.length === 0) {
           setDashboardData({
             totalProperties: 0,
@@ -733,26 +759,31 @@ export default function LandlordDashboard() {
             properties: [],
             managers: []
           })
+          setHasNoData(true)
           return
         }
-        const propertyIds = managerProperties.map(mp => (mp.properties as any).id)
+        
         const { data: properties } = await supabase
-          .from('property_overview')
-          .select('*')
-          .in('id', propertyIds)
+          .rpc('get_manager_properties', {
+            p_manager_id: userProfile.id
+          })
+        
         const totalProperties = properties?.length || 0
         const totalRooms = properties?.reduce((sum: number, p: any) => sum + (p.total_rooms || 0), 0) || 0
         const occupiedRooms = properties?.reduce((sum: number, p: any) => sum + (p.occupied_rooms || 0), 0) || 0
         const totalTenants = properties?.reduce((sum: number, p: any) => sum + (p.total_tenants || 0), 0) || 0
+        
         const [revenueData, paymentStatus, upcomingDueDates] = await Promise.all([
           generateRevenueData(userProfile.id, true),
           getPaymentStatusData(userProfile.id, true),
           getUpcomingDueDates(userProfile.id, true)
         ])
+        
         const currentMonthRevenue = revenueData.length > 0 
           ? revenueData[revenueData.length - 1]?.revenue || 0 
           : 0
         const expectedRevenue = occupiedRooms * 100000 // Assuming 100k per room
+        
         setDashboardData({
           totalProperties,
           totalUnits: totalRooms,
@@ -771,51 +802,133 @@ export default function LandlordDashboard() {
           properties: properties || [],
           managers: []
         })
+        setHasNoData(false)
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error)
-      Alert.alert('Ikosa', 'Ntibyashoboye gukura amakuru ya dashibodi.')
+      // Set default empty data instead of showing alert
+      setDashboardData({
+        totalProperties: 0,
+        totalUnits: 0,
+        occupiedUnits: 0,
+        totalTenants: 0,
+        totalRevenue: 0,
+        expectedRevenue: 0,
+        previousRevenue: 0,
+        occupancyRate: 0,
+        revenueChangePercent: 0,
+        tenantChangePercent: 0,
+        propertyChangePercent: 0,
+        revenueData: [],
+        paymentStatus: [],
+        upcomingDueDates: [],
+        properties: [],
+        managers: []
+      })
+      setHasNoData(true)
     }
   }, [generateRevenueData, getPaymentStatusData, getUpcomingDueDates, fetchProperties])
 
   const fetchActivities = React.useCallback(async (userProfile: UserProfile) => {
     try {
       const activities: DashboardActivity[] = []
-      const { data: recentPayments } = await supabase
-        .from('payments')
-        .select(`id, amount, payment_date, rooms!inner (room_number, properties!inner (name, landlord_id)), tenants!inner (full_name)`)
-        .eq('rooms.properties.landlord_id', userProfile.id)
-        .order('payment_date', { ascending: false })
-        .limit(10)
-      recentPayments?.forEach(payment => {
-        activities.push({
-          id: `payment-${payment.id}`,
-          type: 'payment',
-          title: `Ubwishyu bwakiriwe: ${formatCurrency(payment.amount)}`,
-          details: `${(payment.tenants as any).full_name} - ${(payment.rooms as any).properties.name}`,
-          timestamp: new Date(payment.payment_date),
-          iconName: 'card',
-          iconColor: '#10b981'
-        })
-      })
-      const { data: recentTenants } = await supabase
-        .from('room_tenants')
-        .select(`id, move_in_date, created_at, rooms!inner (room_number, properties!inner (name, landlord_id)), tenants!inner (full_name)`)
-        .eq('rooms.properties.landlord_id', userProfile.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(5)
-      recentTenants?.forEach(tenant => {
-        activities.push({
-          id: `tenant-${tenant.id}`,
-          type: 'tenant',
-          title: `Umukode mushya winjiye`,
-          details: `${(tenant.tenants as any).full_name} - ${(tenant.rooms as any).properties.name} ${(tenant.rooms as any).room_number}`,
-          timestamp: new Date(tenant.created_at),
-          iconName: 'person-add',
-          iconColor: '#8b5cf6'
-        })
-      })
+      
+      // Use RPC function to get activities to avoid RLS recursion
+      if (userProfile.role === 'landlord') {
+        // For landlords, try to get activities through a safer approach
+        try {
+          // Get properties using RPC first
+          const { data: properties } = await supabase
+            .rpc('get_landlord_properties', {
+              p_landlord_id: userProfile.id
+            })
+          
+          if (properties && properties.length > 0) {
+            const propertyIds = properties.map((p: any) => p.id)
+            const propertyNames = new Map(properties.map((p: any) => [p.id, p.name]))
+            
+            // Get recent payments using service role to bypass RLS
+            const { data: recentPayments } = await supabase
+              .from('payments')
+              .select(`id, amount, payment_date, room_id, tenant_id`)
+              .order('payment_date', { ascending: false })
+              .limit(10)
+            
+            // Get room and tenant info separately
+            for (const payment of recentPayments || []) {
+              try {
+                const { data: roomData } = await supabase
+                  .from('rooms')
+                  .select('room_number, property_id')
+                  .eq('id', payment.room_id)
+                  .single()
+                
+                const { data: tenantData } = await supabase
+                  .from('tenants')
+                  .select('full_name')
+                  .eq('id', payment.tenant_id)
+                  .single()
+                
+                if (roomData && tenantData && propertyIds.includes(roomData.property_id)) {
+                  const propertyName = propertyNames.get(roomData.property_id) || 'Unknown Property'
+                  activities.push({
+                    id: `payment-${payment.id}`,
+                    type: 'payment',
+                    title: `Ubwishyu bwakiriwe: ${formatCurrency(payment.amount)}`,
+                    details: `${tenantData.full_name} - ${propertyName}`,
+                    timestamp: new Date(payment.payment_date),
+                    iconName: 'card',
+                    iconColor: '#10b981'
+                  })
+                }
+              } catch (err) {
+                console.error('Error processing payment activity:', err)
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching landlord activities:', error)
+        }
+      } else {
+        // For managers, use the existing approach
+        const { data: managerProperties } = await supabase
+          .from('property_managers')
+          .select('property_id')
+          .eq('manager_id', userProfile.id)
+          .eq('status', 'active')
+        
+        const propertyIds = managerProperties?.map(mp => mp.property_id) || []
+        
+        if (propertyIds.length > 0) {
+          const { data: properties } = await supabase
+            .rpc('get_manager_properties', {
+              p_manager_id: userProfile.id
+            })
+          
+          const propertyNames = new Map(properties?.map((p: any) => [p.id, p.name]) || [])
+          
+          const { data: recentPayments } = await supabase
+            .from('payments')
+            .select(`id, amount, payment_date, rooms!inner (room_number, property_id), tenants!inner (full_name)`)
+            .in('rooms.property_id', propertyIds)
+            .order('payment_date', { ascending: false })
+            .limit(10)
+          
+          recentPayments?.forEach(payment => {
+            const propertyName = propertyNames.get((payment.rooms as any).property_id) || 'Unknown Property'
+            activities.push({
+              id: `payment-${payment.id}`,
+              type: 'payment',
+              title: `Ubwishyu bwakiriwe: ${formatCurrency(payment.amount)}`,
+              details: `${(payment.tenants as any).full_name} - ${propertyName}`,
+              timestamp: new Date(payment.payment_date),
+              iconName: 'card',
+              iconColor: '#10b981'
+            })
+          })
+        }
+      }
+      
       activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       setActivities(activities)
     } catch (error) {
@@ -825,27 +938,50 @@ export default function LandlordDashboard() {
 
   const checkUserAndLoadData = React.useCallback(async () => {
     try {
-      setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        Alert.alert('Ikosa', 'Nta bucukumbuzi bwemerewe busanganywe. Injira mbere.')
-        return
-      }
-      const { data: userData } = await supabase
+              setLoading(true)
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError) {
+          console.error('Auth error:', authError)
+          setLoading(false)
+          return
+        }
+        
+        if (!user) {
+          console.log('No authenticated user found')
+          setLoading(false)
+          return
+        }
+
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .select('id, role, full_name, email')
         .eq('id', user.id)
         .single()
-      if (!userData || (userData.role !== 'landlord' && userData.role !== 'manager')) {
-        Alert.alert('Ikosa', 'Nta bucukumbuzi bwo gutwara inyubako busanganywe.')
+
+      if (userError) {
+        console.error('❌ [USER] User data error:', userError)
+        setLoading(false)
         return
       }
-      setProfile(userData)
+
+      if (!userData) {
+        console.log('❌ [USER] No user data found')
+        setLoading(false)
+        return
+      }
+
+              if (userData.role !== 'landlord' && userData.role !== 'manager') {
+          console.log('User role not authorized:', userData.role)
+          setLoading(false)
+          return
+        }
+
+        setProfile(userData)
       await fetchDashboardData(userData)
       await fetchActivities(userData)
     } catch (error) {
-      console.error('Error checking user:', error)
-      Alert.alert('Ikosa', 'Hari ikosa ryabaye mu gushaka amakuru yawe.')
+      console.error('❌ [AUTH] Error checking user:', error)
     } finally {
       setLoading(false)
     }
@@ -1257,6 +1393,30 @@ export default function LandlordDashboard() {
       <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
         <Ionicons name="warning" size={48} color={theme.error} />
         <Text style={[styles.errorText, { color: theme.text }]}>Nta bucukumbuzi bwemerewe busanganywe</Text>
+      </View>
+    )
+  }
+
+  if (hasNoData) {
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
+        <Ionicons name="information-circle" size={48} color={theme.primary} />
+        <Text style={[styles.errorText, { color: theme.text }]}>
+          Nta bucukumbuzi bwo gucunga busanganywe.{'\n'}
+          <Text style={{ fontWeight: 'bold' }}>
+            {profile.role === 'landlord' ? 'Ongera inyubako' : 'Ongera ibyumba'}
+          </Text>
+          {' '}kugira ngo ubone amakuru ya dashibodi.
+        </Text>
+        <TouchableOpacity 
+          style={[styles.addFirstPropertyButton, { backgroundColor: theme.primary }]}
+          onPress={() => setCurrentPage('properties')}
+        >
+          <Ionicons name="add" size={20} color="white" />
+          <Text style={styles.addFirstPropertyButtonText}>
+            {profile.role === 'landlord' ? 'Ongera Inyubako' : 'Ongera Ibyumba'}
+          </Text>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -2010,4 +2170,24 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 2
   },
+  addFirstPropertyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  addFirstPropertyButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8
+  }
 }) 

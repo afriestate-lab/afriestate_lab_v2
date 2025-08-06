@@ -55,13 +55,11 @@ export default function AddTenantForm({ onBack, onSuccess }: AddTenantFormProps)
         return
       }
 
-      // Fetch properties owned by current user
+      // Fetch properties owned by current user using RPC to avoid RLS recursion
       const { data: propertiesData, error: propertiesError } = await supabase
-        .from('properties')
-        .select('id, name, address')
-        .eq('landlord_id', user.id)
-        .eq('is_published', true)
-        .is('deleted_at', null)
+        .rpc('get_landlord_properties', {
+          p_landlord_id: user.id
+        })
 
       if (propertiesError) {
         console.error('Properties fetch error:', propertiesError)
@@ -72,7 +70,7 @@ export default function AddTenantForm({ onBack, onSuccess }: AddTenantFormProps)
       setProperties(propertiesData || [])
 
       if (propertiesData && propertiesData.length > 0) {
-        const propertyIds = propertiesData.map(p => p.id)
+        const propertyIds = propertiesData.map((p: any) => p.id)
         
         // Fetch vacant rooms from these properties
         const { data: roomsData, error: roomsError } = await supabase
@@ -214,7 +212,7 @@ export default function AddTenantForm({ onBack, onSuccess }: AddTenantFormProps)
       const roomAssignments = selectedRooms.map(room => ({
         tenant_id: tenantId,
         room_id: room.roomId,
-        rent_portion: room.price,
+        rent_amount: room.price,
         move_in_date: formData.move_in_date,
         next_due_date: calculateNextDueDate(formData.move_in_date),
         is_active: true

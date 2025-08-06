@@ -445,6 +445,25 @@ export default function AddPropertyForm({ onBack, onSuccess }: AddPropertyFormPr
         return
       }
 
+      // --- NEW: Update price_range_min and price_range_max ---
+      // Fetch all rooms for this property
+      const { data: allRooms, error: fetchRoomsError } = await supabase
+        .from('rooms')
+        .select('rent_amount')
+        .eq('property_id', property.id)
+        .is('deleted_at', null)
+
+      if (!fetchRoomsError && allRooms && allRooms.length > 0) {
+        const prices = allRooms.map(r => Number(r.rent_amount)).filter(n => !isNaN(n))
+        const minPrice = Math.min(...prices)
+        const maxPrice = Math.max(...prices)
+        await supabase
+          .from('properties')
+          .update({ price_range_min: minPrice, price_range_max: maxPrice })
+          .eq('id', property.id)
+      }
+      // --- END NEW ---
+
       Alert.alert('Byagenze neza!', 'Inyubako yarongoye neza hamwe n&apos;ibyumba byayo.')
       onSuccess()
 

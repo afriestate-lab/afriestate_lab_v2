@@ -2,7 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Alert, Modal, ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { NavigationContainer } from '@react-navigation/native'
+// NavigationContainer is automatically provided by Expo Router
 import { PaperProvider } from 'react-native-paper'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { StatusBar } from 'expo-status-bar'
@@ -837,39 +837,37 @@ export default function RootLayout() {
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
-              <NavigationContainer>
-                <Tab.Navigator
-                  initialRouteName="Home"
-                  tabBar={props => <CustomTabBar {...props} onShowSignIn={() => setShowSignIn(true)} />}
-                  screenOptions={{ headerShown: false }}
-                >
-                                  <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Ahabanza' }} />
+              <Tab.Navigator
+                initialRouteName="Home"
+                tabBar={props => <CustomTabBar {...props} onShowSignIn={() => setShowSignIn(true)} />}
+                screenOptions={{ headerShown: false }}
+              >
+                <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Ahabanza' }} />
                 <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Dashibodi' }} />
                 <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
                 <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: 'Ubutumwa' }} />
                 <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Konti' }} />
-                </Tab.Navigator>
-                <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
-                  <SignInScreen 
-                    onSuccess={() => setShowSignIn(false)} 
-                    onClose={() => setShowSignIn(false)}
-                    onShowSignUp={() => {
-                      setShowSignIn(false);
-                      setShowSignUp(true);
-                    }}
-                  />
-                </Modal>
-                <Modal visible={showSignUp} animationType="slide" onRequestClose={() => setShowSignUp(false)}>
-                  <SignUpScreen 
-                    onSuccess={() => setShowSignUp(false)} 
-                    onClose={() => setShowSignUp(false)}
-                    onShowSignIn={() => {
-                      setShowSignUp(false);
-                      setShowSignIn(true);
-                    }}
-                  />
-                </Modal>
-              </NavigationContainer>
+              </Tab.Navigator>
+              <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
+                <SignInScreen 
+                  onSuccess={() => setShowSignIn(false)} 
+                  onClose={() => setShowSignIn(false)}
+                  onShowSignUp={() => {
+                    setShowSignIn(false);
+                    setShowSignUp(true);
+                  }}
+                />
+              </Modal>
+              <Modal visible={showSignUp} animationType="slide" onRequestClose={() => setShowSignUp(false)}>
+                <SignUpScreen 
+                  onSuccess={() => setShowSignUp(false)} 
+                  onClose={() => setShowSignUp(false)}
+                  onShowSignIn={() => {
+                    setShowSignUp(false);
+                    setShowSignIn(true);
+                  }}
+                />
+              </Modal>
             </AuthProvider>
             <StatusBarWrapper />
           </ThemeProvider>

@@ -101,6 +101,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ onBack, userProfile }) => {
       setLoading(true)
       console.log('📊 [MOBILE_REPORTS] Fetching report data for user:', userProfile?.id)
 
+      // Check if userProfile is defined
+      if (!userProfile?.id) {
+        console.error('❌ [MOBILE_REPORTS] No user profile or user ID found')
+        setReportData(null)
+        return
+      }
+
       // Calculate date range
       const now = new Date()
       let startDate = new Date()
@@ -120,34 +127,64 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ onBack, userProfile }) => {
           break
       }
 
-      // Fetch comprehensive data
-      const [propertiesResponse, roomsResponse, paymentsResponse, tenantsResponse] = await Promise.all([
-        supabase
-          .from('properties')
-          .select('*')
-          .eq('landlord_id', userProfile?.id),
-        
+      // Fetch comprehensive data using RPC functions to avoid RLS recursion
+      const propertiesResponse = await supabase
+        .rpc('get_landlord_properties', {
+          p_landlord_id: userProfile.id
+        })
+      
+      const properties = propertiesResponse.data || []
+      const propertyIds = properties.filter((p: any) => p && p.id).map((p: any) => p.id)
+      
+      // If no properties, return empty data
+      if (propertyIds.length === 0) {
+        setReportData({
+          overview: {
+            total_properties: 0,
+            total_rooms: 0,
+            occupied_rooms: 0,
+            vacancy_rate: 0,
+            total_revenue: 0,
+            collection_rate: 0,
+            average_rent: 0,
+            total_tenants: 0,
+            new_tenants_this_month: 0
+          },
+          revenue: {
+            monthly_revenue: [],
+            revenue_by_property: [],
+            payment_methods: []
+          },
+          occupancy: {
+            occupancy_by_property: []
+          },
+          trends: {
+            revenue_growth: 0,
+            tenant_growth: 0
+          }
+        })
+        return
+      }
+      
+      const [roomsResponse, paymentsResponse, tenantsResponse] = await Promise.all([
         supabase
           .from('rooms')
           .select(`
             *, 
-            properties!inner(landlord_id, name),
             room_tenants!left(
               id, is_active, move_in_date,
               tenants(id, full_name)
             )
           `)
-          .eq('properties.landlord_id', userProfile?.id),
+          .in('property_id', propertyIds),
         
         supabase
           .from('payments')
           .select(`
             *, 
-            rooms!inner(
-              properties!inner(landlord_id)
-            )
+            rooms!inner(property_id)
           `)
-          .eq('rooms.properties.landlord_id', userProfile?.id)
+          .in('rooms.property_id', propertyIds)
           .gte('payment_date', startDate.toISOString()),
         
         supabase
@@ -155,15 +192,12 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ onBack, userProfile }) => {
           .select(`
             *,
             tenants!inner(*),
-            rooms!inner(
-              properties!inner(landlord_id, name)
-            )
+            rooms!inner(property_id)
           `)
-          .eq('rooms.properties.landlord_id', userProfile?.id)
+          .in('rooms.property_id', propertyIds)
           .eq('is_active', true)
       ])
 
-      const properties = propertiesResponse.data || []
       const rooms = roomsResponse.data || []
       const payments = paymentsResponse.data || []
       const tenants = tenantsResponse.data || []
@@ -172,36 +206,37 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ onBack, userProfile }) => {
       const totalProperties = properties.length
       const totalRooms = rooms.length
       const occupiedRooms = rooms.filter(room => 
-        room.room_tenants?.some((rt: any) => rt.is_active)
+        room?.room_tenants?.some((rt: any) => rt?.is_active)
       ).length
       const vacancyRate = totalRooms > 0 ? ((totalRooms - occupiedRooms) / totalRooms) * 100 : 0
 
-      const totalRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0)
+      const totalRevenue = payments.reduce((sum, p) => sum + Number(p?.amount || 0), 0)
       const onTimePayments = payments.filter(p => 
-        new Date(p.payment_date) <= new Date(p.due_date || p.payment_date)
+        p?.payment_date && new Date(p.payment_date) <= new Date(p?.due_date || p.payment_date)
       )
       const collectionRate = payments.length > 0 ? (onTimePayments.length / payments.length) * 100 : 100
 
       const averageRent = rooms.length > 0 ? 
-        rooms.reduce((sum, r) => sum + Number(r.rent_amount), 0) / rooms.length : 0
+        rooms.reduce((sum, r) => sum + Number(r?.rent_amount || 0), 0) / rooms.length : 0
 
       const totalTenants = tenants.length
       const newTenants = tenants.filter(t => 
-        new Date(t.move_in_date) >= startDate
+        t?.move_in_date && new Date(t.move_in_date) >= startDate
       ).length
 
       // Calculate revenue by property
-      const revenueByProperty = properties.map(property => {
-        const propertyPayments = payments.filter(p => 
-          rooms.find(r => r.id === p.room_id)?.properties?.id === property.id
-        )
-        const revenue = propertyPayments.reduce((sum, p) => sum + Number(p.amount), 0)
+      const revenueByProperty = properties.map((property: any) => {
+        const propertyPayments = payments.filter(p => {
+          const room = rooms.find(r => r && r.id === p?.room_id)
+          return room?.properties?.id === property?.id
+        })
+        const revenue = propertyPayments.reduce((sum, p) => sum + Number(p?.amount || 0), 0)
         return {
-          property_name: property.name,
+          property_name: property?.name || 'Unknown Property',
           revenue,
           percentage: totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0
         }
-      }).sort((a, b) => b.revenue - a.revenue)
+      }).sort((a: any, b: any) => b.revenue - a.revenue)
 
       // Calculate payment methods breakdown
       const paymentMethods = payments.reduce((acc, payment) => {
@@ -225,20 +260,20 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ onBack, userProfile }) => {
       }).sort((a, b) => b.amount - a.amount)
 
       // Calculate occupancy by property
-      const occupancyByProperty = properties.map(property => {
-        const propertyRooms = rooms.filter(r => r.properties.id === property.id)
+      const occupancyByProperty = properties.map((property: any) => {
+        const propertyRooms = rooms.filter(r => r?.properties?.id === property?.id)
         const propertyOccupiedRooms = propertyRooms.filter(room => 
           room.room_tenants?.some((rt: any) => rt.is_active)
         ).length
         
         return {
-          property_name: property.name,
+          property_name: property?.name || 'Unknown Property',
           occupancy_rate: propertyRooms.length > 0 ? 
             (propertyOccupiedRooms / propertyRooms.length) * 100 : 0,
           total_rooms: propertyRooms.length,
           occupied_rooms: propertyOccupiedRooms
         }
-      }).sort((a, b) => b.occupancy_rate - a.occupancy_rate)
+      }).sort((a: any, b: any) => b.occupancy_rate - a.occupancy_rate)
 
       // Calculate monthly revenue trends (last 6 months)
       const monthlyRevenue: MonthlyRevenue[] = []
