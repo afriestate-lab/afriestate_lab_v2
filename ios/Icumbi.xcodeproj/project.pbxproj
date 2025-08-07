@@ -7,13 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E7E23082E5E54BF885142AF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E458247CF4C5275060FBB2DA /* PrivacyInfo.xcprivacy */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		28F45B02990F0AD2B442DC28 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BED3FB6B0741D04C35570E10 /* ExpoModulesProvider.swift */; };
-		3419D290D4DAC4F9B3436C9E /* libPods-Icumbi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 410D862922056A7432C17048 /* libPods-Icumbi.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		B6EA72D4259EA07C822DB493 /* libPods-Icumbi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3544D4B3366328EF479A3E87 /* libPods-Icumbi.a */; };
+		B75429E99D493E51EC014F90 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F689D7D2ABA001676045ACBD /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		D1CF7104F7504F57897D5152 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4178D978AF5443ED8EB51AF2 /* GoogleService-Info.plist */; };
-		DF4D1C84318574A855126E3B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 410E96D49592D5BE7C908188 /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -21,17 +20,16 @@
 		13B07F961A680F5B00A75B9A /* Icumbi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Icumbi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Icumbi/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Icumbi/Info.plist; sourceTree = "<group>"; };
-		21EF4E081434DFCCD8447259 /* Pods-Icumbi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Icumbi.release.xcconfig"; path = "Target Support Files/Pods-Icumbi/Pods-Icumbi.release.xcconfig"; sourceTree = "<group>"; };
-		410D862922056A7432C17048 /* libPods-Icumbi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Icumbi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		410E96D49592D5BE7C908188 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Icumbi/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		4178D978AF5443ED8EB51AF2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Icumbi/GoogleService-Info.plist"; sourceTree = "<group>"; };
-		7B3D2A491CC8B2DD64DA3F58 /* Pods-Icumbi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Icumbi.debug.xcconfig"; path = "Target Support Files/Pods-Icumbi/Pods-Icumbi.debug.xcconfig"; sourceTree = "<group>"; };
+		3544D4B3366328EF479A3E87 /* libPods-Icumbi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Icumbi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Icumbi/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		BED3FB6B0741D04C35570E10 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Icumbi/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		C202E5B017896B1E4327B128 /* Pods-Icumbi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Icumbi.debug.xcconfig"; path = "Target Support Files/Pods-Icumbi/Pods-Icumbi.debug.xcconfig"; sourceTree = "<group>"; };
+		E458247CF4C5275060FBB2DA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Icumbi/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		ED87A72BB3AFA88D594EB9E2 /* Pods-Icumbi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Icumbi.release.xcconfig"; path = "Target Support Files/Pods-Icumbi/Pods-Icumbi.release.xcconfig"; sourceTree = "<group>"; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Icumbi/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Icumbi-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Icumbi-Bridging-Header.h"; path = "Icumbi/Icumbi-Bridging-Header.h"; sourceTree = "<group>"; };
+		F689D7D2ABA001676045ACBD /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Icumbi/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,31 +37,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3419D290D4DAC4F9B3436C9E /* libPods-Icumbi.a in Frameworks */,
+				B6EA72D4259EA07C822DB493 /* libPods-Icumbi.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		071B5B9974FCA4297ED9AA36 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				7B3D2A491CC8B2DD64DA3F58 /* Pods-Icumbi.debug.xcconfig */,
-				21EF4E081434DFCCD8447259 /* Pods-Icumbi.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		113DC91D669B8F4DFEE9C13B /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				9C90C58BFE172B00443AD21C /* Icumbi */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* Icumbi */ = {
 			isa = PBXGroup;
 			children = (
@@ -73,8 +53,15 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				4178D978AF5443ED8EB51AF2 /* GoogleService-Info.plist */,
-				410E96D49592D5BE7C908188 /* PrivacyInfo.xcprivacy */,
+				E458247CF4C5275060FBB2DA /* PrivacyInfo.xcprivacy */,
+			);
+			name = Icumbi;
+			sourceTree = "<group>";
+		};
+		1977879B29DAEE3CC7613EA3 /* Icumbi */ = {
+			isa = PBXGroup;
+			children = (
+				F689D7D2ABA001676045ACBD /* ExpoModulesProvider.swift */,
 			);
 			name = Icumbi;
 			sourceTree = "<group>";
@@ -83,9 +70,27 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				410D862922056A7432C17048 /* libPods-Icumbi.a */,
+				3544D4B3366328EF479A3E87 /* libPods-Icumbi.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		300AC7A6504F7C99A38908D8 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				1977879B29DAEE3CC7613EA3 /* Icumbi */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		805A2D5FECC6880FF94C14B7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C202E5B017896B1E4327B128 /* Pods-Icumbi.debug.xcconfig */,
+				ED87A72BB3AFA88D594EB9E2 /* Pods-Icumbi.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -102,8 +107,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				071B5B9974FCA4297ED9AA36 /* Pods */,
-				113DC91D669B8F4DFEE9C13B /* ExpoModulesProviders */,
+				805A2D5FECC6880FF94C14B7 /* Pods */,
+				300AC7A6504F7C99A38908D8 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -116,14 +121,6 @@
 				13B07F961A680F5B00A75B9A /* Icumbi.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		9C90C58BFE172B00443AD21C /* Icumbi */ = {
-			isa = PBXGroup;
-			children = (
-				BED3FB6B0741D04C35570E10 /* ExpoModulesProvider.swift */,
-			);
-			name = Icumbi;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -143,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Icumbi" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				2860A31D01ACF19B093FD715 /* [Expo] Configure project */,
+				ECFE5F3A415CFDFFA34B42BB /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				E1D66140E85F51CCD0506100 /* [CP] Embed Pods Frameworks */,
+				4B0AC9D9A8D76277E1CD7521 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -199,8 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				D1CF7104F7504F57897D5152 /* GoogleService-Info.plist in Resources */,
-				DF4D1C84318574A855126E3B /* PrivacyInfo.xcprivacy in Resources */,
+				0E7E23082E5E54BF885142AF /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,24 +240,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		2860A31D01ACF19B093FD715 /* [Expo] Configure project */ = {
+		4B0AC9D9A8D76277E1CD7521 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Icumbi/Pods-Icumbi-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Icumbi/expo-configure-project.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Icumbi/Pods-Icumbi-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -303,23 +298,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Icumbi/Pods-Icumbi-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E1D66140E85F51CCD0506100 /* [CP] Embed Pods Frameworks */ = {
+		ECFE5F3A415CFDFFA34B42BB /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Icumbi/Pods-Icumbi-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			inputFileListPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Icumbi/Pods-Icumbi-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Icumbi/expo-configure-project.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -329,7 +325,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				28F45B02990F0AD2B442DC28 /* ExpoModulesProvider.swift in Sources */,
+				B75429E99D493E51EC014F90 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,7 +334,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7B3D2A491CC8B2DD64DA3F58 /* Pods-Icumbi.debug.xcconfig */;
+			baseConfigurationReference = C202E5B017896B1E4327B128 /* Pods-Icumbi.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -374,7 +370,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 21EF4E081434DFCCD8447259 /* Pods-Icumbi.release.xcconfig */;
+			baseConfigurationReference = ED87A72BB3AFA88D594EB9E2 /* Pods-Icumbi.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

@@ -18,6 +18,15 @@
         "buildType": "apk"
       }
     },
+    "testing": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ENV": "testing"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "env": {
@@ -43,8 +52,8 @@
         "credentialsSource": "remote"
       },
       "android": {
-        "buildType": "app-bundle",
-        "gradleCommand": ":app:bundleRelease"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       }
     }
   },
