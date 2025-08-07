@@ -20,7 +20,9 @@ import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 import { LineChart } from 'react-native-chart-kit'
 import { useTheme } from './_layout'
+import { useLanguage } from '@/lib/languageContext'
 import IcumbiLogo from './components/IcumbiLogo'
+import LanguageSelector from './components/LanguageSelector'
 
 const chartConfig = {
   backgroundGradientFrom: '#f8fafc',
@@ -274,6 +276,7 @@ const ChartCard = ({
 
 export default function LandlordDashboard() {
   const { theme } = useTheme()
+  const { t } = useLanguage()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [loading, setLoading] = useState(true)
@@ -1480,12 +1483,15 @@ export default function LandlordDashboard() {
           </Text>
         </View>
         
-        <TouchableOpacity onPress={() => setAdminPanelOpen(true)} style={styles.dangerZoneButton}>
-          <Ionicons name="shield" size={24} color={theme.error} />
-          <View style={styles.dangerBadge}>
-            <View style={styles.dangerPulse} />
-          </View>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <LanguageSelector size="small" />
+          <TouchableOpacity onPress={() => setAdminPanelOpen(true)} style={styles.dangerZoneButton}>
+            <Ionicons name="shield" size={24} color={theme.error} />
+            <View style={styles.dangerBadge}>
+              <View style={styles.dangerPulse} />
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Tab Navigation - matching web implementation */}

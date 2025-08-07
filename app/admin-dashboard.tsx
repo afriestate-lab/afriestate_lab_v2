@@ -20,7 +20,9 @@ import { supabase } from '../src/lib/supabase'
 import { formatCurrency, formatDate } from '../src/lib/helpers'
 import { LineChart } from 'react-native-chart-kit'
 import { useTheme } from './_layout'
+import { useLanguage } from '@/lib/languageContext'
 import IcumbiLogo from './components/IcumbiLogo'
+import LanguageSelector from './components/LanguageSelector'
 
 const chartConfig = {
   backgroundGradientFrom: '#f8fafc',
@@ -272,6 +274,7 @@ const ChartCard = ({
 
 export default function AdminDashboard() {
   const { theme } = useTheme()
+  const { t } = useLanguage()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [loading, setLoading] = useState(true)
@@ -1551,6 +1554,7 @@ export default function AdminDashboard() {
         </View>
         
         <View style={styles.headerActions}>
+          <LanguageSelector size="small" />
           <TouchableOpacity onPress={refreshDashboardData} style={styles.actionButton}>
             <Ionicons name="refresh" size={20} color={theme.primary} />
           </TouchableOpacity>

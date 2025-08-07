@@ -22,6 +22,7 @@ import { useTheme } from './_layout'
 import { useLanguage } from '@/lib/languageContext'
 import LeaseExtensionFlow from './components/LeaseExtensionFlow'
 import IcumbiLogo from './components/IcumbiLogo'
+import LanguageSelector from './components/LanguageSelector'
 
 // Local type definitions
 interface TenantUser {
@@ -1541,7 +1542,7 @@ export default function TenantDashboard() {
             <Text style={[styles.nameText, { color: theme.text }]}>{tenantUser.full_name}</Text>
           </View>
         </View>
-        {/* Sign out button removed as requested */}
+        <LanguageSelector size="small" />
       </View>
 
       {/* Main Navigation Grid */}

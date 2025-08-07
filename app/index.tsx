@@ -15,6 +15,7 @@ import SignUpScreen from './auth/sign-up'
 import { useNavigation } from '@react-navigation/native'
 import AddActionModal from './add-action-modal'
 import IcumbiLogo from './components/IcumbiLogo'
+import LanguageSelector from './components/LanguageSelector'
 
 import { useTheme } from './_layout'
 import { useLanguage } from '@/lib/languageContext'
@@ -592,7 +593,8 @@ export default function PropertiesScreen() {
             Icumbi
           </Text>
         </View>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <LanguageSelector size="small" />
           {!authLoading && (
             user ? (
               // User is logged in - show profile info and sign out
