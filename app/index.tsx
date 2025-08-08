@@ -783,8 +783,9 @@ export default function PropertiesScreen() {
                 <TouchableOpacity 
                   style={styles.privacyLinkContainer}
                   onPress={() => {
-                    // Open privacy policy in web browser
-                    Linking.openURL('https://icumbi.com/privacy')
+                    console.log('Privacy link clicked from index!');
+                    // Show privacy modal
+                    setShowPrivacyModal(true)
                   }}
                   activeOpacity={0.7}
                 >

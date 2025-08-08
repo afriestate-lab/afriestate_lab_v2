@@ -717,8 +717,8 @@ function ProfileScreen() {
               style={styles.privacyLinkContainer}
               onPress={() => {
                 console.log('Privacy link clicked from layout!');
-                // Open privacy policy in web browser
-                Linking.openURL('https://icumbi.com/privacy')
+                // Show privacy modal instead of external link
+                setShowPrivacyModal(true)
               }}
               activeOpacity={0.7}
             >
@@ -845,6 +845,7 @@ function CustomTabBar({ state, descriptors, navigation, onShowSignIn }: BottomTa
 export default function RootLayout() {
   const [showSignIn, setShowSignIn] = useState(false)
   const [showSignUp, setShowSignUp] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
   
 
   
@@ -884,6 +885,45 @@ export default function RootLayout() {
                     setShowSignIn(true);
                   }}
                 />
+              </Modal>
+              
+              {/* Privacy Policy Modal */}
+              <Modal visible={showPrivacyModal} animationType="slide" onRequestClose={() => setShowPrivacyModal(false)}>
+                <View style={styles.privacyModalContainer}>
+                  <View style={styles.privacyModalHeader}>
+                    <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={styles.privacyModalBackButton}>
+                      <Ionicons name="close" size={24} color="#000" />
+                    </TouchableOpacity>
+                    <Text style={styles.privacyModalTitle}>Privacy Policy & Terms</Text>
+                  </View>
+                  <ScrollView style={styles.privacyModalContent}>
+                    <Text style={styles.privacyModalText}>
+                      Welcome to Icumbi ("we," "our," or "us"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the Icumbi mobile application ("App").
+                    </Text>
+                    <Text style={styles.privacyModalText}>
+                      By using our App, you agree to the collection and use of information in accordance with this policy. If you do not agree with this policy, please do not use our App.
+                    </Text>
+                    <Text style={styles.privacyModalSectionTitle}>1. Information We Collect</Text>
+                    <Text style={styles.privacyModalText}>
+                      We collect personal information including your name, phone number, email address, and role in the platform. We also collect property and payment information as needed for our services.
+                    </Text>
+                    <Text style={styles.privacyModalSectionTitle}>2. How We Use Your Information</Text>
+                    <Text style={styles.privacyModalText}>
+                      We use your information to provide our services, process payments, manage properties, and improve our app functionality.
+                    </Text>
+                    <Text style={styles.privacyModalSectionTitle}>3. Data Security</Text>
+                    <Text style={styles.privacyModalText}>
+                      We implement industry-standard security measures to protect your information, including encryption and secure authentication.
+                    </Text>
+                    <Text style={styles.privacyModalSectionTitle}>4. Contact Information</Text>
+                    <Text style={styles.privacyModalText}>
+                      For questions about this Privacy Policy, please contact us:{'\n'}
+                      Email: support@icumbi.com{'\n'}
+                      Phone: +250 780 0566 266{'\n'}
+                      Address: Kigali, Rwanda
+                    </Text>
+                  </ScrollView>
+                </View>
               </Modal>
             </AuthProvider>
             <StatusBarWrapper />
@@ -1246,5 +1286,45 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Privacy Modal Styles
+  privacyModalContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  privacyModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  privacyModalBackButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  privacyModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  privacyModalContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  privacyModalText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#374151',
+    marginBottom: 16,
+  },
+  privacyModalSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 24,
+    marginBottom: 12,
   },
 }) 
