@@ -193,7 +193,7 @@ If you have questions about this Privacy Policy or our data practices, please co
 **Email:** support@icumbi.com  
 **Phone:** +250 780 0566 266  
 **Address:** Kigali, Rwanda  
-**Website:** https://icumbi.com/privacy
+**Website:** https://icumbi.com
 
 ## 12. Complaints and Disputes
 

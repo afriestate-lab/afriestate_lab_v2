@@ -34,7 +34,7 @@
 ## Contact
 **Email:** support@icumbi.com  
 **Phone:** +250 780 0566 266  
-**Website:** https://icumbi.com/privacy
+**Website:** https://icumbi.com
 
 ## Children
 Our app is not intended for children under 13. We do not knowingly collect data from children under 13.

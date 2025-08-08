@@ -64,12 +64,12 @@ Privacy | Terms | Contact | Support
 
 Once deployed:
 - `https://icumbi.com` → Main website with Privacy link
-- `https://icumbi.com/privacy` → Complete privacy policy
+- `https://icumbi.com` → Main website
 - **Perfect for Google Play Console!**
 
 ## 🎯 For Google Play Console
 
 Use this URL in your app submission:
-**`https://icumbi.com/privacy`**
+**`https://icumbi.com`**
 
 This will work perfectly for your app store submission! 

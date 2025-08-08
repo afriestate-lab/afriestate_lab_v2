@@ -999,7 +999,7 @@ export default function PropertiesScreen() {
               Email: support@icumbi.com{'\n'}
               Phone: +250 780 0566 266{'\n'}
               Address: Kigali, Rwanda{'\n'}
-              Website: https://icumbi.com/privacy
+              Website: https://icumbi.com
             </Text>
             
             <Text style={styles.privacyModalText}>
@@ -1397,7 +1397,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: '#374151',
   },
-  privacyModalTitle: {
+  privacyModalMainTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,

@@ -68,7 +68,7 @@ Perfect for:
 Download Icumbi today and experience the future of property management in Rwanda!
 
 For support: support@icumbi.com
-Privacy Policy: https://icumbi.com/privacy
+Privacy Policy: https://icumbi.com
 ```
 
 ### Google Play Store Description (Android)
@@ -124,7 +124,7 @@ IDEAL FOR:
 Transform your property management today with Icumbi!
 
 Support: support@icumbi.com
-Privacy: https://icumbi.com/privacy
+Privacy: https://icumbi.com
 ```
 
 ## Keywords
@@ -180,7 +180,7 @@ property management, real estate, landlord, tenant, rent collection, property re
 - **Internet**: For app functionality and data sync
 
 ### Privacy Policy URL
-- **URL**: https://icumbi.com/privacy
+- **URL**: https://icumbi.com
 - **Must include**: Data collection, usage, storage, and sharing policies
 
 ## Support Information

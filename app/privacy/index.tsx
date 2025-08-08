@@ -19,7 +19,7 @@ export default function PrivacyPolicyScreen() {
   }
 
   const openWebsitePrivacy = () => {
-    Linking.openURL('https://icumbi.com/privacy')
+    Linking.openURL('https://icumbi.com')
   }
 
   return (
@@ -235,7 +235,7 @@ export default function PrivacyPolicyScreen() {
             Email: support@icumbi.com{'\n'}
             Phone: +250 780 0566 266{'\n'}
             Address: Kigali, Rwanda{'\n'}
-            Website: https://icumbi.com/privacy
+            Website: https://icumbi.com
           </Text>
         </View>
 

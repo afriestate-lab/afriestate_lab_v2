@@ -193,7 +193,7 @@ Niba ufite ibibazo kuri iyi Iteganyabikorwa rya Ubwihisho cyangwa ibikorwa byacu
 **Imeri:** support@icumbi.com  
 **Telefoni:** +250 780 0566 266  
 **Aderesi:** Kigali, Rwanda  
-**Website:** https://icumbi.com/privacy
+**Website:** https://icumbi.com
 
 ## 12. Amakimbirane n'Amakimbirane
 
