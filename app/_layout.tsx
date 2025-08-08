@@ -709,7 +709,24 @@ function ProfileScreen() {
       <View style={styles.footer}>
         <View style={styles.footerBrand}>
           <IcumbiLogo width={24} height={24} />
-          <Text style={[styles.footerText, { color: theme.textTertiary }]}>Icumbi © 2025</Text>
+          <View style={styles.footerTextContainer}>
+            <Text style={[styles.footerText, { color: theme.textTertiary }]}>
+              Icumbi © 2025 — "Easy rentals, better life." -{' '}
+            </Text>
+            <TouchableOpacity 
+              style={styles.privacyLinkContainer}
+              onPress={() => {
+                console.log('Privacy link clicked from layout!');
+                // For now, just show an alert since we don't have access to the modal state here
+                Alert.alert('Privacy Policy', 'Privacy policy is available in the main app. Please use the privacy link in the main screen.');
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.privacyLinkText, { color: theme.primary }]}>
+                {t('privacy')}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <Text style={[styles.footerVersion, { color: theme.textTertiary }]}>Version 1.0.0</Text>
       </View>
@@ -1164,9 +1181,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9ca3af',
   },
+  footerTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  privacyLinkContainer: {
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
   footerVersion: {
     fontSize: 12,
     color: '#d1d5db',
+  },
+  footerLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  privacyLink: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  privacyLinkText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
   // Existing styles for logged out state
   profileCard: {

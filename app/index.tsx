@@ -99,6 +99,7 @@ export default function PropertiesScreen() {
   const [showSignIn, setShowSignIn] = useState(false)
   const [showSignUp, setShowSignUp] = useState(false)
   const [showAddPropertyModal, setShowAddPropertyModal] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
 
   // Fetch properties from Supabase using RPC function to bypass RLS recursion
   const fetchProperties = async (page = 1, searchQuery = '', sortOrder = 'newest', refresh = false) => {
@@ -775,9 +776,20 @@ export default function PropertiesScreen() {
               </TouchableOpacity>
             </View>
             <View style={styles.appFooter}>
-              <Text variant="bodySmall" style={[styles.footerText, { color: theme.textSecondary }]}>
-                {t('appFooter')}
-              </Text>
+              <View style={styles.footerTextContainer}>
+                <Text variant="bodySmall" style={[styles.footerText, { color: theme.textSecondary }]}>
+                  {t('appFooter')} -{' '}
+                </Text>
+                <TouchableOpacity 
+                  style={styles.privacyLinkContainer}
+                  onPress={() => setShowPrivacyModal(true)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.privacyLinkText, { color: theme.primary }]}>
+                    {t('privacy')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         }
@@ -844,6 +856,160 @@ export default function PropertiesScreen() {
         userRole={userRole}
         initialAction="property"
       />
+
+      {/* Privacy Policy Modal */}
+      <Modal visible={showPrivacyModal} animationType="slide" onRequestClose={() => setShowPrivacyModal(false)}>
+        <View style={styles.privacyModalContainer}>
+          <View style={styles.privacyModalHeader}>
+            <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={styles.privacyModalBackButton}>
+              <Ionicons name="close" size={24} color="#000" />
+            </TouchableOpacity>
+            <Text style={styles.privacyModalTitle}>Privacy Policy & Terms</Text>
+          </View>
+          <ScrollView style={styles.privacyModalContent}>
+            <Text style={styles.privacyModalTitle}>Privacy Policy for Icumbi Mobile App</Text>
+            <Text style={styles.privacyModalSubtitle}>Last Updated: August 18, 2025</Text>
+            
+            <Text style={styles.privacyModalText}>
+              Welcome to Icumbi ("we," "our," or "us"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the Icumbi mobile application ("App").
+            </Text>
+            
+            <Text style={styles.privacyModalSectionTitle}>1. Information We Collect</Text>
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Personal Information:</Text>{'\n'}
+              • Full Name: Your complete name as provided during registration{'\n'}
+              • Phone Number: Your 10-digit Rwandan phone number (primary identifier){'\n'}
+              • Email Address: Your email address for account verification{'\n'}
+              • Password: Securely encrypted password for account authentication{'\n'}
+              • Role: Your role in the platform (tenant, landlord, manager, admin){'\n'}
+              • Profile Picture: Optional avatar image (if provided)
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Property and Rental Information:</Text>{'\n'}
+              • Property Details: Property names, addresses, descriptions{'\n'}
+              • Property Images: Photos of properties and rooms (with consent){'\n'}
+              • Rental Information: Lease terms, payment amounts, rental history{'\n'}
+              • Location Data: Property addresses and general location information
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Payment Information:</Text>{'\n'}
+              • Payment Method: Your chosen payment method (MTN MoMo, Airtel Money, Bank Transfer, Cards, Cash){'\n'}
+              • Payment Amounts: Transaction amounts and payment history{'\n'}
+              • Transaction IDs: Unique identifiers for payment tracking{'\n'}
+              • Phone Numbers: For mobile money payments (Airtel phone numbers)
+            </Text>
+            
+            <Text style={styles.privacyModalSectionTitle}>2. How We Use Your Information</Text>
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Account Management:</Text>{'\n'}
+              • Create and manage your user account{'\n'}
+              • Authenticate your identity and maintain account security{'\n'}
+              • Provide personalized user experience based on your role{'\n'}
+              • Send account-related notifications and updates
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Property Management:</Text>{'\n'}
+              • Display and manage property listings{'\n'}
+              • Process property bookings and reservations{'\n'}
+              • Handle tenant-landlord communications{'\n'}
+              • Generate property reports and analytics
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Payment Processing:</Text>{'\n'}
+              • Process rental payments and transactions{'\n'}
+              • Generate payment receipts and records{'\n'}
+              • Track payment history and financial reports{'\n'}
+              • Handle payment disputes and refunds
+            </Text>
+            
+            <Text style={styles.privacyModalSectionTitle}>3. Data Security</Text>
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Security Measures:</Text>{'\n'}
+              • Encryption: All data is encrypted in transit and at rest{'\n'}
+              • Authentication: Secure login and multi-factor authentication{'\n'}
+              • Access Controls: Limited access to personal information{'\n'}
+              • Regular Audits: Security assessments and vulnerability testing
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Data Retention:</Text>{'\n'}
+              We retain your information for as long as necessary to provide our services, comply with legal obligations, resolve disputes, and improve our services.
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Data Deletion:</Text>{'\n'}
+              You may request deletion of your account and personal information by contacting us at support@icumbi.com. We will process your request within 30 days.
+            </Text>
+            
+            <Text style={styles.privacyModalSectionTitle}>4. Your Rights and Choices</Text>
+            <Text style={styles.privacyModalText}>
+              You have the right to:{'\n'}
+              • Access: View and download your personal information{'\n'}
+              • Correct: Update or modify your information{'\n'}
+              • Delete: Request deletion of your account and data{'\n'}
+              • Portability: Export your data in a machine-readable format
+            </Text>
+            
+            <Text style={styles.privacyModalSectionTitle}>5. Terms and Conditions</Text>
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Acceptance of Terms:</Text>{'\n'}
+              By downloading, installing, or using the Icumbi app, you agree to comply with and be bound by these Terms and Conditions.
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>User Accounts:</Text>{'\n'}
+              • You must provide accurate and complete information when creating an account{'\n'}
+              • You are responsible for maintaining the confidentiality of your account credentials{'\n'}
+              • You must be at least 18 years old to create an account{'\n'}
+              • One person may only create one account
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Payment Terms:</Text>{'\n'}
+              • All payments are processed through secure third-party providers{'\n'}
+              • Payment methods include MTN MoMo, Airtel Money, bank transfers, and cards{'\n'}
+              • Transaction fees may apply and will be clearly displayed{'\n'}
+              • Refunds are subject to our refund policy
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>User Conduct:</Text>{'\n'}
+              You agree not to:{'\n'}
+              • Use the app for any illegal or unauthorized purpose{'\n'}
+              • Violate any laws or regulations{'\n'}
+              • Infringe on the rights of others{'\n'}
+              • Upload harmful or malicious content{'\n'}
+              • Attempt to gain unauthorized access to our systems{'\n'}
+              • Use the app to harass, abuse, or harm other users
+            </Text>
+            
+            <Text style={styles.privacyModalSectionTitle}>6. Contact Information</Text>
+            <Text style={styles.privacyModalText}>
+              If you have questions about this Privacy Policy or our data practices, please contact us:
+            </Text>
+            <Text style={styles.privacyModalContactInfo}>
+              Email: support@icumbi.com{'\n'}
+              Phone: +250 780 0566 266{'\n'}
+              Address: Kigali, Rwanda{'\n'}
+              Website: https://icumbi.com/privacy
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Governing Law:</Text>{'\n'}
+              This Privacy Policy is governed by the laws of Rwanda. Any disputes arising from this policy will be resolved in accordance with Rwandan law.
+            </Text>
+            
+            <Text style={styles.privacyModalText}>
+              <Text style={styles.bold}>Consent:</Text>{'\n'}
+              By using the Icumbi mobile app, you consent to the collection, use, and sharing of your information as described in this Privacy Policy.
+            </Text>
+          </ScrollView>
+        </View>
+      </Modal>
 
     </View>
   )
@@ -1180,7 +1346,97 @@ const styles = StyleSheet.create({
   appFooter: {
     alignItems: 'center',
   },
+  footerTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
   footerText: {
     color: '#6b7280',
+  },
+  privacyLinkContainer: {
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+
+  privacyModalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  privacyModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingTop: 50,
+  },
+  privacyModalBackButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  privacyModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
+  },
+  privacyModalContent: {
+    flex: 1,
+    padding: 20,
+  },
+  privacyModalText: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 16,
+    color: '#374151',
+  },
+  privacyModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#1f2937',
+  },
+  privacyModalSubtitle: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginBottom: 20,
+    color: '#6b7280',
+  },
+  privacyModalSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 24,
+    marginBottom: 12,
+    color: '#1f2937',
+  },
+  privacyModalContactInfo: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginTop: 8,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    borderRadius: 8,
+    color: '#374151',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  footerLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  privacyLink: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  privacyLinkText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 }) 

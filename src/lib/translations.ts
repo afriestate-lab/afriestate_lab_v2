@@ -365,7 +365,7 @@ export const translations: Record<Language, Translations> = {
     language: 'Ururimi',
     darkMode: 'Uko kwerekana',
     notifications: 'Kumenyesha',
-    privacy: 'Ibitugu',
+    privacy: 'Amabwiriza',
     security: 'Umutekano',
     about: 'Ibyerekeye',
     help: 'Ubufasha',
