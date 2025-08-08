@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Icumbi - Easy rentals, better life</title>
+    <title>Icumbi - Easy Rentals, Better Life</title>
     <style>
         * {
             margin: 0;
@@ -14,214 +14,123 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #ffffff;
+            color: #374151;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
         
         .header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            padding: 20px 0;
             text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 40px 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .welcome-section {
-            margin-bottom: 40px;
-        }
-        
-        .welcome-section h2 {
-            color: #007bff;
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-        
-        .welcome-section p {
-            font-size: 1.1em;
-            color: #666;
+            padding: 40px 0;
+            border-bottom: 2px solid #667eea;
             margin-bottom: 30px;
         }
         
-        .cta-button {
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .content {
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .description {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .link {
             display: inline-block;
-            background: linear-gradient(135deg, #007bff, #0056b3);
+            background-color: #667eea;
             color: white;
-            padding: 15px 30px;
+            padding: 12px 24px;
             text-decoration: none;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 1.1em;
-            transition: transform 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.2s;
         }
         
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
-        }
-        
-        .features-section {
-            margin-top: 60px;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-        }
-        
-        .feature-card {
-            background: white;
-            padding: 30px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e9ecef;
-        }
-        
-        .feature-card h3 {
-            color: #007bff;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-        
-        .feature-card p {
-            color: #666;
-            line-height: 1.6;
+        .link:hover {
+            background-color: #5a67d8;
         }
         
         .footer {
-            background-color: #f8f9fa;
-            padding: 30px 0;
             text-align: center;
-            border-top: 1px solid #dee2e6;
-            margin-top: auto;
-        }
-        
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        .footer-text {
-            color: #666;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-        
-        .footer-links {
-            margin-top: 15px;
-        }
-        
-        .footer-links a {
-            color: #007bff;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s ease;
-        }
-        
-        .footer-links a:hover {
-            color: #0056b3;
-            text-decoration: underline;
-        }
-        
-        .privacy-link {
-            color: #007bff !important;
-            font-weight: 600;
+            padding: 30px 0;
+            margin-top: 40px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
         }
         
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
+            .container {
+                padding: 15px;
+                margin: 0;
             }
             
-            .main-content {
-                padding: 20px 15px;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .footer-links a {
-                display: block;
-                margin: 10px 0;
+            .title {
+                font-size: 24px;
             }
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <h1>Icumbi</h1>
-        <p>Easy rentals, better life</p>
-    </header>
-    
-    <main class="main-content">
-        <div class="welcome-section">
-            <h2>Welcome to Icumbi</h2>
-            <p>Your complete property management solution for Rwanda. Manage properties, handle payments, and streamline your rental business with our powerful mobile app.</p>
-            <a href="#" class="cta-button">Download Mobile App</a>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Icumbi</div>
+            <h1 class="title">Easy Rentals, Better Life</h1>
+            <p class="subtitle">Your trusted platform for property rentals in Rwanda</p>
         </div>
-        
-        <div class="features-section">
-            <h2>Why Choose Icumbi?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h3>🏠 Property Management</h3>
-                    <p>Easily manage your properties, track tenants, and handle all aspects of your rental business from one platform.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>💳 Payment Processing</h3>
-                    <p>Integrated payment solutions with MTN MoMo, Airtel Money, and bank transfers for seamless rent collection.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>📊 Financial Reports</h3>
-                    <p>Get detailed financial reports, track income, and monitor your rental business performance in real-time.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>📱 Mobile First</h3>
-                    <p>Access your property management tools anywhere, anytime with our mobile-optimized platform.</p>
-                </div>
+
+        <div class="content">
+            <p class="description">
+                Welcome to Icumbi! We're your trusted platform for finding and managing rental properties in Rwanda. 
+                Our mobile app makes it easy for tenants, landlords, and property managers to connect and manage rentals efficiently.
+            </p>
+            
+            <div class="links">
+                <a href="/privacy" class="link">Privacy Policy</a>
+                <a href="mailto:support@icumbi.com" class="link">Contact Support</a>
             </div>
         </div>
-    </main>
-    
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-text">
-                Icumbi © 2025 - 'Easy rentals, better life.'
-            </div>
-            <div class="footer-links">
-                <a href="/privacy" class="privacy-link">Privacy</a>
-                <a href="/terms">Terms</a>
-                <a href="/contact">Contact</a>
-                <a href="/support">Support</a>
-            </div>
+
+        <div class="footer">
+            <p>&copy; 2025 Icumbi. All rights reserved.</p>
+            <p>Email: support@icumbi.com | Phone: +250 780 0566 266</p>
         </div>
-    </footer>
+    </div>
 </body>
 </html> 
