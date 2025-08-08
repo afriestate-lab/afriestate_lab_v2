@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Alert, Modal, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Alert, Modal, ScrollView, Linking } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 // NavigationContainer is automatically provided by Expo Router
@@ -717,8 +717,8 @@ function ProfileScreen() {
               style={styles.privacyLinkContainer}
               onPress={() => {
                 console.log('Privacy link clicked from layout!');
-                // For now, just show an alert since we don't have access to the modal state here
-                Alert.alert('Privacy Policy', 'Privacy policy is available in the main app. Please use the privacy link in the main screen.');
+                // Open privacy policy in web browser
+                Linking.openURL('https://icumbi.com/privacy')
               }}
               activeOpacity={0.7}
             >

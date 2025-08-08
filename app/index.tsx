@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { View, StyleSheet, Image, Dimensions, ScrollView, RefreshControl, FlatList, TouchableOpacity, Alert, Modal, TextInput } from 'react-native'
+import { View, StyleSheet, Image, Dimensions, ScrollView, RefreshControl, FlatList, TouchableOpacity, Alert, Modal, TextInput, Linking } from 'react-native'
 import { Text, Button, Surface, Searchbar, Chip, ActivityIndicator } from 'react-native-paper'
 import { router } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
@@ -782,7 +782,10 @@ export default function PropertiesScreen() {
                 </Text>
                 <TouchableOpacity 
                   style={styles.privacyLinkContainer}
-                  onPress={() => setShowPrivacyModal(true)}
+                  onPress={() => {
+                    // Open privacy policy in web browser
+                    Linking.openURL('https://icumbi.com/privacy')
+                  }}
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.privacyLinkText, { color: theme.primary }]}>
