@@ -133,7 +133,7 @@ Securely creates lease extension requests with validation:
 ## 🚀 Next Steps for Enhancement
 
 ### 1. Payment Integration
-- Connect to IremboPaycallback system
+
 - Implement payment processing for extension fees
 - Add payment confirmation flow
 

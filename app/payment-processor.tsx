@@ -77,9 +77,6 @@ export default function PaymentProcessor({
 
       // SIMULATION MODE: All payment methods are processed as successful
       switch (paymentMethod) {
-        case 'irembopay':
-          await processIremboPayPayment()
-          break
         case 'mtn_momo':
           await processMTNMoMo()
           break
@@ -107,50 +104,7 @@ export default function PaymentProcessor({
     }
   }
 
-  const processIremboPayPayment = async () => {
-    setPaymentState({ 
-      step: 'processing', 
-      message: 'Gukora invoice ya IremboPay...' 
-    })
 
-    try {
-      // SIMULATION MODE: Simulate IremboPay processing
-      console.log('🎯 [MOBILE_PAYMENT_SIMULATION] Simulating IremboPay payment')
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      setPaymentState({ 
-        step: 'processing', 
-        message: 'Gufungura IremboPay checkout...' 
-      })
-
-      // Simulate checkout process
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      setPaymentState({ 
-        step: 'processing', 
-        message: 'Tegereza ubwishyu bwemezwe...' 
-      })
-
-      // Simulate payment completion
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
-      const transactionId = `SIM-IREMBO-${Date.now()}`
-      setPaymentState({
-        step: 'success',
-        message: 'Ubwishyu bwagenze neza na IremboPay! (Simulation)',
-        transactionId
-      })
-      
-      setTimeout(() => {
-        onSuccess()
-      }, 2000)
-      
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : 'IremboPay payment failed')
-    }
-  }
 
   const processMTNMoMo = async () => {
     setPaymentState({
@@ -326,12 +280,6 @@ export default function PaymentProcessor({
 
   const getPaymentMethodInfo = () => {
     switch (paymentMethod) {
-      case 'irembopay':
-        return {
-          name: 'IremboPay',
-          icon: '💳',
-          color: '#667eea'
-        }
       case 'mtn_momo':
         return {
           name: 'MTN Mobile Money',

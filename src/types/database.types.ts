@@ -142,9 +142,6 @@ export interface Payment {
   notes: string | null
   recorded_by: string
   created_at: string
-      // IremboPay-specific fields
-    irembopay_tx_ref?: string | null
-    irembopay_transaction_id?: string | null
   status?: string
   tenant_phone?: string | null
   landlord_phone?: string | null

@@ -21,6 +21,7 @@ Handles the actual payment processing for different payment methods:
 - Airtel Money
 - SPENN
 - Credit Card (Stripe)
+- Bank Transfer
 - Cash
 
 ### 3. DatePicker (`date-picker.tsx`)

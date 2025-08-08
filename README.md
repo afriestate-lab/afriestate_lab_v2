@@ -25,7 +25,7 @@ A comprehensive React Native mobile application for property management, built w
 - **UI Components**: React Native Paper
 - **State Management**: React Context API
 - **TypeScript**: Full type safety
-- **Payment Integration**: IremboPay, MTN MoMo, Flutterwave
+- **Payment Integration**: MTN MoMo, Airtel Money, Bank Transfer, Cards
 
 ## 🛠️ Prerequisites
 
@@ -101,9 +101,10 @@ EXPO_PUBLIC_SUPER_ADMIN_PHONE=+250780566973
 ### Payment Integration
 
 The app supports multiple payment methods:
-- **IremboPay**: Rwandan government payment system
 - **MTN MoMo**: Mobile money payments
-- **Flutterwave**: International payments
+- **Airtel Money**: Mobile money payments
+- **Bank Transfer**: Traditional banking
+- **Cards**: Credit/Debit card payments
 - **Cash**: Manual payment recording
 
 ## 📱 App Structure
@@ -157,10 +158,10 @@ The app supports multiple authentication methods:
 ## 💰 Payment System
 
 ### Supported Payment Methods
-- **IremboPay**: Government services integration
 - **MTN MoMo**: Mobile money
 - **Airtel Money**: Mobile money
 - **Bank Transfer**: Traditional banking
+- **Cards**: Credit/Debit card payments
 - **Cash**: Manual recording
 
 ### Payment Features

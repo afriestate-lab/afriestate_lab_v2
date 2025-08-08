@@ -1492,7 +1492,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                       <TextInput
                         value={checkInDate}
                         onChangeText={(date) => handleDateChange('checkIn', date)}
-                        placeholder="01/01/2024"
+                        placeholder="18/08/2025"
                         keyboardType="numeric"
                         style={{
                           borderWidth: 1,
@@ -1511,7 +1511,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                       <TextInput
                         value={checkOutDate}
                         onChangeText={(date) => handleDateChange('checkOut', date)}
-                        placeholder="01/02/2024"
+                        placeholder="18/08/2025"
                         keyboardType="numeric"
                         style={{
                           borderWidth: 1,

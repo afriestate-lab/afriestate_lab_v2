@@ -14,7 +14,7 @@ interface LanguageOption {
 const languages: LanguageOption[] = [
   {
     code: 'rw',
-    name: 'Kinyarwanda',
+    name: 'Ikinyarwanda',
     flag: '🇷🇼',
     nativeName: 'Ikinyarwanda'
   },
@@ -53,11 +53,11 @@ export default function LanguageSelector({ size = 'medium', showText = false }: 
   const getSizeStyles = () => {
     switch (size) {
       case 'small':
-        return { fontSize: 16, padding: 6 }
+        return { fontSize: 14, padding: 4 }
       case 'large':
-        return { fontSize: 24, padding: 10 }
+        return { fontSize: 22, padding: 8 }
       default:
-        return { fontSize: 20, padding: 8 }
+        return { fontSize: 18, padding: 6 }
     }
   }
 
@@ -101,8 +101,11 @@ export default function LanguageSelector({ size = 'medium', showText = false }: 
           <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: theme.text }]}>Select Language</Text>
-              <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                <Ionicons name="close" size={24} color={theme.textSecondary} />
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={() => setIsModalVisible(false)}
+              >
+                <Ionicons name="close" size={18} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -114,7 +117,7 @@ export default function LanguageSelector({ size = 'medium', showText = false }: 
                     styles.languageOption,
                     {
                       backgroundColor: currentLanguage === language.code ? theme.primary : theme.surfaceVariant,
-                      borderColor: theme.border
+                      borderColor: currentLanguage === language.code ? theme.primary : theme.border
                     }
                   ]}
                   onPress={() => handleLanguageChange(language.code)}
@@ -127,17 +130,13 @@ export default function LanguageSelector({ size = 'medium', showText = false }: 
                       styles.languageName,
                       { color: currentLanguage === language.code ? 'white' : theme.text }
                     ]}>
-                      {language.nativeName}
-                    </Text>
-                    <Text style={[
-                      styles.languageSubtext,
-                      { color: currentLanguage === language.code ? 'rgba(255,255,255,0.8)' : theme.textSecondary }
-                    ]}>
                       {language.name}
                     </Text>
                   </View>
                   {currentLanguage === language.code && (
-                    <Ionicons name="checkmark" size={20} color="white" />
+                    <View style={styles.checkmarkContainer}>
+                      <Ionicons name="checkmark" size={16} color="white" />
+                    </View>
                   )}
                 </TouchableOpacity>
               ))}
@@ -153,12 +152,12 @@ const styles = StyleSheet.create({
   flagButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    gap: 4
+    gap: 3
   },
   flag: {
-    fontSize: 20
+    fontSize: 18
   },
   languageText: {
     fontWeight: '600'
@@ -167,7 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    backgroundColor: 'rgba(0, 0, 0, 0.4)'
   },
   modalBackdrop: {
     position: 'absolute',
@@ -177,49 +176,61 @@ const styles = StyleSheet.create({
     bottom: 0
   },
   modalContent: {
-    width: '80%',
-    maxWidth: 300,
-    borderRadius: 16,
-    padding: 20,
-    elevation: 5,
+    width: '75%',
+    maxWidth: 280,
+    borderRadius: 20,
+    padding: 16,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 16
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '600'
+    fontSize: 16,
+    fontWeight: '700'
+  },
+  closeButton: {
+    padding: 4,
+    borderRadius: 12
   },
   languageList: {
-    gap: 12
+    gap: 8
   },
   languageOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 12
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    gap: 10
   },
   languageFlag: {
-    fontSize: 20
+    fontSize: 18
   },
   languageInfo: {
     flex: 1
   },
   languageName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600'
   },
   languageSubtext: {
-    fontSize: 14,
-    marginTop: 2
+    fontSize: 13,
+    marginTop: 1
+  },
+  checkmarkContainer: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 }) 

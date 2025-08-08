@@ -66,13 +66,6 @@ interface PaymentDetails {
 
 const paymentMethods = [
   {
-    id: 'irembopay',
-    name: 'IremboPay - Guhuza byose',
-    icon: '💳',
-    color: '#667eea',
-    description: 'MTN, Airtel, Banks, Cards'
-  },
-  {
     id: 'mtn_momo',
     name: 'MTN Mobile Money',
     icon: '📱',
