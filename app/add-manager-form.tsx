@@ -4,6 +4,7 @@ import { Text, Button, Card } from 'react-native-paper'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/lib/languageContext'
 import { API_ENDPOINTS, config } from '@/config'
 
 interface AddManagerFormProps {
@@ -18,6 +19,7 @@ interface Property {
 }
 
 export default function AddManagerForm({ onBack, onSuccess }: AddManagerFormProps) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [loadingProperties, setLoadingProperties] = useState(true)
   const [formData, setFormData] = useState({
@@ -40,7 +42,7 @@ export default function AddManagerForm({ onBack, onSuccess }: AddManagerFormProp
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
-        Alert.alert('Ikosa', 'Ntiwashoboye kumenya uwowe. Ongera ukinjire.')
+        Alert.alert(t('alertError'), t('unableDetermineUser'))
         return
       }
 
@@ -52,7 +54,7 @@ export default function AddManagerForm({ onBack, onSuccess }: AddManagerFormProp
 
       if (propertiesError) {
         console.error('Properties fetch error:', propertiesError)
-        Alert.alert('Ikosa', 'Ntiyashoboye gushaka inyubako zawe.')
+        Alert.alert(t('alertError'), t('unableFetchProperties'))
         return
       }
 
@@ -60,7 +62,7 @@ export default function AddManagerForm({ onBack, onSuccess }: AddManagerFormProp
 
     } catch (error) {
       console.error('Error fetching properties:', error)
-      Alert.alert('Ikosa', 'Habaye ikosa mu gushaka inyubako.')
+      Alert.alert(t('alertError'), t('unableFetchProperties'))
     } finally {
       setLoadingProperties(false)
     }
@@ -68,29 +70,29 @@ export default function AddManagerForm({ onBack, onSuccess }: AddManagerFormProp
 
   const validateForm = () => {
     if (!formData.full_name.trim()) {
-      Alert.alert('Ikosa', 'Andika amazina yuzuye')
+      Alert.alert(t('alertError'), t('fullName'))
       return false
     }
     
     if (!formData.id_number.trim()) {
-      Alert.alert('Ikosa', 'Andika nomero y\'indangamuntu')
+      Alert.alert(t('alertError'), 'ID number is required')
       return false
     }
 
     if (!formData.email.trim()) {
-      Alert.alert('Ikosa', 'Andika aderesi ya imeri')
+      Alert.alert(t('alertError'), t('email'))
       return false
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email.trim())) {
-      Alert.alert('Ikosa', 'Andika aderesi ya imeri nyayo')
+      Alert.alert(t('alertError'), 'Please enter a valid email')
       return false
     }
 
     if (!formData.property_id) {
-      Alert.alert('Ikosa', 'Hitamo inyubako azayobora')
+      Alert.alert(t('alertError'), t('properties'))
       return false
     }
 
@@ -105,7 +107,7 @@ export default function AddManagerForm({ onBack, onSuccess }: AddManagerFormProp
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
-        Alert.alert('Ikosa', 'Ntiwashoboye kumenya uwowe. Ongera ukinjire.')
+        Alert.alert(t('alertError'), t('unableDetermineUser'))
         return
       }
 

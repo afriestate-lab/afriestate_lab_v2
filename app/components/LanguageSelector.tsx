@@ -32,7 +32,7 @@ interface LanguageSelectorProps {
 }
 
 export default function LanguageSelector({ size = 'medium', showText = false }: LanguageSelectorProps) {
-  const { currentLanguage, changeLanguage } = useLanguage()
+  const { currentLanguage, changeLanguage, t } = useLanguage()
   const { theme } = useTheme()
   const [isModalVisible, setIsModalVisible] = React.useState(false)
 
@@ -42,9 +42,9 @@ export default function LanguageSelector({ size = 'medium', showText = false }: 
     if (languageCode !== currentLanguage) {
       changeLanguage(languageCode)
       Alert.alert(
-        'Language Changed',
-        `Language changed to ${languageCode === 'rw' ? 'Kinyarwanda' : 'English'}`,
-        [{ text: 'OK' }]
+        t('languageChanged'),
+        `${t('languageChangedTo')} ${languageCode === 'rw' ? t('languageKinyarwanda') : t('languageEnglish')}`,
+        [{ text: t('confirm') }]
       )
     }
     setIsModalVisible(false)
@@ -100,7 +100,7 @@ export default function LanguageSelector({ size = 'medium', showText = false }: 
           />
           <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Select Language</Text>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>{t('selectLanguage')}</Text>
               <TouchableOpacity 
                 style={styles.closeButton}
                 onPress={() => setIsModalVisible(false)}

@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { supabase } from '../src/lib/supabase'
 import { formatDate } from '../src/lib/helpers'
+import { useLanguage } from '@/lib/languageContext'
 
 interface User {
   id: string
@@ -40,6 +41,7 @@ export default function AdminUsersPage({ onBack }: AdminUsersPageProps) {
   const [refreshing, setRefreshing] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState<'all' | 'landlord' | 'manager' | 'tenant' | 'admin'>('all')
+  const { t } = useLanguage()
 
   useEffect(() => {
     fetchAllUsers()
@@ -72,7 +74,7 @@ export default function AdminUsersPage({ onBack }: AdminUsersPageProps) {
       setUsers(transformedUsers)
     } catch (error) {
       console.error('Error fetching users:', error)
-      Alert.alert('Ikosa', 'Ntibyashoboye gukura abakoresha bose.')
+      Alert.alert(t('alertError'), t('unableFetchAllUsers'))
     } finally {
       setLoading(false)
     }

@@ -4,6 +4,7 @@ import { Text, Button, Card, Checkbox } from 'react-native-paper'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/lib/languageContext'
 import { formatCurrency } from '@/lib/helpers'
 
 interface AddPaymentFormProps {
@@ -28,6 +29,7 @@ interface Tenant {
 }
 
 export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProps) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [loadingTenants, setLoadingTenants] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -71,7 +73,7 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
-        Alert.alert('Ikosa', 'Ntiwashoboye kumenya uwowe. Ongera ukinjire.')
+        Alert.alert(t('alertError'), t('unableDetermineUser'))
         return
       }
 
@@ -83,7 +85,7 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
 
       if (propertiesError) {
         console.error('Properties error:', propertiesError)
-        Alert.alert('Ikosa', 'Ntiyashoboye gushaka inyubako zawe.')
+        Alert.alert(t('alertError'), t('unableFetchProperties'))
         return
       }
 
@@ -94,25 +96,43 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
 
       const propertyIds = properties?.map((p: any) => p.id) || []
 
-      // Get rooms for these properties
-      const { data: rooms, error: roomsError } = await supabase
-        .from('rooms')
-        .select('id')
-        .in('property_id', propertyIds)
-        .is('deleted_at', null)
-
-      if (roomsError) {
-        console.error('Rooms error:', roomsError)
-        Alert.alert('Ikosa', 'Ntiyashoboye gushaka ibyumba.')
+      // Get rooms for these properties using RPC to avoid RLS issues
+      let allRooms: any[] = []
+      
+      try {
+        // Call RPC for each property to get rooms
+        const roomPromises = propertyIds.map(propertyId => 
+          supabase.rpc('get_property_rooms', {
+            p_property_id: propertyId
+          })
+        )
+        
+        const roomResults = await Promise.all(roomPromises)
+        
+        // Check for errors and collect all rooms
+        for (const result of roomResults) {
+          if (result.error) {
+            console.error('Rooms error:', result.error)
+            Alert.alert(t('alertError'), t('unableFetchRooms'))
+            return
+          }
+          if (result.data) {
+            allRooms.push(...result.data)
+          }
+        }
+        
+      } catch (error) {
+        console.error('Error fetching rooms:', error)
+        Alert.alert(t('alertError'), t('unableFetchRooms'))
         return
       }
 
-      if (!rooms || rooms.length === 0) {
+      if (allRooms.length === 0) {
         setAllTenants([])
         return
       }
 
-      const roomIds = rooms.map(r => r.id)
+      const roomIds = allRooms.map(r => r.id)
 
       // Get tenants with their room assignments
       const { data: tenantData, error: tenantError } = await supabase

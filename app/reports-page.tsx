@@ -166,17 +166,30 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ onBack, userProfile }) => {
         return
       }
       
-      const [roomsResponse, paymentsResponse, tenantsResponse] = await Promise.all([
-        supabase
-          .from('rooms')
-          .select(`
-            *, 
-            room_tenants!left(
-              id, is_active, move_in_date,
-              tenants(id, full_name)
-            )
-          `)
-          .in('property_id', propertyIds),
+      // Get rooms data using RPC to avoid RLS issues
+      let allRoomsWithTenants: any[] = []
+      
+      try {
+        const roomPromises = propertyIds.map(propertyId => 
+          supabase.rpc('get_property_rooms', {
+            p_property_id: propertyId
+          })
+        )
+        
+        const roomResults = await Promise.all(roomPromises)
+        
+        for (const result of roomResults) {
+          if (result.data) {
+            allRoomsWithTenants.push(...result.data)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching rooms for reports:', error)
+      }
+      
+      const roomsResponse = { data: allRoomsWithTenants, error: null }
+      
+      const [paymentsResponse, tenantsResponse] = await Promise.all([
         
         supabase
           .from('payments')

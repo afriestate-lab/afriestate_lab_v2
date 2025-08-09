@@ -15,7 +15,7 @@ const { width } = Dimensions.get('window');
 
 export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onSuccess?: () => void, onClose?: () => void, onShowSignUp?: () => void } = {}) {
   const navigation = useNavigation()
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   
   const ROLES = [
     { label: t('tenant'), value: 'tenant' },
@@ -333,13 +333,31 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
         return;
       }
 
-      const data = await apiResponse.json();
-      console.log('✅ API Response:', data);
-
-      if (data.success) {
-        setResetMessage(data.message || 'Ubutumwa bwoherejwe kuri telefoni/imeri yawe ya konti.');
-      } else {
-        setResetMessage(data.error || 'Ntibyashoboye kohereza ubutumwa bwo guhindura ijambo ry\'ibanga.');
+      // Get response text first to avoid "Already read" error
+      const responseText = await apiResponse.text();
+      console.log('📡 Raw response text:', responseText);
+      
+      let data;
+      try {
+        // Try to parse as JSON only if response looks like JSON
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+          data = JSON.parse(responseText);
+          console.log('✅ Parsed API Response:', data);
+          
+          if (data.success) {
+            setResetMessage(data.message || 'Ubutumwa bwoherejwe kuri telefoni/imeri yawe ya konti.');
+          } else {
+            setResetMessage(data.error || 'Ntibyashoboye kohereza ubutumwa bwo guhindura ijambo ry\'ibanga.');
+          }
+        } else {
+          // Non-JSON response (likely HTML error page)
+          console.error('❌ Received non-JSON response:', responseText);
+          setResetMessage('Serivisi ntabwo ikora. Nyamuneka gerageza ongera.');
+        }
+      } catch (parseError) {
+        console.error('❌ Failed to parse reset response:', parseError);
+        console.error('❌ Response text was:', responseText);
+        setResetMessage('Habaye ikosa mu guhindura ijambo ry\'ibanga.');
       }
           } catch (error: any) {
         console.error('❌ Password reset error:', error);
@@ -382,7 +400,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           <View style={styles.logoContainer}>
             <IcumbiLogo width={60} height={60} />
           </View>
-          <Text style={styles.title}>Murakaza neza</Text>
+          <Text style={styles.title}>{currentLanguage === 'en' ? 'Welcome' : 'Murakaza neza'}</Text>
           {/* Role Dropdown */}
           <TouchableOpacity style={styles.dropdown} onPress={() => setRoleModal(true)}>
             <Text style={styles.dropdownText}>{ROLES.find(r => r.value === role)?.label}</Text>
@@ -418,14 +436,14 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           {/* Inputs */}
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
             <TouchableOpacity onPress={() => setIdentifierType('phone')} style={{ marginRight: 16 }}>
-              <Text style={{ fontWeight: identifierType === 'phone' ? 'bold' : 'normal', color: '#333' }}>Telefone</Text>
+              <Text style={{ fontWeight: identifierType === 'phone' ? 'bold' : 'normal', color: '#333' }}>{t('phoneNumber')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setIdentifierType('email')}>
-              <Text style={{ fontWeight: identifierType === 'email' ? 'bold' : 'normal', color: '#333' }}>Imeri</Text>
+              <Text style={{ fontWeight: identifierType === 'email' ? 'bold' : 'normal', color: '#333' }}>{t('email')}</Text>
             </TouchableOpacity>
           </View>
           <TextInput
-            label={identifierType === 'phone' ? 'Numero ya telefone' : 'Imeri'}
+            label={identifierType === 'phone' ? t('phoneNumber') : t('email')}
             value={identifier}
             onChangeText={setIdentifier}
             keyboardType={identifierType === 'phone' ? 'phone-pad' : 'email-address'}
@@ -436,7 +454,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
             theme={{ colors: { primary: '#2563eb', text: '#333', placeholder: '#666' } }}
           />
           <TextInput
-            label="Ijambo ry'ibanga"
+            label={t('password')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -455,7 +473,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
             }} 
             style={{ marginBottom: 4, alignSelf: 'flex-end' }}
           >
-            <Text style={styles.forgotText}>Wibagiwe ijambo ry&apos;ibanga?</Text>
+            <Text style={styles.forgotText}>{t('forgotPassword')}</Text>
           </TouchableOpacity>
           <HelperText type="error" visible={!!error}>{error}</HelperText>
           {/* Sign In Button */}
@@ -468,14 +486,14 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
             contentStyle={styles.gradientBtnContent}
             labelStyle={styles.gradientBtnLabel}
           >
-            Injira
+            {t('signIn')}
           </Button>
           
 
           
           {/* Sign Up Link */}
           <View style={styles.signupRow}>
-            <Text style={styles.signupText}>Nta konti ufite? </Text>
+            <Text style={styles.signupText}>{currentLanguage === 'en' ? "Don't have an account? " : 'Nta konti ufite? '}</Text>
             <TouchableOpacity 
               style={styles.signupTouchable}
               activeOpacity={0.7}
@@ -497,7 +515,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
                 }
               }}
             >
-              <Text style={styles.signupLink}>Fungura konti</Text>
+                <Text style={styles.signupLink}>{currentLanguage === 'en' ? 'Create Account' : 'Fungura konti'}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -516,7 +534,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
                     <View style={styles.modalOverlay}>
             <View style={styles.modal}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <Text style={styles.resetTitle}>Subiza Ijambo Banga</Text>
+                <Text style={styles.resetTitle}>{currentLanguage === 'en' ? 'Reset Password' : 'Subiza Ijambo Banga'}</Text>
                 <TouchableOpacity 
                   onPress={() => {
                     console.log('🔘 Close button clicked');
@@ -540,7 +558,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
               styles.resetToggleText,
               resetIdentifierType === 'email' && styles.resetToggleTextActive
             ]}>
-              Imeyili
+              {currentLanguage === 'en' ? 'Email' : 'Imeyili'}
             </Text>
           </TouchableOpacity>
           
@@ -555,14 +573,14 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
               styles.resetToggleText,
               resetIdentifierType === 'phone' && styles.resetToggleTextActive
             ]}>
-              Telefoni
+              {currentLanguage === 'en' ? 'Phone' : 'Telefoni'}
             </Text>
           </TouchableOpacity>
         </View>
 
         <TextInput
           mode="outlined"
-          label={resetIdentifierType === 'email' ? "Imeyili" : "Telefoni"}
+          label={resetIdentifierType === 'email' ? (currentLanguage === 'en' ? 'Email' : 'Imeyili') : (currentLanguage === 'en' ? 'Phone' : 'Telefoni')}
           value={resetIdentifier}
           onChangeText={setResetIdentifier}
           style={styles.input}
@@ -578,7 +596,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           loading={resetLoading}
           disabled={resetLoading || !resetIdentifier}
         >
-          Ohereza
+          {currentLanguage === 'en' ? 'Send' : 'Ohereza'}
         </Button>
         {resetMessage ? (
           <Text style={{ color: '#2563eb', textAlign: 'center', marginTop: 10 }}>

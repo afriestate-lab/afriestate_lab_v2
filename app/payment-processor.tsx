@@ -57,15 +57,33 @@ export default function PaymentProcessor({
   const [phoneNumber, setPhoneNumber] = useState(userPhone || '')
 
   useEffect(() => {
-    if (visible) {
-      setPaymentState({
-        step: 'processing',
-        message: 'Gutegura ubwishyu...'
-      })
-      setPhoneNumber(userPhone || '')
+    if (!visible) return
+    setPaymentState({
+      step: 'processing',
+      message: 'Gutegura ubwishyu...'
+    })
+    setPhoneNumber(userPhone || '')
+
+    const needsPhone = paymentMethod === 'mtn_momo' || paymentMethod === 'airtel_money'
+    const hasPhone = !!(userPhone && userPhone.trim())
+
+    // For methods that require a phone number, wait until the user provides it
+    if (needsPhone && !hasPhone) {
+      return
+    }
+
+    processPayment()
+  }, [visible, paymentMethod])
+
+  // When the user provides a phone number for MoMo/Airtel, automatically start processing
+  useEffect(() => {
+    if (!visible) return
+    const needsPhone = paymentMethod === 'mtn_momo' || paymentMethod === 'airtel_money'
+    if (!needsPhone) return
+    if (phoneNumber && phoneNumber.trim().length >= 9 && paymentState.step === 'processing') {
       processPayment()
     }
-  }, [visible, paymentMethod])
+  }, [phoneNumber])
 
   const processPayment = async () => {
     try {
@@ -337,6 +355,19 @@ export default function PaymentProcessor({
             placeholder={paymentMethod === 'mtn_momo' ? '0780123456' : '0730123456'}
             dense
           />
+          <Button
+            mode="contained"
+            style={{ marginTop: 12 }}
+            onPress={() => {
+              if (!phoneNumber.trim()) {
+                setPaymentState({ step: 'error', message: 'Uzuza nimero ya telefoni' } as any)
+                return
+              }
+              processPayment()
+            }}
+          >
+            Tangira Kwishyura
+          </Button>
         </View>
       )}
     </View>

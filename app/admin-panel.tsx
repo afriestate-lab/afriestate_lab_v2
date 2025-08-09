@@ -192,11 +192,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onRefresh, use
         return []
       }
 
-      // Get room IDs for those properties
-      const { data: roomIds } = await supabase
-        .from('rooms')
-        .select('id')
-        .in('property_id', propertyIds.map(p => p.id))
+      // Get room IDs for those properties using RPC to avoid RLS issues
+      let allRoomIds: any[] = []
+      
+      try {
+        const roomPromises = propertyIds.map(p => 
+          supabase.rpc('get_property_rooms', {
+            p_property_id: p.id
+          })
+        )
+        
+        const roomResults = await Promise.all(roomPromises)
+        
+        for (const result of roomResults) {
+          if (result.data) {
+            allRoomIds.push(...result.data.map((room: any) => ({ id: room.id })))
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error)
+      }
+      
+      const roomIds = allRoomIds
 
       if (!roomIds || roomIds.length === 0) {
         setTenants([])

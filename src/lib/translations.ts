@@ -73,6 +73,9 @@ export interface Translations {
   terms: string
   privacyPolicy: string
 
+  // Generic UI
+  selectLanguage: string
+
   // Properties
   property: string
   properties: string
@@ -155,6 +158,7 @@ export interface Translations {
   messages: string
   newMessage: string
   sendMessage: string
+  reply: string
   messageSubject: string
   messageBody: string
   messageRecipient: string
@@ -164,6 +168,7 @@ export interface Translations {
   messageUnread: string
   messageRead: string
   messageReplied: string
+  noMessages: string
 
   // Roles
   roleTenant: string
@@ -279,6 +284,7 @@ export interface Translations {
   recentPayments: string
   receiptNumber: string
   recentActivities: string
+  loadingActivities: string
   reservationHistory: string
   noReservations: string
   messageHistory: string
@@ -297,8 +303,55 @@ export interface Translations {
   sendMessageAccessibility: string
   sendMessageHint: string
   requestExtensionModal: string
+  
+  // Additional login and welcome texts
+  loginBeforeAsk: string
+  loginBeforeAskMessage: string
+  closeButton: string
+  loginButton: string
+  welcomeToIcumbi: string
+  welcomeToContinueMessage: string
+  addPropertyTitle: string
+  addPropertyMessage: string
+  closeDialog: string
+  goToDashboardButton: string
+  sendMessageTitle: string
+  sendMessageDescription: string
+  addOptionsTitle: string
+  addOptionsQuestion: string
+  propertyOption: string
+  messageOption: string
   requestExtensionAccessibility: string
   requestExtensionHint: string
+
+  // Common error/success messages (app-specific)
+  unableDetermineUser: string
+  unableFetchProperties: string
+  unableFetchRooms: string
+  unableFetchTenants: string
+  errorFetchingTenants: string
+  mustSelectTenant: string
+  mustSelectAtLeastOneRoom: string
+  enterPaymentAmount: string
+  selectPaymentDate: string
+  selectNextDueDate: string
+  paymentApprovedSuccess: string
+  unableApprovePayment: string
+  noAuthAccess: string
+  noUserInfoAvailable: string
+  errorFetchingYourInfo: string
+  unableFetchAllPayments: string
+  unableFetchAllUsers: string
+
+  // Activities / Filters / Relative time
+  all: string
+  managers: string
+  noActivitiesFound: string
+  activitiesHelp: string
+  momentsAgo: string
+  minutesAgoSuffix: string
+  hoursAgoSuffix: string
+  daysAgoSuffix: string
 }
 
 export const translations: Record<Language, Translations> = {
@@ -372,6 +425,9 @@ export const translations: Record<Language, Translations> = {
     contact: 'Twandikire',
     terms: 'Amabwiriza',
     privacyPolicy: 'Politiki y\'ibitugu',
+
+    // Generic UI
+    selectLanguage: 'Hitamo Ururimi',
 
     // Properties
     property: 'Inyubako',
@@ -455,6 +511,7 @@ export const translations: Record<Language, Translations> = {
     messages: 'Ubutumwa',
     newMessage: 'Ubutumwa bushya',
     sendMessage: 'Ohereza ubutumwa',
+    reply: 'Igisubizo',
     messageSubject: 'Icyo ubutumwa buvuga',
     messageBody: 'Inyandiko y\'ubutumwa',
     messageRecipient: 'Uwo ubutumwa buhererwa',
@@ -464,6 +521,7 @@ export const translations: Record<Language, Translations> = {
     messageUnread: 'Ubutumwa butasomwe',
     messageRead: 'Ubutumwa busomwe',
     messageReplied: 'Ubutumwa buhagaze',
+    noMessages: 'Nta butumwa',
 
     // Roles
     roleTenant: 'Umukode',
@@ -579,6 +637,7 @@ export const translations: Record<Language, Translations> = {
     recentPayments: 'Kwishyura biheruka',
     receiptNumber: 'Inyemezabwishyu:',
     recentActivities: 'Ibikorwa biheruka',
+    loadingActivities: 'Gukurura ibikorwa...',
     reservationHistory: 'Amateka ya rezervasiyo',
     noReservations: 'Nta rezervasiyo zihari',
     messageHistory: 'Amateka y\'ubutumwa',
@@ -599,6 +658,53 @@ export const translations: Record<Language, Translations> = {
     requestExtensionModal: 'Saba kongera igihe',
     requestExtensionAccessibility: 'Ohereza icyifuzo cyo kongera igihe',
     requestExtensionHint: 'Kanda kugira ngo wohereze icyifuzo cyo kongera igihe kuri nyirinyubako',
+    
+    // Additional login and welcome texts
+    loginBeforeAsk: 'Injira mbere',
+    loginBeforeAskMessage: 'Ugomba kwinjira mbere yo kubaza ibibazo ku nyubako.',
+    closeButton: 'Siba',
+    loginButton: 'Injira',
+    welcomeToIcumbi: 'Murakaza neza kuri Icumbi!',
+    welcomeToContinueMessage: 'Kugira ngo ukomeze, reba inyubako zacu ziri kuri Ahabanza cyangwa ujya kuri Konti wenyine urebe amakuru yawe.',
+    addPropertyTitle: 'Ongeramo Inyubako',
+    addPropertyMessage: 'Kugira ngo wongeramo inyubako, ugomba kujya kuri website ya Icumbi.com cyangwa ukoreshe dashboard ya landlord.',
+    closeDialog: 'Siba',
+    goToDashboardButton: 'Jya kuri Dashibodi',
+    sendMessageTitle: 'Ohereza Ubutumwa',
+    sendMessageDescription: 'Kugira ngo wohereze ubutumwa, jya kuri Dashboard (Dashibodi) maze uhitamo "Ubutumwa".',
+    addOptionsTitle: 'Hitamo icyo ushaka kongeraho',
+    addOptionsQuestion: 'Ni iki ushaka kongeraho kuri Icumbi?',
+    propertyOption: 'Inyubako',
+    messageOption: 'Ubutumwa',
+    
+    // Common error/success messages (app-specific)
+    unableDetermineUser: 'Ntiwashoboye kumenya uwowe. Ongera ukinjire.',
+    unableFetchProperties: 'Ntiyashoboye gushaka inyubako zawe.',
+    unableFetchRooms: 'Ntiyashoboye gushaka ibyumba.',
+    unableFetchTenants: 'Ntiyashoboye gushaka abakodesha.',
+    errorFetchingTenants: 'Habaye ikosa mu gushaka abakodesha.',
+    mustSelectTenant: 'Hitamo umukodesha',
+    mustSelectAtLeastOneRoom: 'Hitamo byibura icyumba kimwe',
+    enterPaymentAmount: 'Andika amafaranga yishyuwe',
+    selectPaymentDate: 'Hitamo itariki y\'ubwishyu',
+    selectNextDueDate: 'Hitamo itariki ikurikira y\'ubwishyu',
+    paymentApprovedSuccess: 'Ubwishyu bwemejwe neza.',
+    unableApprovePayment: 'Ntibyashoboye kwemeza ubwishyu.',
+    noAuthAccess: 'Nta bucukumbuzi bwemerewe busanganywe.',
+    noUserInfoAvailable: 'Nta makuru y\'umukoresha asanganywe.',
+    errorFetchingYourInfo: 'Hari ikosa ryabaye mu gushaka amakuru yawe.',
+    unableFetchAllPayments: 'Ntibyashoboye gukura ubwishyu bwose.',
+    unableFetchAllUsers: 'Ntibyashoboye gukura abakoresha bose.',
+
+    // Activities / Filters / Relative time
+    all: 'Byose',
+    managers: 'Abayobozi',
+    noActivitiesFound: 'Nta bikorwa bibonetse',
+    activitiesHelp: 'Ibikorwa bizagaragara hano igihe cyose ucuruza ubukode.',
+    momentsAgo: 'Hashize gato',
+    minutesAgoSuffix: 'iminota ishize',
+    hoursAgoSuffix: 'isaha ishize',
+    daysAgoSuffix: 'umunsi ushize',
   },
   en: {
     // Common
@@ -670,6 +776,9 @@ export const translations: Record<Language, Translations> = {
     contact: 'Contact',
     terms: 'Terms',
     privacyPolicy: 'Privacy Policy',
+
+    // Generic UI
+    selectLanguage: 'Select Language',
 
     // Properties
     property: 'Property',
@@ -753,6 +862,7 @@ export const translations: Record<Language, Translations> = {
     messages: 'Messages',
     newMessage: 'New Message',
     sendMessage: 'Send Message',
+    reply: 'Reply',
     messageSubject: 'Message Subject',
     messageBody: 'Message Body',
     messageRecipient: 'Message Recipient',
@@ -762,6 +872,7 @@ export const translations: Record<Language, Translations> = {
     messageUnread: 'Message Unread',
     messageRead: 'Message Read',
     messageReplied: 'Message Replied',
+    noMessages: 'No messages',
 
     // Roles
     roleTenant: 'Tenant',
@@ -877,6 +988,7 @@ export const translations: Record<Language, Translations> = {
     recentPayments: 'Recent Payments',
     receiptNumber: 'Receipt:',
     recentActivities: 'Recent Activities',
+    loadingActivities: 'Loading activities...',
     reservationHistory: 'Reservation History',
     noReservations: 'No reservations available',
     messageHistory: 'Message History',
@@ -897,6 +1009,53 @@ export const translations: Record<Language, Translations> = {
     requestExtensionModal: 'Request Extension',
     requestExtensionAccessibility: 'Send extension request',
     requestExtensionHint: 'Tap to send extension request to landlord',
+    
+    // Additional login and welcome texts
+    loginBeforeAsk: 'Login Required',
+    loginBeforeAskMessage: 'You need to login before asking questions about this property.',
+    closeButton: 'Close',
+    loginButton: 'Login',
+    welcomeToIcumbi: 'Welcome to Icumbi!',
+    welcomeToContinueMessage: 'To continue, view our properties on the Home tab or go to your Profile to see your information.',
+    addPropertyTitle: 'Add Property',
+    addPropertyMessage: 'To add a property, you need to go to the Icumbi.com website or use the landlord dashboard.',
+    closeDialog: 'Close',
+    goToDashboardButton: 'Go to Dashboard',
+    sendMessageTitle: 'Send Message',
+    sendMessageDescription: 'To send a message, go to Dashboard and select "Messages".',
+    addOptionsTitle: 'Choose what to add',
+    addOptionsQuestion: 'What would you like to add to Icumbi?',
+    propertyOption: 'Property',
+    messageOption: 'Message',
+    
+    // Common error/success messages (app-specific)
+    unableDetermineUser: 'Could not determine your session. Please sign in again.',
+    unableFetchProperties: 'Unable to fetch your properties.',
+    unableFetchRooms: 'Unable to fetch rooms.',
+    unableFetchTenants: 'Unable to fetch tenants.',
+    errorFetchingTenants: 'An error occurred while fetching tenants.',
+    mustSelectTenant: 'Please select a tenant',
+    mustSelectAtLeastOneRoom: 'Please select at least one room',
+    enterPaymentAmount: 'Please enter payment amount',
+    selectPaymentDate: 'Please select payment date',
+    selectNextDueDate: 'Please select next due date',
+    paymentApprovedSuccess: 'Payment approved successfully.',
+    unableApprovePayment: 'Unable to approve payment.',
+    noAuthAccess: 'No authorized access available.',
+    noUserInfoAvailable: 'No user info available.',
+    errorFetchingYourInfo: 'An error occurred while fetching your info.',
+    unableFetchAllPayments: 'Unable to fetch all payments.',
+    unableFetchAllUsers: 'Unable to fetch users.',
+
+    // Activities / Filters / Relative time
+    all: 'All',
+    managers: 'Managers',
+    noActivitiesFound: 'No activities found',
+    activitiesHelp: 'Activities will appear here as you use the app.',
+    momentsAgo: 'Just now',
+    minutesAgoSuffix: 'minutes ago',
+    hoursAgoSuffix: 'hours ago',
+    daysAgoSuffix: 'days ago',
   },
 }
 

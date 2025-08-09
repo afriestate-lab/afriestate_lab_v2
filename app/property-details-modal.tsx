@@ -149,12 +149,11 @@ export default function PropertyDetailsModal({
         .eq('id', propertyId)
         .single()
       if (propertyError) throw propertyError
-      // Fetch rooms for this property
+      // Fetch rooms for this property using RPC to avoid RLS issues
       const { data: roomsData } = await supabase
-        .from('rooms')
-        .select('*')
-        .eq('property_id', propertyId)
-        .order('room_number', { ascending: true })
+        .rpc('get_property_rooms', {
+          p_property_id: propertyId
+        })
       // Collect all images: featured, property_images, and all room images
       let images: string[] = []
       
@@ -842,11 +841,11 @@ export default function PropertyDetailsModal({
             onPress={() => {
               if (!user) {
                 Alert.alert(
-                  '🔒 Injira mbere',
-                  'Ugomba kwinjira mbere yo kubaza ibibazo ku nyubako.',
+                  `🔒 ${t('loginBeforeAsk')}`,
+                  t('loginBeforeAskMessage'),
                   [
-                    { text: 'Siba', style: 'cancel' },
-                    { text: '👤 Injira', onPress: () => router.push('/auth/sign-in') }
+                    { text: t('closeButton'), style: 'cancel' },
+                    { text: `👤 ${t('loginButton')}`, onPress: () => router.push('/auth/sign-in') }
                   ]
                 )
                 return
@@ -869,11 +868,11 @@ export default function PropertyDetailsModal({
             onPress={() => {
               if (!user) {
                 Alert.alert(
-                  '🔒 Injira mbere',
-                  'Ugomba kwinjira mbere yo gufata booking.',
+                  `🔒 ${t('loginBeforeAsk')}`,
+                  t('loginBeforeAskMessage'),
                   [
-                    { text: 'Siba', style: 'cancel' },
-                    { text: '👤 Injira', onPress: () => router.push('/auth/sign-in') }
+                    { text: t('closeButton'), style: 'cancel' },
+                    { text: `👤 ${t('loginButton')}`, onPress: () => router.push('/auth/sign-in') }
                   ]
                 )
                 return
@@ -898,11 +897,11 @@ export default function PropertyDetailsModal({
               if (allOccupied) return;
               if (!user) {
                 Alert.alert(
-                  '🔒 Injira mbere',
-                  'Ugomba kwinjira mbere yo kwishyura inyubako.',
+                  `🔒 ${t('loginBeforeAsk')}`,
+                  t('loginBeforeAskMessage'),
                   [
-                    { text: 'Siba', style: 'cancel' },
-                    { text: '👤 Injira', onPress: () => router.push('/auth/sign-in') }
+                    { text: t('closeButton'), style: 'cancel' },
+                    { text: `👤 ${t('loginButton')}`, onPress: () => router.push('/auth/sign-in') }
                   ]
                 )
                 return

@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Icumbi",
     slug: "icumbi-mobile",
-    version: "1.0.0",
+    version: "2.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "automatic",
@@ -18,27 +18,21 @@ export default {
       bundleIdentifier: "com.icumbi.app",
       supportsTablet: true,
       infoPlist: {
-        NSCameraUsageDescription: "This app uses the camera to take photos of properties and documents.",
-        NSPhotoLibraryUsageDescription: "This app accesses your photo library to select property images and documents.",
-        NSLocationWhenInUseUsageDescription: "This app uses location to help you find nearby properties.",
-        NSMicrophoneUsageDescription: "This app uses the microphone for voice notes and calls."
+        NSCameraUsageDescription: "Icumbi needs camera access to take property photos.",
+        NSPhotoLibraryUsageDescription: "Icumbi needs photo library access to choose property images.",
       }
     },
     android: {
       package: "com.icumbi.app",
+      versionCode: 2,
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
       permissions: [
-        "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE"
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ]
     },
     web: {

@@ -119,6 +119,8 @@ export default function BookingModal({ visible, onClose, property }: BookingModa
   const [checkOutDate, setCheckOutDate] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [successRef, setSuccessRef] = useState<string | null>(null)
+  const [successAt, setSuccessAt] = useState<string | null>(null)
   const [userExists, setUserExists] = useState(false)
   const [paymentProcessorVisible, setPaymentProcessorVisible] = useState(false)
   const [checkInDatePickerVisible, setCheckInDatePickerVisible] = useState(false)
@@ -218,10 +220,8 @@ export default function BookingModal({ visible, onClose, property }: BookingModa
   const handlePaymentSuccess = () => {
     setPaymentProcessorVisible(false)
     setIsSuccess(true)
-    setTimeout(() => {
-      onClose()
-      Alert.alert('Ubwishyu', 'Ubwishyu bwawe bwemezwe neza!')
-    }, 1500)
+    setSuccessRef(`SIM-BOOK-${Date.now()}`)
+    setSuccessAt(new Date().toISOString())
   }
 
   const handlePaymentError = (error: string) => {
@@ -544,6 +544,75 @@ export default function BookingModal({ visible, onClose, property }: BookingModa
     </Card>
   )
 
+  const renderSuccessStep = () => (
+    <Card style={styles.stepCard}>
+      <Card.Content>
+        <View style={styles.stepHeader}>
+          <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+          <Text variant="titleMedium" style={styles.stepTitle}>
+            Kwishyura Byagenze Neza
+          </Text>
+        </View>
+
+        <Surface style={styles.confirmationCard} elevation={1}>
+          <Text variant="titleSmall" style={styles.propertyName}>
+            {property.izina}
+          </Text>
+          <Text variant="bodySmall" style={styles.propertyLocation}>
+            {property.aho} • {property.ubwoko}
+          </Text>
+
+          <Divider style={styles.divider} />
+
+          <View style={styles.confirmationRow}>
+            <Text style={styles.confirmationLabel}>Itariki yo kwinjira:</Text>
+            <Text style={styles.confirmationValue}>{checkInDate}</Text>
+          </View>
+
+          <View style={styles.confirmationRow}>
+            <Text style={styles.confirmationLabel}>Itariki yo gusohokamo:</Text>
+            <Text style={styles.confirmationValue}>{checkOutDate}</Text>
+          </View>
+
+          <View style={styles.confirmationRow}>
+            <Text style={styles.confirmationLabel}>Uburyo bwo kwishyura:</Text>
+            <Text style={styles.confirmationValue}>
+              {paymentMethods.find(m => m.id === selectedPaymentMethod)?.name}
+            </Text>
+          </View>
+
+          <Divider style={styles.divider} />
+
+          <View style={styles.confirmationRow}>
+            <Text style={styles.totalLabel}>Igiciro cyose:</Text>
+            <Text style={styles.totalValue}>{formatCurrency(calculateTotalCost())}</Text>
+          </View>
+
+          {successRef && (
+            <>
+              <Divider style={styles.divider} />
+              <View style={styles.confirmationRow}>
+                <Text style={styles.confirmationLabel}>Reference:</Text>
+                <Text style={styles.confirmationValue}>{successRef}</Text>
+              </View>
+            </>
+          )}
+        </Surface>
+
+        <View style={styles.buttonRow}>
+          <Button
+            mode="contained"
+            onPress={onClose}
+            style={styles.payButton}
+            contentStyle={styles.buttonContent}
+          >
+            Byiza
+          </Button>
+        </View>
+      </Card.Content>
+    </Card>
+  )
+
   const renderCurrentStep = () => {
     switch (step) {
       case 0:
@@ -551,7 +620,7 @@ export default function BookingModal({ visible, onClose, property }: BookingModa
       case 1:
         return renderPaymentStep()
       case 2:
-        return renderConfirmStep()
+        return isSuccess ? renderSuccessStep() : renderConfirmStep()
       default:
         return renderDatesStep()
     }
@@ -613,7 +682,7 @@ export default function BookingModal({ visible, onClose, property }: BookingModa
            amount={calculateTotalCost()}
            propertyName={property.izina}
            paymentMethod={selectedPaymentMethod || ''}
-           userPhone={userDetails.phone}
+            userPhone={selectedPaymentMethod === 'airtel_money' ? paymentDetails.airtelPhone : userDetails.phone}
          />
 
          {/* Date Pickers */}

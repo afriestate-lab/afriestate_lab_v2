@@ -314,12 +314,12 @@ function DashboardScreen() {
 
   // Show welcome screen for guests
   console.log('✅ [DASHBOARD_ROUTING] Routing to Welcome Screen (guest)')
-  return (
+    return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
-      <Text style={[styles.screenText, { color: theme.text }]}>Murakaza neza kuri Icumbi!</Text>
+      <Text style={[styles.screenText, { color: theme.text }]}>{t('welcomeToIcumbi')}</Text>
       <Text style={[styles.subText, { color: theme.textSecondary }]}>
-        Kugira ngo ukomeze, reba inyubako zacu ziri kuri Ahabanza cyangwa ujya kuri Konti wenyine urebe amakuru yawe.
-      </Text>
+        {t('welcomeToContinueMessage')}
+</Text>
     </View>
   )
 }
@@ -338,22 +338,22 @@ function AddScreen() {
       setShowTenantModal(true)
     } else {
       Alert.alert(
-        'Hitamo icyo ushaka kongeraho',
-        'Ni iki ushaka kongeraho kuri Icumbi?',
+        t('addOptionsTitle'),
+        t('addOptionsQuestion'),
         [
           { 
-            text: 'Inyubako',
+            text: t('propertyOption'),
             onPress: () => {
               Alert.alert(
-                'Ongeramo Inyubako',
-                'Kugira ngo wongeramo inyubako, ugomba kujya kuri website ya Icumbi.com cyangwa ukoreshe dashboard ya landlord.',
+                t('addPropertyTitle'),
+                t('addPropertyMessage'),
                 [
-                  { text: 'Siba', style: 'cancel' },
+                  { text: t('closeDialog'), style: 'cancel' },
                   { 
-                    text: 'Jya kuri Dashibodi',
+                    text: t('goToDashboardButton'),
                     onPress: () => {
                       // Navigate to Dashboard tab
-                      Alert.alert('Menya', 'Jya kuri Dashibodi kugira ngo ukoreshe amahitamo yo kongeramo inyubako.')
+                      Alert.alert(t('about'), t('dashboardInfo'))
                     }
                   }
                 ]
@@ -361,24 +361,24 @@ function AddScreen() {
             }
           },
           { 
-            text: 'Ubutumwa',
+            text: t('messageOption'),
             onPress: () => {
               Alert.alert(
-                'Ohereza Ubutumwa',
-                'Kugira ngo wohereze ubutumwa, jya kuri Dashboard (Dashibodi) maze uhitamo "Ubutumwa".',
+                t('sendMessageTitle'),
+                t('sendMessageDescription'),
                 [
-                  { text: 'Siba', style: 'cancel' },
+                  { text: t('closeDialog'), style: 'cancel' },
                   { 
-                    text: 'Jya kuri Dashibodi',
+                    text: t('goToDashboardButton'),
                     onPress: () => {
-                      Alert.alert('Menya', 'Jya kuri Dashibodi maze ukande kuri "Ubutumwa" kugira ngo wohereze ubutumwa.')
+                      Alert.alert(t('about'), t('sendMessageDescription'))
                     }
                   }
                 ]
               )
             }
           },
-          { text: 'Siba', style: 'cancel' }
+          { text: t('closeDialog'), style: 'cancel' }
         ]
       )
     }

@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { supabase } from '../src/lib/supabase'
 import { formatDate, formatCurrency } from '../src/lib/helpers'
+import { useLanguage } from '@/lib/languageContext'
 
 interface Payment {
   id: string
@@ -43,6 +44,7 @@ export default function AdminPaymentsPage({ onBack }: AdminPaymentsPageProps) {
   const [refreshing, setRefreshing] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved'>('all')
+  const { t } = useLanguage()
 
   useEffect(() => {
     fetchAllPayments()
@@ -78,7 +80,7 @@ export default function AdminPaymentsPage({ onBack }: AdminPaymentsPageProps) {
       setPayments(transformedPayments)
     } catch (error) {
       console.error('Error fetching payments:', error)
-      Alert.alert('Ikosa', 'Ntibyashoboye gukura ubwishyu bwose.')
+      Alert.alert(t('alertError'), t('unableFetchAllPayments'))
     } finally {
       setLoading(false)
     }
@@ -105,11 +107,11 @@ export default function AdminPaymentsPage({ onBack }: AdminPaymentsPageProps) {
 
       if (error) throw error
 
-      Alert.alert('Byagenze neza', 'Ubwishyu bwemejwe neza.')
+      Alert.alert(t('alertSuccess'), t('paymentApprovedSuccess'))
       await fetchAllPayments()
     } catch (error) {
       console.error('Error approving payment:', error)
-      Alert.alert('Ikosa', 'Ntibyashoboye kwemeza ubwishyu.')
+      Alert.alert(t('alertError'), t('unableApprovePayment'))
     }
   }
 

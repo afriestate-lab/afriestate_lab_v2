@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/lib/languageContext'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 
 const { width } = Dimensions.get('window')
@@ -59,6 +60,7 @@ interface PaymentsPageProps {
 }
 
 export default function PaymentsPage({ onBack }: PaymentsPageProps) {
+  const { t } = useLanguage()
   const [payments, setPayments] = useState<PaymentDetail[]>([])
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -81,7 +83,7 @@ export default function PaymentsPage({ onBack }: PaymentsPageProps) {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
-        Alert.alert('Ikosa', 'Nta bucukumbuzi bwemerewe busanganywe.')
+        Alert.alert(t('alertError'), t('noAuthAccess'))
         return
       }
 
@@ -92,7 +94,7 @@ export default function PaymentsPage({ onBack }: PaymentsPageProps) {
         .single()
 
       if (!userData) {
-        Alert.alert('Ikosa', 'Nta makuru y\'umukoresha asanganywe.')
+        Alert.alert(t('alertError'), t('noUserInfoAvailable'))
         return
       }
 
@@ -100,7 +102,7 @@ export default function PaymentsPage({ onBack }: PaymentsPageProps) {
       await fetchPayments(userData)
     } catch (error) {
       console.error('Error checking user:', error)
-      Alert.alert('Ikosa', 'Hari ikosa ryabaye mu gushaka amakuru yawe.')
+      Alert.alert(t('alertError'), t('errorFetchingYourInfo'))
     } finally {
       setLoading(false)
     }

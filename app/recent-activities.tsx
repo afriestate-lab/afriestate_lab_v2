@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/helpers'
 import { useTheme } from './_layout'
+import { useLanguage } from '@/lib/languageContext'
 
 // Types matching the web version
 interface DashboardActivity {
@@ -25,6 +26,7 @@ interface RecentActivitiesProps {
 
 export default function RecentActivities({ onBack }: RecentActivitiesProps) {
   const { theme } = useTheme()
+  const { t, currentLanguage } = useLanguage()
   const [activities, setActivities] = useState<DashboardActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -153,12 +155,13 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
     const now = new Date()
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
     
-    if (diffInMinutes < 1) return 'Hashize gato'
-    if (diffInMinutes < 60) return `${diffInMinutes} iminota ishize`
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} isaha ishize`
-    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)} umunsi ushize`
-    
-    return date.toLocaleDateString('rw-RW', {
+    if (diffInMinutes < 1) return t('momentsAgo')
+    if (diffInMinutes < 60) return `${diffInMinutes} ${t('minutesAgoSuffix')}`
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} ${t('hoursAgoSuffix')}`
+    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)} ${t('daysAgoSuffix')}`
+
+    const locale = currentLanguage === 'rw' ? 'rw-RW' : 'en-US'
+    return date.toLocaleDateString(locale, {
       month: 'short',
       day: 'numeric',
       year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
@@ -191,12 +194,12 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
               <Ionicons name="arrow-back" size={24} color={theme.text} />
             </TouchableOpacity>
           )}
-          <Text style={[styles.title, { color: theme.text }]}>Ibikorwa Bishya</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{t('recentActivities')}</Text>
         </View>
         
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.primary} />
-          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Gukurura ibikorwa...</Text>
+          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('loadingActivities')}</Text>
         </View>
       </SafeAreaView>
     )
@@ -210,7 +213,7 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
             <Ionicons name="arrow-back" size={24} color={theme.text} />
           </TouchableOpacity>
         )}
-        <Text style={[styles.title, { color: theme.text }]}>Ibikorwa Bishya</Text>
+        <Text style={[styles.title, { color: theme.text }]}>{t('recentActivities')}</Text>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>({getFilteredActivities().length})</Text>
       </View>
 
@@ -235,7 +238,7 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
             activityFilter === 'all' && { color: 'white' }
           ]}
         >
-          Byose
+          {t('all')}
         </Chip>
         <Chip
           selected={activityFilter === 'payment'}
@@ -251,7 +254,7 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
             activityFilter === 'payment' && { color: 'white' }
           ]}
         >
-          Kwishyura
+          {t('payments')}
         </Chip>
         <Chip
           selected={activityFilter === 'tenant'}
@@ -267,7 +270,7 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
             activityFilter === 'tenant' && { color: 'white' }
           ]}
         >
-          Abakodesha
+          {t('tenants')}
         </Chip>
         <Chip
           selected={activityFilter === 'property'}
@@ -283,7 +286,7 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
             activityFilter === 'property' && { color: 'white' }
           ]}
         >
-          Inyubako
+          {t('properties')}
         </Chip>
         <Chip
           selected={activityFilter === 'manager'}
@@ -299,7 +302,7 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
             activityFilter === 'manager' && { color: 'white' }
           ]}
         >
-          Abayobozi
+          {t('managers')}
         </Chip>
       </ScrollView>
 
@@ -314,13 +317,10 @@ export default function RecentActivities({ onBack }: RecentActivitiesProps) {
           <View style={styles.emptyState}>
             <Ionicons name="flash-off" size={64} color={theme.textTertiary} />
             <Text style={[styles.emptyTitle, { color: theme.text }]}>
-              {activityFilter !== 'all' 
-                ? `Nta bikorwa ${getFilterDisplayName(activityFilter)} bibonetse` 
-                : 'Nta bikorwa bibonetse'
-              }
+              {t('noActivitiesFound')}
             </Text>
             <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
-              Ibikorwa bizagaragara hano igihe cyose ucuruza ubukode.
+              {t('activitiesHelp')}
             </Text>
           </View>
         ) : (

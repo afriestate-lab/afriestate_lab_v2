@@ -113,6 +113,12 @@ export default function AddPropertyForm({ onBack, onSuccess }: AddPropertyFormPr
           quality: 0.8,
         })
       } else {
+        // Request media library permission before opening gallery
+        const libPerm = await ImagePicker.requestMediaLibraryPermissionsAsync()
+        if (libPerm.status !== 'granted') {
+          Alert.alert('Ikosa', 'Uburenganzira bwo kubona amasomo (Media Library) ntibwemewe. Emeza uburenganzira mu igenamiterere rya telefone yawe.')
+          return
+        }
         result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: true,
@@ -177,6 +183,12 @@ export default function AddPropertyForm({ onBack, onSuccess }: AddPropertyFormPr
           quality: 0.8,
         })
       } else {
+        // Request media library permission before opening gallery
+        const libPerm = await ImagePicker.requestMediaLibraryPermissionsAsync()
+        if (libPerm.status !== 'granted') {
+          Alert.alert('Ikosa', 'Uburenganzira bwo kubona amasomo (Media Library) ntibwemewe. Emeza uburenganzira mu igenamiterere rya telefone yawe.')
+          return
+        }
         result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: true,

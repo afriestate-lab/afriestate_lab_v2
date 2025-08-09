@@ -65,13 +65,12 @@ export const queries = {
       .eq('landlord_id', userId)
       .order('created_at', { ascending: false }),
 
-  // Rooms
+  // Rooms - Use RPC function to avoid RLS issues
   getRooms: (propertyId: string) =>
     supabase
-      .from('rooms')
-      .select('*')
-      .eq('property_id', propertyId)
-      .order('floor_number', { ascending: true }),
+      .rpc('get_property_rooms', {
+        p_property_id: propertyId
+      }),
 
   // Tenants
   getTenants: (propertyId: string) =>

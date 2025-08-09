@@ -306,14 +306,24 @@ export default function PropertiesScreen() {
     try {
       console.log('=== DEBUG: Testing room data fetch ===')
       
-      // Test basic room query
-      const { data: rooms, error: roomError } = await supabase
-        .from('rooms')
-        .select('id, room_number, floor_number, status, property_id')
-        .limit(5)
+      // Test basic room query using RPC to avoid RLS issues
+      console.log('DEBUG: Testing with RPC function instead')
       
-      console.log('DEBUG: Room query result:', rooms)
-      console.log('DEBUG: Room query error:', roomError)
+      // Get a test property first
+      const { data: testProperty } = await supabase
+        .from('properties')
+        .select('id')
+        .limit(1)
+        .single()
+      
+      if (testProperty) {
+        const { data: rooms, error: roomError } = await supabase
+          .rpc('get_property_rooms', {
+            p_property_id: testProperty.id
+          })
+        console.log('DEBUG: Room RPC result:', rooms)
+        console.log('DEBUG: Room RPC error:', roomError)
+      }
       
       // Test property query
       const { data: properties, error: propError } = await supabase

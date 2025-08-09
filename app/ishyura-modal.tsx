@@ -303,40 +303,19 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
       // Implement proper checkout date checking for room availability
       console.log('✅ [MOBILE_ISHYURA] Fetching rooms with expiry check')
 
-      // Now fetch all rooms for this property
+      // Now fetch all rooms for this property using RPC to avoid RLS issues
       const { data: roomsData, error: roomsError } = await supabase
-        .from('rooms')
-        .select(`
-          id,
-          room_number,
-          floor_number,
-          rent_amount,
-          status
-        `)
-        .eq('property_id', propertyId)
-        .is('deleted_at', null)
+        .rpc('get_property_rooms', {
+          p_property_id: propertyId
+        })
 
-      // Get active room tenants to check availability
-      const { data: activeTenants, error: tenantsError } = await supabase
-        .from('room_tenants')
-        .select(`
-          room_id,
-          move_out_date,
-          is_active
-        `)
-        .eq('is_active', true)
-        .not('move_out_date', 'is', null)
-
-      if (tenantsError) {
-        console.warn('⚠️ [MOBILE_ISHYURA] Could not fetch tenant data:', tenantsError)
-      }
-
-      // Create a map of occupied rooms
+      // Create a map of occupied rooms based on tenant data from RPC
       const occupiedRooms = new Set<string>()
-      if (activeTenants) {
-        activeTenants.forEach(tenant => {
-          if (tenant.move_out_date && tenant.move_out_date > today) {
-            occupiedRooms.add(tenant.room_id)
+      if (roomsData) {
+        roomsData.forEach((room: any) => {
+          // If room has an active tenant, mark it as occupied
+          if (room.tenant_id) {
+            occupiedRooms.add(room.id)
           }
         })
       }

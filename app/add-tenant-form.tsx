@@ -72,17 +72,54 @@ export default function AddTenantForm({ onBack, onSuccess }: AddTenantFormProps)
       if (propertiesData && propertiesData.length > 0) {
         const propertyIds = propertiesData.map((p: any) => p.id)
         
-        // Fetch vacant rooms from these properties
-        const { data: roomsData, error: roomsError } = await supabase
-          .from('rooms')
-          .select('id, room_number, rent_amount, floor_number, property_id')
-          .in('property_id', propertyIds)
-          .eq('status', 'vacant')
-          .is('deleted_at', null)
-          .order('property_id, floor_number, room_number')
+        // Fetch rooms from these properties using RPC to avoid RLS issues
+        let allRooms: any[] = []
+        
+        try {
+          const roomPromises = propertyIds.map(propertyId => 
+            supabase.rpc('get_property_rooms', {
+              p_property_id: propertyId
+            })
+          )
+          
+          const roomResults = await Promise.all(roomPromises)
+          
+          for (const result of roomResults) {
+            if (result.error) {
+              console.error('Rooms error:', result.error)
+              continue
+            }
+            if (result.data) {
+              // Filter for vacant rooms only
+              const vacantRooms = result.data.filter((room: any) => 
+                room.status === 'vacant' || !room.tenant_id
+              )
+              allRooms.push(...vacantRooms)
+            }
+          }
+          
+          // Sort rooms by property_id, floor_number, room_number
+          allRooms.sort((a, b) => {
+            if (a.property_id !== b.property_id) {
+              return a.property_id.localeCompare(b.property_id)
+            }
+            if (a.floor_number !== b.floor_number) {
+              return a.floor_number - b.floor_number
+            }
+            return a.room_number.localeCompare(b.room_number)
+          })
+          
+          const roomsData = allRooms
+          const roomsError = null
+          
+        } catch (error) {
+          console.error('Error fetching rooms:', error)
+          Alert.alert('Ikosa', 'Ntiyashoboye gushaka ibyumba.')
+          return
+        }
 
-        if (roomsError) {
-          console.error('Rooms fetch error:', roomsError)
+        if (roomsData.length === 0) {
+          console.warn('No vacant rooms found')
           Alert.alert('Ikosa', 'Ntiyashoboye gushaka ibyumba byubusa.')
           return
         }

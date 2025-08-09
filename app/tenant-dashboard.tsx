@@ -189,11 +189,11 @@ const getPriorityColor = (priority: string): string => {
 
 const getMessageTypeText = (type: string): string => {
   switch (type) {
-    case 'general': return 'Rusange'
-    case 'maintenance': return 'Serivisi'
-    case 'payment': return 'Kwishyura'
-    case 'emergency': return 'Ubutabazi'
-    default: return 'Rusange'
+    case 'general': return 'General'
+    case 'maintenance': return 'Maintenance'
+    case 'payment': return 'Payment'
+    case 'emergency': return 'Emergency'
+    default: return 'General'
   }
 }
 
@@ -1329,12 +1329,12 @@ export default function TenantDashboard() {
             </View>
           </View>
           <Text style={[styles.listItemSubtitle, { color: theme.textSecondary }]}>
-            {getMessageTypeText(message.message_type)} - {message.property_name || 'Property'}
+            {getMessageTypeText(message.message_type)} - {message.property_name || t('property')}
           </Text>
           <Text style={[styles.messageContent, { color: theme.text }]}>{message.message}</Text>
           {message.landlord_reply && (
             <View style={styles.replyContainer}>
-              <Text style={[styles.replyTitle, { color: theme.primary }]}>Igisubizo:</Text>
+              <Text style={[styles.replyTitle, { color: theme.primary }]}>{t('reply')}:</Text>
               <Text style={[styles.replyContent, { color: theme.text }]}>{message.landlord_reply}</Text>
               <Text style={[styles.replyDate, { color: theme.textSecondary }]}>
                 {message.replied_at && formatDate(message.replied_at)}
@@ -1347,7 +1347,7 @@ export default function TenantDashboard() {
         </View>
       ))}
       {messages.length === 0 && (
-        <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Nta butumwa bwacu</Text>
+        <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{t('noMessages')}</Text>
       )}
     </ScrollView>
   )
@@ -1659,7 +1659,7 @@ export default function TenantDashboard() {
             
             <TextInput
               style={[styles.input, { backgroundColor: theme.surfaceVariant, color: theme.text }]}
-              placeholder="Insanganyamatsiko"
+              placeholder={t('messageSubject')}
               placeholderTextColor={theme.textSecondary}
               value={newMessage.subject}
               onChangeText={(text) => setNewMessage(prev => ({ ...prev, subject: text }))}
@@ -1698,7 +1698,7 @@ export default function TenantDashboard() {
               ) : (
                 <>
                   <Ionicons name="send" size={20} color="white" />
-                  <Text style={styles.sendButtonText}>Ohereza</Text>
+                  <Text style={styles.sendButtonText}>{t('sendMessage')}</Text>
                 </>
               )}
             </TouchableOpacity>

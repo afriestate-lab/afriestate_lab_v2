@@ -4,17 +4,23 @@ import { Text, TextInput, Button, HelperText, ActivityIndicator } from 'react-na
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { API_ENDPOINTS } from '@/config';
+import { useLanguage } from '@/lib/languageContext';
 import IcumbiLogo from '../components/IcumbiLogo';
 
-const ROLES = [
-  { label: 'Umukodesha', value: 'tenant' },
-  { label: "Nyirinyubako", value: 'landlord' },
-  { label: 'Umuyobozi', value: 'manager' },
-];
+// ROLES will be defined inside the component to use translations
 
 const { width, height } = Dimensions.get('window');
 
 export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onSuccess?: () => void, onClose?: () => void, onShowSignIn?: () => void } = {}) {
+  
+  const { t, currentLanguage } = useLanguage();
+  
+  const ROLES = [
+    { label: t('tenant'), value: 'tenant' },
+    { label: t('landlord'), value: 'landlord' },
+    { label: t('manager'), value: 'manager' },
+  ];
+  
   // Debug mode - set to true to enable detailed logging
   const DEBUG_MODE = true;
   const [role, setRole] = useState<string>('tenant'); // Set default role to tenant
@@ -116,32 +122,32 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
   };
 
   const validateForm = () => {
-    if (!role) return setError('Hitamo uruhare rwawe.'), false;
-    if (!formData.full_name.trim()) return setError('Andika amazina yawe yuzuye.'), false;
+    if (!role) return setError(t('selectRole')), false;
+    if (!formData.full_name.trim()) return setError(currentLanguage === 'en' ? 'Please enter your full name.' : 'Andika amazina yawe yuzuye.'), false;
     
     // REQUIRE BOTH EMAIL AND PHONE NUMBER
-    if (!formData.email.trim()) return setError('Andika imeri yawe.'), false;
-    if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) return setError('Imeri wanditse ntiyemewe. Andika imeri nyayo.'), false;
+    if (!formData.email.trim()) return setError(currentLanguage === 'en' ? 'Please enter your email.' : 'Andika imeri yawe.'), false;
+    if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) return setError(currentLanguage === 'en' ? 'Invalid email. Please enter a valid email.' : 'Imeri wanditse ntiyemewe. Andika imeri nyayo.'), false;
     
-    if (!formData.phone_number.trim()) return setError('Andika numero ya telefone.'), false;
+    if (!formData.phone_number.trim()) return setError(currentLanguage === 'en' ? 'Please enter your phone number.' : 'Andika numero ya telefone.'), false;
     
     // Clean and validate phone number
     const cleanedPhone = formData.phone_number.replace(/\D/g, '');
-    if (!/^[0-9]{10}$/.test(cleanedPhone)) return setError('Uzuza telefoni nyayo y\'imibare 10.'), false;
+    if (!/^[0-9]{10}$/.test(cleanedPhone)) return setError(t('enterValidPhoneEmail')), false;
     
-    if (formData.password.length < 6) return setError('Ijambo ry\'ibanga rigomba kuba nibura inyuguti 6.'), false;
-    if (formData.password !== formData.confirmPassword) return setError('Amagambo y\'ibanga ntabwo ari kimwe.'), false;
+    if (formData.password.length < 6) return setError(currentLanguage === 'en' ? 'Password must be at least 6 characters.' : 'Ijambo ry\'ibanga rigomba kuba nibura inyuguti 6.'), false;
+    if (formData.password !== formData.confirmPassword) return setError(currentLanguage === 'en' ? 'Passwords do not match.' : 'Amagambo y\'ibanga ntabwo ari kimwe.'), false;
     
-    if (role === 'manager' && !formData.landlord_pin.trim()) return setError('Andika PIN ya nyir\'inyubako.'), false;
+    if (role === 'manager' && !formData.landlord_pin.trim()) return setError(currentLanguage === 'en' ? 'Enter landlord PIN.' : 'Andika PIN ya nyir\'inyubako.'), false;
     if (role === 'manager') {
       if (!formData.landlord_pin.trim()) {
-        return setError('PIN ya nyir\'inyubako irakenewe kugirango ushobore kwiyandikisha.'), false;
+         return setError(currentLanguage === 'en' ? 'Landlord PIN is required to register as manager.' : 'PIN ya nyir\'inyubako irakenewe kugirango ushobore kwiyandikisha.'), false;
       }
       if (formData.landlord_pin.trim().length !== 6 || !/^\d{6}$/.test(formData.landlord_pin.trim())) {
-        return setError('PIN ya nyir\'inyubako igomba kuba imibare 6 gusa.'), false;
+         return setError(currentLanguage === 'en' ? 'Landlord PIN must be exactly 6 digits.' : 'PIN ya nyir\'inyubako igomba kuba imibare 6 gusa.'), false;
       }
       if (!selectedLandlord) {
-        return setError('PIN ya nyir\'inyubako ntiyemewe. Saba nyir\'inyubako PIN ikwiye.'), false;
+         return setError(currentLanguage === 'en' ? 'Invalid landlord PIN. Ask the landlord for the correct PIN.' : 'PIN ya nyir\'inyubako ntiyemewe. Saba nyir\'inyubako PIN ikwiye.'), false;
       }
     }
     return true;
@@ -184,91 +190,98 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
 
       // Additional validation before sending
       if (!signupPayload.full_name || !signupPayload.email || !signupPayload.phone_number || !signupPayload.password) {
-        setError('Uzuza amakuru yose asabwa (amazina, imeri, telefoni, ijambo ry\'ibanga).');
+        setError(currentLanguage === 'en' ? 'Fill all required fields (name, email, phone, password).' : 'Uzuza amakuru yose asabwa (amazina, imeri, telefoni, ijambo ry\'ibanga).');
         setLoading(false);
         return;
       }
 
       // Log the payload for debugging
-      console.log('Payload yakozwe:', signupPayload); // Logging in Kinyarwanda
+      console.log('Payload created:', signupPayload);
     
       // Both email and phone are required for signup
 
-      // Use the signup API endpoint instead of direct Supabase auth
-      console.log('🌐 Calling signup API:', API_ENDPOINTS.SIGNUP);
+      // Since the API endpoint is not available (404), use direct Supabase authentication
+      console.log('🔄 API endpoint unavailable, using direct Supabase signup');
       
-      // Create AbortController for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const email = formData.email.trim() || `${formData.phone_number}@icumbi.temp`;
       
-      const response = await fetch(API_ENDPOINTS.SIGNUP, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(signupPayload),
-        signal: controller.signal,
-      });
-      
-      clearTimeout(timeoutId);
-
-      console.log('📡 Signup response status:', response.status);
-      console.log('📡 Signup response headers:', response.headers);
-      
-      let data;
-      try {
-        data = await response.json();
-        console.log('📡 Signup response data:', data);
-      } catch (parseError) {
-        console.error('❌ Failed to parse signup response:', parseError);
-        const responseText = await response.text();
-        console.error('❌ Raw response:', responseText);
-        setError('Habaye ikosa mu gufungura konti. Gerageza ongera.');
-        setLoading(false);
-        return;
-      }
-
-      if (!response.ok) {
-        const errorMsg = data.error || 'Fungura konti byanze. Gerageza ongera.';
-        // Translate common error messages to Kinyarwanda
-        const kinyarwandaError = errorMsg.includes('already exists') ? 
-          'Iyi konti isanzwe ihari. Koresha konti yawe cyangwa ufungure indi.' :
-          errorMsg.includes('invalid') ?
-          'Amakuru winjije ntiyemewe. Nyamuneka reba neza hanyuma ugerageze ongera.' :
-          'Fungura konti byanze. Nyamuneka gerageza ongera.';
-        
-        setError(kinyarwandaError);
-        setLoading(false);
-        return;
-      }
-
-      // Check if signup was successful
-      if (!data.success) {
-        const errorMsg = data.error || 'Fungura konti byanze. Gerageza ongera.';
-        setError(errorMsg);
-        setLoading(false);
-        return;
-      }
-
-      console.log('✅ Signup successful, user created:', data.user?.id)
-      setSuccess('Konti yawe yafunguwe neza! Ubu urimo kwinjira...')
-      
-      // Verify user exists in database and create tenant records if needed
-      try {
-        console.log('🔍 Verifying user in database...');
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('id, email, role')
-          .eq('email', signupPayload.email)
-          .single();
-          
-        if (userError || !userData) {
-          console.error('❌ User verification failed:', userError);
-          throw new Error('User not found in database after creation');
+      // Create user in Supabase Auth
+      console.log('🔐 Creating Supabase auth user...');
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.full_name.trim(),
+            phone_number: formData.phone_number.trim(),
+            role: role,
+          }
         }
+      });
+
+      if (authError) {
+        console.error('❌ Supabase auth error:', authError);
         
-        console.log('✅ User verified in database:', userData.id);
+        if (authError.message.includes('already registered')) {
+          setError(currentLanguage === 'en' ? 'This account already exists. Use your account or create another.' : 'Iyi konti isanzwe ihari. Koresha konti yawe cyangwa ufungure indi.');
+        } else if (authError.message.includes('invalid email')) {
+          setError(currentLanguage === 'en' ? 'Email or phone is invalid.' : 'Email cyangwa telefoni ntabwo ari neza.');
+        } else if (authError.message.includes('weak password')) {
+          setError(currentLanguage === 'en' ? 'Password must be stronger.' : 'Ijambo ry\'ibanga rigomba kuba rikomeye.');
+        } else {
+          setError(currentLanguage === 'en' ? 'Sign up failed. Please try again.' : 'Fungura konti byanze. Gerageza ongera.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        console.error('❌ No user returned from Supabase auth');
+        setError(currentLanguage === 'en' ? 'Sign up failed. Please try again.' : 'Fungura konti byanze. Gerageza ongera.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ Supabase auth user created:', authData.user.id);
+      
+      // Try to create user record in users table, but continue if it fails
+      console.log('📝 Attempting to create user record in database...');
+      const { data: dbUserData, error: userError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          full_name: formData.full_name.trim(),
+          phone_number: formData.phone_number.trim(),
+          email: formData.email.trim() || null,
+          role: role,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      let userData;
+      if (userError) {
+        console.warn('⚠️ Database user creation failed, but auth user exists:', userError.message);
+        // Continue with auth user data instead
+        console.log('ℹ️ Using auth user metadata instead of database record');
         
+        // Create a userData object from auth user metadata
+        userData = {
+          id: authData.user.id,
+          full_name: formData.full_name.trim(),
+          phone_number: formData.phone_number.trim(),
+          email: formData.email.trim() || null,
+          role: role
+        };
+      } else {
+        console.log('✅ User record created in database:', dbUserData.id);
+        userData = dbUserData;
+      }
+      setSuccess(currentLanguage === 'en' ? 'Your account has been created! Signing you in...' : 'Konti yawe yafunguwe neza! Ubu urimo kwinjira...')
+      
+      // Create role-specific records
+      try {
         // If user is a tenant, create tenant_users and tenants records
         if (userData.role === 'tenant') {
           console.log('🔧 Creating tenant records for user:', userData.id);
@@ -278,9 +291,9 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
             .from('tenant_users')
             .insert({
               auth_user_id: userData.id,
-              full_name: signupPayload.full_name,
-              email: signupPayload.email,
-              phone_number: signupPayload.phone_number,
+              full_name: userData.full_name,
+              email: userData.email,
+              phone_number: userData.phone_number,
               status: 'active'
             })
             .select()
@@ -288,7 +301,8 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
             
           if (tenantUserError) {
             console.error('❌ Failed to create tenant_users record:', tenantUserError);
-            // Continue anyway, as the table might not exist
+            // Continue anyway, as the table might not exist or has RLS policies
+            console.log('ℹ️ tenant_users table may not exist or RLS blocks insertion');
           } else {
             console.log('✅ Created tenant_users record:', tenantUserData.id);
             
@@ -297,9 +311,9 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
               .from('tenants')
               .insert({
                 tenant_user_id: tenantUserData.id,
-                full_name: signupPayload.full_name,
-                phone_number: signupPayload.phone_number,
-                email: signupPayload.email,
+                full_name: userData.full_name,
+                phone_number: userData.phone_number,
+                email: userData.email,
                 id_number: '', // Will be filled later
                 emergency_contact: null,
                 landlord_id: null // Will be set when assigned to a property
@@ -319,109 +333,40 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
         // Continue with auto-login anyway, as the user might still be created
       }
       
-      // Attempt auto-login after successful signup using Supabase directly
-      try {
-        console.log('🔐 Attempting auto-login with email:', signupPayload.email)
-        
-        // Add a small delay to ensure the user is fully created in the database
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Use Supabase auth directly for auto-login with retry
-        let signInData = null;
-        let signInError = null;
-        
-        // Try up to 3 times with increasing delays
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          console.log(`🔐 Auto-login attempt ${attempt}/3`);
-          
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: signupPayload.email,
-            password: signupPayload.password,
-          });
-          
-          if (!error && data?.user) {
-            signInData = data;
-            console.log(`✅ Auto-login successful on attempt ${attempt}:`, data.user.id);
-            break;
-          } else {
-            signInError = error;
-            console.log(`❌ Auto-login attempt ${attempt} failed:`, error?.message);
-            
-            if (attempt < 3) {
-              // Wait before retrying (1s, 2s, 3s)
-              await new Promise(resolve => setTimeout(resolve, attempt * 1000));
-            }
-          }
+      // User is already authenticated from the signup process, so we're done
+      console.log('✅ Signup completed successfully. User is authenticated.');
+      setSuccess(currentLanguage === 'en' ? 'Account created! Signing you in...' : 'Konti yafunguwe neza! Ubu urimo kwinjira...')
+      
+      // Clear form data
+      setFormData({
+        full_name: '',
+        phone_number: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        landlord_pin: '',
+      })
+      setRole('tenant') // Reset to default role
+      setSelectedLandlord(null)
+      
+      // Navigate to main app after successful signup
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess()
+        } else {
+          router.replace('/')
         }
-        
-        if (signInError || !signInData?.user) {
-          console.error('❌ All auto-login attempts failed:', signInError)
-          throw new Error(signInError?.message || 'Auto-login failed after all attempts')
-        }
-        
-        // Successfully logged in, redirect to main app
-        setSuccess('Konti yafunguwe kandi winjiye neza!')
-        setLoading(false)
-        
-        // Clear form data
-        setFormData({
-          full_name: '',
-          phone_number: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          landlord_pin: '',
-        })
-        setRole('tenant') // Reset to default role
-        setSelectedLandlord(null)
-        
-        // Navigate to main app after successful auto-login
-        setTimeout(() => {
-          if (onSuccess) {
-            onSuccess()
-          } else {
-            router.replace('/')
-          }
-        }, 1500)
-        
-      } catch (loginError) {
-        console.error('❌ Auto-login exception:', loginError)
-        // Show success message but inform user to login manually
-        setSuccess('Konti yawe yafunguwe neza! Nyamuneka injira ukoresheje imeri/telefoni yawe n\'ijambo ry\'ibanga.')
-        setLoading(false)
-        
-        // Clear form data
-        setFormData({
-          full_name: '',
-          phone_number: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          landlord_pin: '',
-        })
-        setRole('tenant') // Reset to default role
-        setSelectedLandlord(null)
-        
-        // Navigate to sign-in after a delay
-        setTimeout(() => {
-          if (onShowSignIn) {
-            onShowSignIn()
-          } else {
-            router.replace('/auth/sign-in')
-          }
-        }, 3000)
-        return
-      }
+      }, 1500)
       
     } catch (error: any) {
       console.error('❌ Signup error:', error);
       
-      if (error.name === 'AbortError') {
-        setError('Ntibyashoboye gufata serivisi. Nyamuneka reba internet yawe hanyuma ugerageze ongera.');
-      } else if (error.message?.includes('Network request failed')) {
-        setError('Ntibyashoboye gufata serivisi. Nyamuneka reba internet yawe hanyuma ugerageze ongera.');
+      if (error.message?.includes('Network request failed') || error.message?.includes('fetch')) {
+        setError(currentLanguage === 'en' ? 'Network request failed. Please check your internet and try again.' : 'Ntibyashoboye gufata serivisi. Nyamuneka reba internet yawe hanyuma ugerageze ongera.');
+      } else if (error.message?.includes('database') || error.message?.includes('supabase')) {
+        setError(currentLanguage === 'en' ? 'There was a database error. Please try again.' : 'Habaye ikosa muri ububiko bw\'amakuru. Gerageza ongera.');
       } else {
-        setError('Habaye ikosa mu gufungura konti. Gerageza ongera.');
+        setError(currentLanguage === 'en' ? 'There was an error creating your account. Please try again.' : 'Habaye ikosa mu gufungura konti. Gerageza ongera.');
       }
       setLoading(false);
     }
@@ -448,7 +393,7 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           <View style={styles.logoContainer}>
             <IcumbiLogo width={60} height={60} />
           </View>
-          <Text style={styles.title}>Fungura Konti</Text>
+          <Text style={styles.title}>{t('signUp')}</Text>
           {/* Role Dropdown */}
           <TouchableOpacity style={styles.dropdown} onPress={() => setRoleModal(true)}>
             <Text style={styles.dropdownText}>{ROLES.find(r => r.value === role)?.label}</Text>
@@ -480,7 +425,7 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           </RNModal>
           {/* Inputs */}
           <TextInput
-            label="Amazina yawe"
+            label={t('fullName')}
             value={formData.full_name}
             onChangeText={v => handleInputChange('full_name', v)}
             style={styles.input}
@@ -490,7 +435,7 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           
           {/* Email - REQUIRED */}
           <TextInput
-            label="Imeri yawe"
+            label={t('email')}
             value={formData.email}
             onChangeText={text => handleInputChange('email', text)}
             keyboardType="email-address"
@@ -503,7 +448,7 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           
           {/* Phone Number - REQUIRED */}
           <TextInput
-            label="Numero ya telefone"
+            label={t('phoneNumber')}
             value={formData.phone_number}
             onChangeText={text => handleInputChange('phone_number', text)}
             keyboardType="phone-pad"
@@ -513,7 +458,7 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
             theme={{ colors: { primary: '#2563eb', text: '#333', placeholder: '#666' } }}
           />
           <TextInput
-            label="Ijambo ry'ibanga"
+            label={t('password')}
             value={formData.password}
             onChangeText={v => handleInputChange('password', v)}
             secureTextEntry={!showPassword}
@@ -523,7 +468,7 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
             theme={{ colors: { primary: '#2563eb', text: '#333', placeholder: '#666' } }}
           />
           <TextInput
-            label="Subiramo ijambo ry'ibanga"
+            label={t('confirmPassword')}
             value={formData.confirmPassword}
             onChangeText={v => handleInputChange('confirmPassword', v)}
             secureTextEntry={!showConfirmPassword}
@@ -561,21 +506,10 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
             contentStyle={styles.gradientBtnContent}
             labelStyle={styles.gradientBtnLabel}
           >
-            Fungura Konti
+            {t('signUp')}
           </Button>
           
-          {/* Debug button - only visible in debug mode */}
-          {DEBUG_MODE && (
-            <Button
-              mode="outlined"
-              onPress={testSignUpFlow}
-              style={[styles.gradientBtn, { marginTop: 8, backgroundColor: 'transparent', borderColor: '#2563eb' }]}
-              contentStyle={styles.gradientBtnContent}
-              labelStyle={[styles.gradientBtnLabel, { color: '#2563eb' }]}
-            >
-              Test Sign-up Flow
-            </Button>
-          )}
+          {/* Debug button removed for production UI */}
         </View>
       </ScrollView>
       {/* Sign In Link */}
@@ -586,9 +520,9 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           router.replace('/auth/sign-in');
         }
       }} style={styles.signinLinkRow}>
-        <Text style={styles.signinLink}>Ufite konti? Injira</Text>
+        <Text style={styles.signinLink}>{currentLanguage === 'en' ? 'Have an account? Sign In' : 'Ufite konti? Injira'}</Text>
       </TouchableOpacity>
-      <Text style={styles.copyright}>&copy; {new Date().getFullYear()} Icumbi. Uburenganzira bwose burabitswe.</Text>
+      <Text style={styles.copyright}>{currentLanguage === 'en' ? `© ${new Date().getFullYear()} Icumbi. All rights reserved.` : `© ${new Date().getFullYear()} Icumbi. Uburenganzira bwose burabitswe.`}</Text>
     </KeyboardAvoidingView>
   );
 }
