@@ -534,7 +534,7 @@ export default function AdminDashboard() {
     try {
       console.log('Fetching all users...')
       const { data: users, error } = await supabase
-        .rpc('get_all_users_admin')
+        .rpc('get_all_users_admin_simple')
 
       if (error) {
         console.error('Error fetching users:', error)
@@ -923,8 +923,7 @@ export default function AdminDashboard() {
       console.log('User authenticated:', user.id)
       
       const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id, role, full_name, email')
+        .rpc('get_all_users_admin_simple')
         .eq('id', user.id)
         .single()
 
@@ -1289,8 +1288,7 @@ export default function AdminDashboard() {
       
       // Test 2: Check if we can access users
       const { data: testUsers, error: usersError } = await supabase
-        .from('users')
-        .select('id, full_name, role')
+        .rpc('get_all_users_admin_simple')
         .limit(5)
       
       console.log('Test Users:', { data: testUsers?.length || 0, error: usersError })
@@ -1365,8 +1363,7 @@ export default function AdminDashboard() {
       
       // Test 2: Check user role
       const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id, role, full_name, email')
+        .rpc('get_all_users_admin_simple')
         .eq('id', user.id)
         .single()
       
@@ -1444,8 +1441,7 @@ export default function AdminDashboard() {
       }
       
       const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id, role, full_name, email')
+        .rpc('get_all_users_admin_simple')
         .eq('id', user.id)
         .single()
       

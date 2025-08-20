@@ -207,7 +207,7 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
           for (let floorNum = 1; floorNum <= expectedFloors; floorNum++) {
             floors.push({
               floorNumber: floorNum,
-              floorName: `Urubuga ${floorNum}`,
+              floorName: currentLanguage === 'en' ? `Floor ${floorNum}` : `Urubuga ${floorNum}`,
               rooms: floorMap.get(floorNum) || []
             })
           }
@@ -239,7 +239,10 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
       setProperties(detailedProperties)
     } catch (error) {
       console.error('Error fetching properties:', error)
-      Alert.alert('Ikosa', 'Ntibyashoboye gukura amakuru y\'inyubako.')
+      Alert.alert(
+        currentLanguage === 'en' ? 'Error' : 'Ikosa', 
+        currentLanguage === 'en' ? 'Unable to fetch property data.' : 'Ntibyashoboye gukura amakuru y\'inyubako.'
+      )
     } finally {
       setLoading(false)
     }
@@ -276,10 +279,10 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'occupied': return 'Cyatuwemo'
-      case 'vacant': return 'Cyubusa'
-      case 'maintenance': return 'Gisuzumwa'
-      default: return 'Kitazwi'
+      case 'occupied': return currentLanguage === 'en' ? 'Occupied' : 'Cyatuwemo'
+      case 'vacant': return currentLanguage === 'en' ? 'Vacant' : 'Cyubusa'
+      case 'maintenance': return currentLanguage === 'en' ? 'Maintenance' : 'Gisuzumwa'
+      default: return currentLanguage === 'en' ? 'Unknown' : 'Kitazwi'
     }
   }
 
@@ -287,7 +290,7 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={styles.loadingText}>Gukura amakuru y&apos;inyubako...</Text>
+        <Text style={styles.loadingText}>{currentLanguage === 'en' ? 'Loading property data...' : 'Gukura amakuru y\'inyubako...'}</Text>
       </View>
     )
   }

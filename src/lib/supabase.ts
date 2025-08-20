@@ -3,14 +3,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database.types'
 
-// Supabase configuration using environment variables
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+// Supabase configuration - using hardcoded values for production
+const supabaseUrl = 'https://sgektsymnqkyqcethveh.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnZWt0c3ltbnFreXFjZXRodmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNjk2MjEsImV4cCI6MjA2NTg0NTYyMX0.9-GgphRm5dMkmuXmBzu2cORM50qj4bLJdngAqDpjErU'
 
-// Runtime check for environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.')
-}
+console.log('🔧 Supabase configuration loaded:', { 
+  url: supabaseUrl?.substring(0, 30) + '...',
+  hasKey: !!supabaseAnonKey 
+})
 
 // Create Supabase client with React Native specific settings
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {

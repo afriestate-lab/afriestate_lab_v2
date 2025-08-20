@@ -29,7 +29,7 @@ interface Tenant {
 }
 
 export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProps) {
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [loadingTenants, setLoadingTenants] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -101,7 +101,7 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
       
       try {
         // Call RPC for each property to get rooms
-        const roomPromises = propertyIds.map(propertyId => 
+        const roomPromises = propertyIds.map((propertyId: string) => 
           supabase.rpc('get_property_rooms', {
             p_property_id: propertyId
           })
@@ -239,27 +239,27 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
 
   const validateForm = () => {
     if (!selectedTenant) {
-      Alert.alert('Ikosa', 'Hitamo umukodesha')
+      Alert.alert(t('alertError'), t('mustSelectTenant'))
       return false
     }
 
     if (selectedRoomIds.length === 0) {
-      Alert.alert('Ikosa', 'Hitamo byibura icyumba kimwe')
+      Alert.alert(t('alertError'), t('mustSelectAtLeastOneRoom'))
       return false
     }
 
     if (!paymentAmount.trim() || parseFloat(paymentAmount) <= 0) {
-      Alert.alert('Ikosa', 'Andika amafaranga yishyuwe')
+              Alert.alert(t('alertError'), t('enterPaymentAmount'))
       return false
     }
 
     if (!paymentDate.trim()) {
-      Alert.alert('Ikosa', 'Hitamo itariki y\'ubwishyu')
+      Alert.alert(t('alertError'), t('selectPaymentDate'))
       return false
     }
 
     if (!nextDueDate.trim()) {
-      Alert.alert('Ikosa', 'Hitamo itariki ikurikira y\'ubwishyu')
+      Alert.alert(t('alertError'), t('selectNextDueDate'))
       return false
     }
 
@@ -274,7 +274,7 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
-        Alert.alert('Ikosa', 'Ntiwashoboye kumenya uwowe. Ongera ukinjire.')
+        Alert.alert(t('alertError'), t('unableDetermineUser'))
         return
       }
 
@@ -384,13 +384,15 @@ export default function AddPaymentForm({ onBack, onSuccess }: AddPaymentFormProp
 
       Alert.alert(
         'Byagenze neza!', 
-        `Ubwishyu bwa ${amount.toLocaleString()} RWF bwemezwe neza! (Simulation Mode)`
+                  currentLanguage === 'en' 
+            ? `Payment of ${amount.toLocaleString()} RWF approved successfully! (Simulation Mode)`
+            : `Ubwishyu bwa ${amount.toLocaleString()} RWF bwemezwe neza! (Simulation Mode)`
       )
       onSuccess()
 
     } catch (error) {
       console.error('❌ [MOBILE_PAYMENT_SIMULATION] Error processing payment:', error)
-      Alert.alert('Ikosa', 'Ntiyashoboye kwandika ubwishyu. Ongera ugerageze.')
+              Alert.alert(t('alertError'), t('unableApprovePayment'))
     } finally {
       setLoading(false)
     }

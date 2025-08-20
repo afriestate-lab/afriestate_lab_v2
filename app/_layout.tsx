@@ -213,10 +213,6 @@ function DashboardScreen() {
   const [loading, setLoading] = useState(true)
   const { theme } = useTheme()
 
-  useEffect(() => {
-    checkUserRole()
-  }, [])
-
   const checkUserRole = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -234,6 +230,7 @@ function DashboardScreen() {
       if (user.email === 'admin@icumbi.com') {
         console.log('🔧 [ROLE_CHECK] Hardcoded admin detected - forcing admin role')
         setUserRole('admin')
+        setLoading(false)
         return
       }
 
@@ -281,6 +278,10 @@ function DashboardScreen() {
     }
   }
 
+  useEffect(() => {
+    checkUserRole()
+  }, [])
+
   if (loading) {
     return (
       <View style={[styles.screen, { backgroundColor: theme.background }]}>
@@ -316,9 +317,9 @@ function DashboardScreen() {
   console.log('✅ [DASHBOARD_ROUTING] Routing to Welcome Screen (guest)')
     return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
-      <Text style={[styles.screenText, { color: theme.text }]}>{t('welcomeToIcumbi')}</Text>
+      <Text style={[styles.screenText, { color: theme.text }]}>Welcome to Icumbi!</Text>
       <Text style={[styles.subText, { color: theme.textSecondary }]}>
-        {t('welcomeToContinueMessage')}
+        To continue, view our properties on the Home tab or go to your Profile to see your information.
 </Text>
     </View>
   )
@@ -326,6 +327,7 @@ function DashboardScreen() {
 
 function AddScreen() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const { theme } = useTheme()
   const [showModal, setShowModal] = useState(false)
   const [showTenantModal, setShowTenantModal] = useState(false)
@@ -338,22 +340,22 @@ function AddScreen() {
       setShowTenantModal(true)
     } else {
       Alert.alert(
-        t('addOptionsTitle'),
-        t('addOptionsQuestion'),
+        'Choose what to add',
+        'What would you like to add to Icumbi?',
         [
           { 
-            text: t('propertyOption'),
+            text: 'Property',
             onPress: () => {
               Alert.alert(
-                t('addPropertyTitle'),
-                t('addPropertyMessage'),
+                'Add Property',
+                'To add a property, you need to go to the Icumbi.com website or use the landlord dashboard.',
                 [
                   { text: t('closeDialog'), style: 'cancel' },
                   { 
                     text: t('goToDashboardButton'),
                     onPress: () => {
                       // Navigate to Dashboard tab
-                      Alert.alert(t('about'), t('dashboardInfo'))
+                      Alert.alert('About', 'Go to Dashboard to use the property addition options.')
                     }
                   }
                 ]
@@ -361,11 +363,11 @@ function AddScreen() {
             }
           },
           { 
-            text: t('messageOption'),
+            text: 'Message',
             onPress: () => {
               Alert.alert(
-                t('sendMessageTitle'),
-                t('sendMessageDescription'),
+                              'Send Message',
+              'To send a message, go to Dashboard and select "Messages".',
                 [
                   { text: t('closeDialog'), style: 'cancel' },
                   { 
@@ -464,12 +466,13 @@ function MessagesScreen() {
   )
 }
 
-function ProfileScreen() {
+function ProfileScreen({ onShowSignIn }: { onShowSignIn: () => void }) {
   const { user } = useAuth()
   const { theme, themeMode, toggleTheme } = useTheme()
   const { t, currentLanguage, changeLanguage } = useLanguage()
   const [userProfile, setUserProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
   
   const loadUserProfile = React.useCallback(async () => {
     if (!user) {
@@ -506,7 +509,7 @@ function ProfileScreen() {
       t('signOut'),
       t('logoutConfirm'),
       [
-        { text: t('cancel'), style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         { 
           text: t('signOut'), 
           style: 'destructive',
@@ -556,9 +559,9 @@ function ProfileScreen() {
         <View style={[styles.profileCard, { backgroundColor: theme.card, shadowColor: theme.cardShadow }]}>
           <Ionicons name="person-circle" size={120} color={theme.primary} style={styles.profileIcon} />
           <Text style={[styles.profileTitle, { color: theme.text }]}>{t('myAccount')}</Text>
-          <Text style={[styles.profileSubtitle, { color: theme.textSecondary }]}>Injira kugira ngo urebye amakuru yawe</Text>
+          <Text style={[styles.profileSubtitle, { color: theme.textSecondary }]}>{t('signInToViewProfile')}</Text>
           <TouchableOpacity 
-            onPress={() => router.push('/auth/sign-in')}
+            onPress={onShowSignIn}
             style={[styles.primaryButton, { backgroundColor: theme.primary }]}
           >
             <Text style={styles.primaryButtonText}>{t('signIn')}</Text>
@@ -730,6 +733,45 @@ function ProfileScreen() {
         </View>
         <Text style={[styles.footerVersion, { color: theme.textTertiary }]}>Version 1.0.0</Text>
       </View>
+      
+      {/* Privacy Policy Modal */}
+      <Modal visible={showPrivacyModal} animationType="slide" onRequestClose={() => setShowPrivacyModal(false)}>
+        <View style={styles.privacyModalContainer}>
+          <View style={styles.privacyModalHeader}>
+            <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={styles.privacyModalBackButton}>
+              <Ionicons name="close" size={24} color="#000" />
+            </TouchableOpacity>
+            <Text style={styles.privacyModalTitle}>Privacy Policy & Terms</Text>
+          </View>
+          <ScrollView style={styles.privacyModalContent}>
+            <Text style={styles.privacyModalText}>
+              Welcome to Icumbi ("we," "our," or "us"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the Icumbi mobile application ("App").
+            </Text>
+            <Text style={styles.privacyModalText}>
+              By using our App, you agree to the collection and use of information in accordance with this policy. If you do not agree with this policy, please do not use our App.
+            </Text>
+            <Text style={styles.privacyModalSectionTitle}>1. Information We Collect</Text>
+            <Text style={styles.privacyModalText}>
+              We collect personal information including your name, phone number, email address, and role in the platform. We also collect property and payment information as needed for our services.
+            </Text>
+            <Text style={styles.privacyModalSectionTitle}>2. How We Use Your Information</Text>
+            <Text style={styles.privacyModalText}>
+              We use your information to provide our services, process payments, manage properties, and improve our app functionality.
+            </Text>
+            <Text style={styles.privacyModalSectionTitle}>3. Data Security</Text>
+            <Text style={styles.privacyModalText}>
+              We implement industry-standard security measures to protect your information, including encryption and secure authentication.
+            </Text>
+            <Text style={styles.privacyModalSectionTitle}>4. Contact Information</Text>
+            <Text style={styles.privacyModalText}>
+              For questions about this Privacy Policy, please contact us:{'\n'}
+              Email: support@icumbi.com{'\n'}
+              Phone: +250 780 0566 266{'\n'}
+              Address: Kigali, Rwanda
+            </Text>
+          </ScrollView>
+        </View>
+      </Modal>
     </ScrollView>
   )
 }
@@ -845,9 +887,6 @@ function CustomTabBar({ state, descriptors, navigation, onShowSignIn }: BottomTa
 export default function RootLayout() {
   const [showSignIn, setShowSignIn] = useState(false)
   const [showSignUp, setShowSignUp] = useState(false)
-  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
-  
-
   
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -864,7 +903,11 @@ export default function RootLayout() {
                 <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Dashibodi' }} />
                 <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
                 <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: 'Ubutumwa' }} />
-                <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Konti' }} />
+                <Tab.Screen 
+                  name="Profile" 
+                  children={(props) => <ProfileScreen {...props} onShowSignIn={() => setShowSignIn(true)} />}
+                  options={{ tabBarLabel: 'Konti' }} 
+                />
               </Tab.Navigator>
               <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
                 <SignInScreen 
@@ -885,45 +928,6 @@ export default function RootLayout() {
                     setShowSignIn(true);
                   }}
                 />
-              </Modal>
-              
-              {/* Privacy Policy Modal */}
-              <Modal visible={showPrivacyModal} animationType="slide" onRequestClose={() => setShowPrivacyModal(false)}>
-                <View style={styles.privacyModalContainer}>
-                  <View style={styles.privacyModalHeader}>
-                    <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={styles.privacyModalBackButton}>
-                      <Ionicons name="close" size={24} color="#000" />
-                    </TouchableOpacity>
-                    <Text style={styles.privacyModalTitle}>Privacy Policy & Terms</Text>
-                  </View>
-                  <ScrollView style={styles.privacyModalContent}>
-                    <Text style={styles.privacyModalText}>
-                      Welcome to Icumbi ("we," "our," or "us"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the Icumbi mobile application ("App").
-                    </Text>
-                    <Text style={styles.privacyModalText}>
-                      By using our App, you agree to the collection and use of information in accordance with this policy. If you do not agree with this policy, please do not use our App.
-                    </Text>
-                    <Text style={styles.privacyModalSectionTitle}>1. Information We Collect</Text>
-                    <Text style={styles.privacyModalText}>
-                      We collect personal information including your name, phone number, email address, and role in the platform. We also collect property and payment information as needed for our services.
-                    </Text>
-                    <Text style={styles.privacyModalSectionTitle}>2. How We Use Your Information</Text>
-                    <Text style={styles.privacyModalText}>
-                      We use your information to provide our services, process payments, manage properties, and improve our app functionality.
-                    </Text>
-                    <Text style={styles.privacyModalSectionTitle}>3. Data Security</Text>
-                    <Text style={styles.privacyModalText}>
-                      We implement industry-standard security measures to protect your information, including encryption and secure authentication.
-                    </Text>
-                    <Text style={styles.privacyModalSectionTitle}>4. Contact Information</Text>
-                    <Text style={styles.privacyModalText}>
-                      For questions about this Privacy Policy, please contact us:{'\n'}
-                      Email: support@icumbi.com{'\n'}
-                      Phone: +250 780 0566 266{'\n'}
-                      Address: Kigali, Rwanda
-                    </Text>
-                  </ScrollView>
-                </View>
               </Modal>
             </AuthProvider>
             <StatusBarWrapper />

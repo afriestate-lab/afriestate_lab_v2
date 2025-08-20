@@ -76,7 +76,7 @@ export default function AddTenantForm({ onBack, onSuccess }: AddTenantFormProps)
         let allRooms: any[] = []
         
         try {
-          const roomPromises = propertyIds.map(propertyId => 
+          const roomPromises = propertyIds.map((propertyId: string) => 
             supabase.rpc('get_property_rooms', {
               p_property_id: propertyId
             })
@@ -118,7 +118,7 @@ export default function AddTenantForm({ onBack, onSuccess }: AddTenantFormProps)
           return
         }
 
-        if (roomsData.length === 0) {
+        if (allRooms.length === 0) {
           console.warn('No vacant rooms found')
           Alert.alert('Ikosa', 'Ntiyashoboye gushaka ibyumba byubusa.')
           return

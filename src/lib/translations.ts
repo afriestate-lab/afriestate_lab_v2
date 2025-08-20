@@ -60,6 +60,7 @@ export interface Translations {
   freeTier: string
   notSet: string
   nothingRequired: string
+  signInToViewProfile: string
 
   // Settings
   language: string
@@ -303,24 +304,6 @@ export interface Translations {
   sendMessageAccessibility: string
   sendMessageHint: string
   requestExtensionModal: string
-  
-  // Additional login and welcome texts
-  loginBeforeAsk: string
-  loginBeforeAskMessage: string
-  closeButton: string
-  loginButton: string
-  welcomeToIcumbi: string
-  welcomeToContinueMessage: string
-  addPropertyTitle: string
-  addPropertyMessage: string
-  closeDialog: string
-  goToDashboardButton: string
-  sendMessageTitle: string
-  sendMessageDescription: string
-  addOptionsTitle: string
-  addOptionsQuestion: string
-  propertyOption: string
-  messageOption: string
   requestExtensionAccessibility: string
   requestExtensionHint: string
 
@@ -412,6 +395,7 @@ export const translations: Record<Language, Translations> = {
     freeTier: 'Kubuntu (0 RWF)',
     notSet: 'Ntabwo byashyizwemo',
     nothingRequired: 'Kubuntu - ntacyo gisabwa',
+    signInToViewProfile: 'Injira kugira ngo urebye amakuru yawe',
 
     // Settings
     settings: 'Igenamiterere',
@@ -659,24 +643,6 @@ export const translations: Record<Language, Translations> = {
     requestExtensionAccessibility: 'Ohereza icyifuzo cyo kongera igihe',
     requestExtensionHint: 'Kanda kugira ngo wohereze icyifuzo cyo kongera igihe kuri nyirinyubako',
     
-    // Additional login and welcome texts
-    loginBeforeAsk: 'Injira mbere',
-    loginBeforeAskMessage: 'Ugomba kwinjira mbere yo kubaza ibibazo ku nyubako.',
-    closeButton: 'Siba',
-    loginButton: 'Injira',
-    welcomeToIcumbi: 'Murakaza neza kuri Icumbi!',
-    welcomeToContinueMessage: 'Kugira ngo ukomeze, reba inyubako zacu ziri kuri Ahabanza cyangwa ujya kuri Konti wenyine urebe amakuru yawe.',
-    addPropertyTitle: 'Ongeramo Inyubako',
-    addPropertyMessage: 'Kugira ngo wongeramo inyubako, ugomba kujya kuri website ya Icumbi.com cyangwa ukoreshe dashboard ya landlord.',
-    closeDialog: 'Siba',
-    goToDashboardButton: 'Jya kuri Dashibodi',
-    sendMessageTitle: 'Ohereza Ubutumwa',
-    sendMessageDescription: 'Kugira ngo wohereze ubutumwa, jya kuri Dashboard (Dashibodi) maze uhitamo "Ubutumwa".',
-    addOptionsTitle: 'Hitamo icyo ushaka kongeraho',
-    addOptionsQuestion: 'Ni iki ushaka kongeraho kuri Icumbi?',
-    propertyOption: 'Inyubako',
-    messageOption: 'Ubutumwa',
-    
     // Common error/success messages (app-specific)
     unableDetermineUser: 'Ntiwashoboye kumenya uwowe. Ongera ukinjire.',
     unableFetchProperties: 'Ntiyashoboye gushaka inyubako zawe.',
@@ -763,6 +729,7 @@ export const translations: Record<Language, Translations> = {
     freeTier: 'Free (0 RWF)',
     notSet: 'Not set',
     nothingRequired: 'Free - nothing required',
+    signInToViewProfile: 'Sign in to view your information',
 
     // Settings
     settings: 'Settings',
@@ -1009,24 +976,6 @@ export const translations: Record<Language, Translations> = {
     requestExtensionModal: 'Request Extension',
     requestExtensionAccessibility: 'Send extension request',
     requestExtensionHint: 'Tap to send extension request to landlord',
-    
-    // Additional login and welcome texts
-    loginBeforeAsk: 'Login Required',
-    loginBeforeAskMessage: 'You need to login before asking questions about this property.',
-    closeButton: 'Close',
-    loginButton: 'Login',
-    welcomeToIcumbi: 'Welcome to Icumbi!',
-    welcomeToContinueMessage: 'To continue, view our properties on the Home tab or go to your Profile to see your information.',
-    addPropertyTitle: 'Add Property',
-    addPropertyMessage: 'To add a property, you need to go to the Icumbi.com website or use the landlord dashboard.',
-    closeDialog: 'Close',
-    goToDashboardButton: 'Go to Dashboard',
-    sendMessageTitle: 'Send Message',
-    sendMessageDescription: 'To send a message, go to Dashboard and select "Messages".',
-    addOptionsTitle: 'Choose what to add',
-    addOptionsQuestion: 'What would you like to add to Icumbi?',
-    propertyOption: 'Property',
-    messageOption: 'Message',
     
     // Common error/success messages (app-specific)
     unableDetermineUser: 'Could not determine your session. Please sign in again.',

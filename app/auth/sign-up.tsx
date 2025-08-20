@@ -199,11 +199,16 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
       console.log('Payload created:', signupPayload);
     
       // Both email and phone are required for signup
-
-      // Since the API endpoint is not available (404), use direct Supabase authentication
-      console.log('🔄 API endpoint unavailable, using direct Supabase signup');
       
-      const email = formData.email.trim() || `${formData.phone_number}@icumbi.temp`;
+      // Ensure we have a valid email for authentication
+      if (!formData.email.trim()) {
+        setError(currentLanguage === 'en' ? 'Email address is required for account creation.' : 'Imeri iba ngombwa mu gufungura konti.');
+        setLoading(false);
+        return;
+      }
+      
+      const email = formData.email.trim().toLowerCase();
+      console.log('🔐 Creating Supabase auth user with email:', email);
       
       // Create user in Supabase Auth
       console.log('🔐 Creating Supabase auth user...');
@@ -244,73 +249,71 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
 
       console.log('✅ Supabase auth user created:', authData.user.id);
       
-      // Try to create user record in users table, but continue if it fails
-      console.log('📝 Attempting to create user record in database...');
-      const { data: dbUserData, error: userError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          full_name: formData.full_name.trim(),
-          phone_number: formData.phone_number.trim(),
-          email: formData.email.trim() || null,
-          role: role,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
+      // Create user record - since users table has RLS restrictions,
+      // we'll create the record in tenant_users table instead
+      console.log('📝 Creating user record in tenant_users table...');
+      
       let userData;
+      let userError = null;
+      
+      try {
+        // Create tenant_users record (this should work with RLS)
+        const { data: tenantUserData, error: tenantUserError } = await supabase
+          .from('tenant_users')
+          .insert({
+            auth_user_id: authData.user.id,
+            full_name: formData.full_name.trim(),
+            email: email,
+            phone_number: formData.phone_number.trim(),
+            status: 'active'
+          })
+          .select()
+          .single();
+
+        if (tenantUserError) {
+          console.error('❌ Tenant user creation failed:', tenantUserError.message);
+          console.error('Error code:', tenantUserError.code);
+          console.error('Error details:', tenantUserError.details);
+          userError = tenantUserError;
+        } else {
+          console.log('✅ Tenant user record created:', tenantUserData.id);
+          
+          // Create userData object from tenant user record
+          userData = {
+            id: authData.user.id,
+            full_name: formData.full_name.trim(),
+            phone_number: formData.phone_number.trim(),
+            email: email,
+            role: role
+          };
+        }
+      } catch (error) {
+        console.error('❌ Exception during tenant user creation:', error);
+        userError = error;
+      }
+
+      // If tenant user creation failed, we cannot continue
       if (userError) {
-        console.warn('⚠️ Database user creation failed, but auth user exists:', userError.message);
-        // Continue with auth user data instead
-        console.log('ℹ️ Using auth user metadata instead of database record');
-        
-        // Create a userData object from auth user metadata
-        userData = {
-          id: authData.user.id,
-          full_name: formData.full_name.trim(),
-          phone_number: formData.phone_number.trim(),
-          email: formData.email.trim() || null,
-          role: role
-        };
-      } else {
-        console.log('✅ User record created in database:', dbUserData.id);
-        userData = dbUserData;
+        console.error('❌ CRITICAL: Tenant user record creation failed. Authentication will not work.');
+        setError(currentLanguage === 'en' 
+          ? 'Account creation failed. Please try again or contact support.' 
+          : 'Fungura konti byanze. Gerageza ongera cyangwa hamagara ubufasha.');
+        setLoading(false);
+        return;
       }
       setSuccess(currentLanguage === 'en' ? 'Your account has been created! Signing you in...' : 'Konti yawe yafunguwe neza! Ubu urimo kwinjira...')
       
-      // Create role-specific records
+      // Create additional tenant records if needed
       try {
-        // If user is a tenant, create tenant_users and tenants records
         if (userData.role === 'tenant') {
-          console.log('🔧 Creating tenant records for user:', userData.id);
+          console.log('🔧 Creating additional tenant records...');
           
-          // First, try to create tenant_users record
-          const { data: tenantUserData, error: tenantUserError } = await supabase
-            .from('tenant_users')
-            .insert({
-              auth_user_id: userData.id,
-              full_name: userData.full_name,
-              email: userData.email,
-              phone_number: userData.phone_number,
-              status: 'active'
-            })
-            .select()
-            .single();
-            
-          if (tenantUserError) {
-            console.error('❌ Failed to create tenant_users record:', tenantUserError);
-            // Continue anyway, as the table might not exist or has RLS policies
-            console.log('ℹ️ tenant_users table may not exist or RLS blocks insertion');
-          } else {
-            console.log('✅ Created tenant_users record:', tenantUserData.id);
-            
-            // Then create tenants record
+          // Try to create tenants record
+          try {
             const { data: tenantData, error: tenantError } = await supabase
               .from('tenants')
               .insert({
-                tenant_user_id: tenantUserData.id,
+                tenant_user_id: userData.id, // Use the auth user ID
                 full_name: userData.full_name,
                 phone_number: userData.phone_number,
                 email: userData.email,
@@ -323,14 +326,18 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
               
             if (tenantError) {
               console.error('❌ Failed to create tenants record:', tenantError);
+              console.error('Error code:', tenantError.code);
+              console.error('Error details:', tenantError.details);
             } else {
               console.log('✅ Created tenants record:', tenantData.id);
             }
+          } catch (error) {
+            console.error('❌ Exception creating tenants record:', error);
           }
         }
       } catch (verifyError) {
-        console.error('❌ User verification error:', verifyError);
-        // Continue with auto-login anyway, as the user might still be created
+        console.error('❌ Additional record creation error:', verifyError);
+        // Continue with auto-login anyway
       }
       
       // User is already authenticated from the signup process, so we're done

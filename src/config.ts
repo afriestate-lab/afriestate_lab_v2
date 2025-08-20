@@ -4,11 +4,11 @@ export const config = {
   API_URL: 'https://icumbi.com',
   
   // Environment
-  APP_ENV: process.env.EXPO_PUBLIC_APP_ENV || 'development',
+  APP_ENV: 'production',
   
-  // Supabase Configuration (these should be in .env file)
-  SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://sgektsymnqkyqcethveh.supabase.co',
-  SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnZWt0c3ltbnFreXFjZXRodmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNjk2MjEsImV4cCI6MjA2NTg0NTYyMX0.9-GgphRm5dMkmuXmBzu2cORM50qj4bLJdngAqDpjErU',
+  // Supabase Configuration (hardcoded for production)
+  SUPABASE_URL: 'https://sgektsymnqkyqcethveh.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnZWt0c3ltbnFreXFjZXRodmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNjk2MjEsImV4cCI6MjA2NTg0NTYyMX0.9-GgphRm5dMkmuXmBzu2cORM50qj4bLJdngAqDpjErU',
 }
 
 // API Endpoints
