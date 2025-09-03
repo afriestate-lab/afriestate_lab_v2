@@ -76,6 +76,8 @@ export interface Translations {
 
   // Generic UI
   selectLanguage: string
+  chooseYourLanguage: string
+  enterApp: string
 
   // Properties
   property: string
@@ -412,6 +414,8 @@ export const translations: Record<Language, Translations> = {
 
     // Generic UI
     selectLanguage: 'Hitamo Ururimi',
+    chooseYourLanguage: 'Hitamo ururimi rwawe',
+    enterApp: 'Injira muri App',
 
     // Properties
     property: 'Inyubako',
@@ -746,6 +750,8 @@ export const translations: Record<Language, Translations> = {
 
     // Generic UI
     selectLanguage: 'Select Language',
+    chooseYourLanguage: 'Choose your language',
+    enterApp: 'Enter App',
 
     // Properties
     property: 'Property',

@@ -16,6 +16,7 @@ import TenantActionModal from './tenant-action-modal'
 import AddActionModal from './add-action-modal'
 import { LanguageProvider, useLanguage } from '@/lib/languageContext'
 import IcumbiLogo from './components/IcumbiLogo'
+import LanguageSelectionOverlay from './language-selection'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -884,6 +885,25 @@ function CustomTabBar({ state, descriptors, navigation, onShowSignIn }: BottomTa
   )
 }
 
+// Language Selection Wrapper Component
+function LanguageSelectionWrapper({ children }: { children: React.ReactNode }) {
+  const { changeLanguage } = useLanguage()
+
+  const handleLanguageSelected = async (language: 'rw' | 'en') => {
+    try {
+      await changeLanguage(language)
+    } catch (error) {
+      console.error('Error setting language:', error)
+    }
+  }
+
+  return (
+    <LanguageSelectionOverlay onLanguageSelected={handleLanguageSelected}>
+      {children}
+    </LanguageSelectionOverlay>
+  )
+}
+
 export default function RootLayout() {
   const [showSignIn, setShowSignIn] = useState(false)
   const [showSignUp, setShowSignUp] = useState(false)
@@ -893,44 +913,46 @@ export default function RootLayout() {
       <PaperProvider>
         <LanguageProvider>
           <ThemeProvider>
-            <AuthProvider>
-              <Tab.Navigator
-                initialRouteName="Home"
-                tabBar={props => <CustomTabBar {...props} onShowSignIn={() => setShowSignIn(true)} />}
-                screenOptions={{ headerShown: false }}
-              >
-                <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Ahabanza' }} />
-                <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Dashibodi' }} />
-                <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
-                <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: 'Ubutumwa' }} />
-                <Tab.Screen 
-                  name="Profile" 
-                  children={(props) => <ProfileScreen {...props} onShowSignIn={() => setShowSignIn(true)} />}
-                  options={{ tabBarLabel: 'Konti' }} 
-                />
-              </Tab.Navigator>
-              <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
-                <SignInScreen 
-                  onSuccess={() => setShowSignIn(false)} 
-                  onClose={() => setShowSignIn(false)}
-                  onShowSignUp={() => {
-                    setShowSignIn(false);
-                    setShowSignUp(true);
-                  }}
-                />
-              </Modal>
-              <Modal visible={showSignUp} animationType="slide" onRequestClose={() => setShowSignUp(false)}>
-                <SignUpScreen 
-                  onSuccess={() => setShowSignUp(false)} 
-                  onClose={() => setShowSignUp(false)}
-                  onShowSignIn={() => {
-                    setShowSignUp(false);
-                    setShowSignIn(true);
-                  }}
-                />
-              </Modal>
-            </AuthProvider>
-            <StatusBarWrapper />
+            <LanguageSelectionWrapper>
+              <AuthProvider>
+                <Tab.Navigator
+                  initialRouteName="Home"
+                  tabBar={props => <CustomTabBar {...props} onShowSignIn={() => setShowSignIn(true)} />}
+                  screenOptions={{ headerShown: false }}
+                >
+                  <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Ahabanza' }} />
+                  <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Dashibodi' }} />
+                  <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
+                  <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: 'Ubutumwa' }} />
+                  <Tab.Screen 
+                    name="Profile" 
+                    children={(props) => <ProfileScreen {...props} onShowSignIn={() => setShowSignIn(true)} />}
+                    options={{ tabBarLabel: 'Konti' }} 
+                  />
+                </Tab.Navigator>
+                <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
+                  <SignInScreen 
+                    onSuccess={() => setShowSignIn(false)} 
+                    onClose={() => setShowSignIn(false)}
+                    onShowSignUp={() => {
+                      setShowSignIn(false);
+                      setShowSignUp(true);
+                    }}
+                  />
+                </Modal>
+                <Modal visible={showSignUp} animationType="slide" onRequestClose={() => setShowSignUp(false)}>
+                  <SignUpScreen 
+                    onSuccess={() => setShowSignUp(false)} 
+                    onClose={() => setShowSignUp(false)}
+                    onShowSignIn={() => {
+                      setShowSignUp(false);
+                      setShowSignIn(true);
+                    }}
+                  />
+                </Modal>
+              </AuthProvider>
+              <StatusBarWrapper />
+            </LanguageSelectionWrapper>
           </ThemeProvider>
         </LanguageProvider>
       </PaperProvider>
@@ -1331,4 +1353,4 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 12,
   },
-}) 
+})
