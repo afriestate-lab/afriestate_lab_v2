@@ -46,6 +46,7 @@ interface Property {
   landlord_id: string
   description?: string
   featured_image_url?: string
+  image_url?: string
   property_images?: string[]
   amenities?: string[]
   property_type: 'apartment' | 'house' | 'villa' | 'studio' | 'room'
@@ -166,6 +167,10 @@ export default function PropertiesScreen() {
             // Check if featured_image_url exists and is not a local file URI
             if (property.featured_image_url && !isLocalFileUri(property.featured_image_url)) {
               return property.featured_image_url
+            }
+            // Backward compatibility: some RPCs may return legacy image_url
+            if (property.image_url && !isLocalFileUri(property.image_url)) {
+              return property.image_url
             }
             // Check if property_images array has valid URLs
             if (property.property_images && property.property_images.length > 0) {
