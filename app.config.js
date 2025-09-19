@@ -6,6 +6,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "automatic",
+    sdkVersion: "54.0.0",
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",

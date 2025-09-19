@@ -1,5 +1,6 @@
 // Mobile-specific helper functions for the Icumbi app
 import { supabase } from './supabase'
+import * as FileSystem from 'expo-file-system'
 
 export interface TenantUser {
   id: string
@@ -324,24 +325,50 @@ export const uploadImageToStorage = async (
     
     console.log('Uploading image:', { uri, filename, bucket })
     
-    // Convert local URI to blob
-    const response = await fetch(uri)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch image: ${response.status}`)
+    // Read file using expo-file-system for better compatibility
+    let base64Data: string
+    try {
+      console.log('Reading file from URI:', uri)
+      base64Data = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      })
+      console.log('File read successfully, size:', base64Data.length, 'characters')
+    } catch (fileError) {
+      console.error('Failed to read image file:', fileError)
+      throw new Error(`Failed to read image file: ${fileError instanceof Error ? fileError.message : 'Unknown error'}`)
     }
     
-    const blob = await response.blob()
-    console.log('Image blob size:', blob.size, 'bytes')
+    // Validate file size
+    if (!base64Data || base64Data.length === 0) {
+      throw new Error('Image file is empty or corrupted')
+    }
+    
+    // Convert base64 to blob
+    const byteCharacters = atob(base64Data)
+    const byteNumbers = new Array(byteCharacters.length)
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    const byteArray = new Uint8Array(byteNumbers)
+    const blob = new Blob([byteArray], { type: 'image/jpeg' })
+    console.log('Image blob size:', blob.size, 'bytes', 'type:', blob.type)
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    console.log('User authentication status:', { user: user?.id, authError })
+    if (authError || !user) {
+      console.error('User authentication failed:', authError)
+      throw new Error('User authentication required for image upload')
+    }
     
-    // Upload to Supabase Storage
+    console.log('User authenticated:', user.id)
+    
+    // Build per-user object path and upload to Supabase Storage
+    const objectPath = `${user.id}/${filename}`
+
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(filename, blob, {
-        contentType: 'image/jpeg',
+      .upload(objectPath, blob, {
+        contentType: blob.type || 'image/jpeg',
         cacheControl: '3600',
         upsert: false
       })
@@ -362,7 +389,7 @@ export const uploadImageToStorage = async (
     // Get public URL
     const { data: urlData } = supabase.storage
       .from(bucket)
-      .getPublicUrl(filename)
+      .getPublicUrl(objectPath)
     
     console.log('Public URL:', urlData.publicUrl)
     return urlData.publicUrl
