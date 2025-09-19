@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTN MoMo API Setup</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .button:hover {
+            background: #5a67d8;
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .credentials {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #10b981;
+        }
+        .error {
+            background: #fef2f2;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ef4444;
+            color: #dc2626;
+        }
+        .loading {
+            text-align: center;
+            color: #6b7280;
+        }
+        .code {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 MTN MoMo API Setup</h1>
+            <p>Create API User and Key for MTN MoMo integration</p>
+        </div>
+
+        <div id="status">
+            <p>Click the button below to create your MTN MoMo API credentials.</p>
+        </div>
+
+        <button class="button" onclick="createCredentials()" id="createBtn">
+            Create API User & Key
+        </button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const config = {
+            baseUrl: 'https://sandbox.momodeveloper.mtn.com',
+            subscriptionKey: '26dcf9a019924b9aa43f84d6b3dd016e',
+            callbackUrl: 'https://icumbi.com/api/momo/callback'
+        };
+
+        async function createCredentials() {
+            const btn = document.getElementById('createBtn');
+            const status = document.getElementById('status');
+            const results = document.getElementById('results');
+            
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+            status.innerHTML = '<div class="loading">🔄 Creating API User and Key...</div>';
+            results.innerHTML = '';
+
+            try {
+                // Generate unique reference ID
+                const referenceId = `ICUMBI_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                
+                // Step 1: Create API User
+                status.innerHTML = '<div class="loading">🔄 Step 1: Creating API User...</div>';
+                
+                const userResponse = await fetch(`${config.baseUrl}/v1_0/apiuser`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Reference-Id': referenceId,
+                        'Ocp-Apim-Subscription-Key': config.subscriptionKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        providerCallbackHost: config.callbackUrl
+                    })
+                });
+
+                if (!userResponse.ok) {
+                    const errorText = await userResponse.text();
+                    throw new Error(`API User creation failed: ${userResponse.status} ${userResponse.statusText}\n${errorText}`);
+                }
+
+                // Step 2: Wait for API user to be ready
+                status.innerHTML = '<div class="loading">🔄 Step 2: Waiting for API user to be ready...</div>';
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Step 3: Create API Key
+                status.innerHTML = '<div class="loading">🔄 Step 3: Creating API Key...</div>';
+                
+                const keyResponse = await fetch(`${config.baseUrl}/v1_0/apiuser/${referenceId}/apikey`, {
+                    method: 'POST',
+                    headers: {
+                        'Ocp-Apim-Subscription-Key': config.subscriptionKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        providerCallbackHost: config.callbackUrl
+                    })
+                });
+
+                if (!keyResponse.ok) {
+                    const errorText = await keyResponse.text();
+                    throw new Error(`API Key creation failed: ${keyResponse.status} ${keyResponse.statusText}\n${errorText}`);
+                }
+
+                const keyData = await keyResponse.json();
+
+                // Step 4: Display results
+                status.innerHTML = '<div style="color: #10b981; text-align: center;">✅ Credentials created successfully!</div>';
+                
+                results.innerHTML = `
+                    <div class="credentials">
+                        <h3>🎉 Your MTN MoMo Credentials</h3>
+                        <p><strong>API User ID:</strong> ${referenceId}</p>
+                        <p><strong>API Key:</strong> ${keyData.apiKey}</p>
+                        <p><strong>Environment:</strong> ${keyData.targetEnvironment}</p>
+                    </div>
+                    
+                    <div class="credentials">
+                        <h3>📝 Add these to your src/config.ts file:</h3>
+                        <div class="code">
+API_USER_ID: process.env.EXPO_PUBLIC_MTN_MOMO_API_USER_ID || '${referenceId}',
+API_KEY: process.env.EXPO_PUBLIC_MTN_MOMO_API_KEY || '${keyData.apiKey}',
+                        </div>
+                    </div>
+                    
+                    <div class="credentials">
+                        <h3>🔧 Or add to your .env file:</h3>
+                        <div class="code">
+EXPO_PUBLIC_MTN_MOMO_API_USER_ID=${referenceId}
+EXPO_PUBLIC_MTN_MOMO_API_KEY=${keyData.apiKey}
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                status.innerHTML = '<div class="error">❌ Error creating credentials</div>';
+                results.innerHTML = `
+                    <div class="error">
+                        <h3>Error Details:</h3>
+                        <p>${error.message}</p>
+                        <h3>Troubleshooting:</h3>
+                        <ul>
+                            <li>Check your internet connection</li>
+                            <li>Verify the subscription key is correct</li>
+                            <li>Make sure you have access to MTN MoMo sandbox</li>
+                        </ul>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create API User & Key';
+            }
+        }
+    </script>
+</body>
+</html>

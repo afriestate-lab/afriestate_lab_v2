@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDate } from '@/lib/helpers'
+import { useLanguage } from '@/lib/languageContext'
 
 interface PropertyDetail {
   id: string
@@ -63,6 +64,7 @@ interface PropertiesPageProps {
 }
 
 export default function PropertiesPage({ onBack }: PropertiesPageProps) {
+  const { t, currentLanguage } = useLanguage()
   const [properties, setProperties] = useState<PropertyDetail[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -325,19 +327,19 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{selectedProperty.total_rooms}</Text>
-            <Text style={styles.statLabel}>Ibyumba byose</Text>
+            <Text style={styles.statLabel}>{t('rooms')}</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{selectedProperty.occupied_rooms}</Text>
-            <Text style={styles.statLabel}>Byatuwemo</Text>
+            <Text style={styles.statLabel}>{t('occupied')}</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{selectedProperty.occupancy_rate}%</Text>
-            <Text style={styles.statLabel}>Ikigereranyo</Text>
+            <Text style={styles.statLabel}>{t('occupancyRate')}</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{formatCurrency(selectedProperty.actual_monthly_revenue)}</Text>
-            <Text style={styles.statLabel}>Injiza z&apos;ukwezi</Text>
+            <Text style={styles.statLabel}>{t('monthlyRevenue')}</Text>
           </View>
         </View>
 
@@ -345,10 +347,10 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
         {showFilters && (
           <View style={styles.filterDropdown}>
             {[
-              { key: 'all', label: 'Byose' },
-              { key: 'occupied', label: 'Byatuwemo' },
-              { key: 'vacant', label: 'Byubusa' },
-              { key: 'maintenance', label: 'Bisuzumwa' }
+              { key: 'all', label: t('all') },
+              { key: 'occupied', label: t('occupied') },
+              { key: 'vacant', label: t('available') },
+              { key: 'maintenance', label: t('maintenance') }
             ].map(filter => (
               <TouchableOpacity
                 key={filter.key}
@@ -476,7 +478,7 @@ export default function PropertiesPage({ onBack }: PropertiesPageProps) {
           <Ionicons name="search" size={20} color="#9ca3af" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Shakira inyubako..."
+            placeholder={t('searchProperties')}
             value={searchTerm}
             onChangeText={setSearchTerm}
             placeholderTextColor="#9ca3af"

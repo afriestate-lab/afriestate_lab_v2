@@ -25,8 +25,20 @@ interface LanguageProviderProps {
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en') // Default to English
 
-  // Note: We don't auto-load language preference anymore since user wants 
-  // language selection to always appear on app start
+  // Load saved language preference on app start
+  useEffect(() => {
+    const loadLanguagePreference = async () => {
+      try {
+        const savedLanguage = await AsyncStorage.getItem('userLanguage')
+        if (savedLanguage === 'rw' || savedLanguage === 'en') {
+          setCurrentLanguage(savedLanguage)
+        }
+      } catch (error) {
+        console.error('Error loading language preference:', error)
+      }
+    }
+    loadLanguagePreference()
+  }, [])
 
   const changeLanguage = async (language: Language) => {
     try {

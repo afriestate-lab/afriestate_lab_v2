@@ -123,13 +123,13 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
 
   const validateForm = () => {
     if (!role) return setError(t('selectRole')), false;
-    if (!formData.full_name.trim()) return setError(currentLanguage === 'en' ? 'Please enter your full name.' : 'Andika amazina yawe yuzuye.'), false;
+    if (!formData.full_name.trim()) return setError(t('enterFullName')), false;
     
     // REQUIRE BOTH EMAIL AND PHONE NUMBER
-    if (!formData.email.trim()) return setError(currentLanguage === 'en' ? 'Please enter your email.' : 'Andika imeri yawe.'), false;
-    if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) return setError(currentLanguage === 'en' ? 'Invalid email. Please enter a valid email.' : 'Imeri wanditse ntiyemewe. Andika imeri nyayo.'), false;
+    if (!formData.email.trim()) return setError(t('enterEmail')), false;
+    if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) return setError(t('invalidEmail')), false;
     
-    if (!formData.phone_number.trim()) return setError(currentLanguage === 'en' ? 'Please enter your phone number.' : 'Andika numero ya telefone.'), false;
+    if (!formData.phone_number.trim()) return setError(t('enterPhoneNumber')), false;
     
     // Clean and validate phone number
     const cleanedPhone = formData.phone_number.replace(/\D/g, '');
@@ -249,52 +249,78 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
 
       console.log('✅ Supabase auth user created:', authData.user.id);
       
-      // Create user record - since users table has RLS restrictions,
-      // we'll create the record in tenant_users table instead
-      console.log('📝 Creating user record in tenant_users table...');
+      // Create user record based on role
+      console.log('📝 Creating user record based on role:', role);
       
       let userData;
       let userError = null;
       
       try {
-        // Create tenant_users record (this should work with RLS)
-        const { data: tenantUserData, error: tenantUserError } = await supabase
-          .from('tenant_users')
-          .insert({
-            auth_user_id: authData.user.id,
-            full_name: formData.full_name.trim(),
-            email: email,
-            phone_number: formData.phone_number.trim(),
-            status: 'active'
-          })
-          .select()
-          .single();
+        if (role === 'tenant') {
+          // Create tenant_users record for tenants
+          console.log('📝 Creating tenant_users record...');
+          const { data: tenantUserData, error: tenantUserError } = await supabase
+            .from('tenant_users')
+            .insert({
+              auth_user_id: authData.user.id,
+              full_name: formData.full_name.trim(),
+              email: email,
+              phone_number: formData.phone_number.trim(),
+              status: 'active'
+            })
+            .select()
+            .single();
 
-        if (tenantUserError) {
-          console.error('❌ Tenant user creation failed:', tenantUserError.message);
-          console.error('Error code:', tenantUserError.code);
-          console.error('Error details:', tenantUserError.details);
-          userError = tenantUserError;
+          if (tenantUserError) {
+            console.error('❌ Tenant user creation failed:', tenantUserError.message);
+            console.error('Error code:', tenantUserError.code);
+            console.error('Error details:', tenantUserError.details);
+            userError = tenantUserError;
+          } else {
+            console.log('✅ Tenant user record created:', tenantUserData.id);
+          }
         } else {
-          console.log('✅ Tenant user record created:', tenantUserData.id);
-          
-          // Create userData object from tenant user record
-          userData = {
-            id: authData.user.id,
-            full_name: formData.full_name.trim(),
-            phone_number: formData.phone_number.trim(),
-            email: email,
-            role: role
-          };
+          // Create users record for landlords and managers
+          console.log('📝 Creating users record for', role);
+          const { data: userRecordData, error: userRecordError } = await supabase
+            .from('users')
+            .insert({
+              id: authData.user.id,
+              role: role,
+              full_name: formData.full_name.trim(),
+              phone_number: formData.phone_number.trim(),
+              email: email,
+              avatar_url: null
+            })
+            .select()
+            .single();
+
+          if (userRecordError) {
+            console.error('❌ User record creation failed:', userRecordError.message);
+            console.error('Error code:', userRecordError.code);
+            console.error('Error details:', userRecordError.details);
+            userError = userRecordError;
+          } else {
+            console.log('✅ User record created:', userRecordData.id);
+          }
         }
+        
+        // Create userData object
+        userData = {
+          id: authData.user.id,
+          full_name: formData.full_name.trim(),
+          phone_number: formData.phone_number.trim(),
+          email: email,
+          role: role
+        };
       } catch (error) {
-        console.error('❌ Exception during tenant user creation:', error);
+        console.error('❌ Exception during user creation:', error);
         userError = error;
       }
 
-      // If tenant user creation failed, we cannot continue
+      // If user creation failed, we cannot continue
       if (userError) {
-        console.error('❌ CRITICAL: Tenant user record creation failed. Authentication will not work.');
+        console.error('❌ CRITICAL: User record creation failed. Authentication will not work.');
         setError(currentLanguage === 'en' 
           ? 'Account creation failed. Please try again or contact support.' 
           : 'Fungura konti byanze. Gerageza ongera cyangwa hamagara ubufasha.');
@@ -334,6 +360,8 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           } catch (error) {
             console.error('❌ Exception creating tenants record:', error);
           }
+        } else {
+          console.log('✅ No additional records needed for', userData.role);
         }
       } catch (verifyError) {
         console.error('❌ Additional record creation error:', verifyError);
@@ -487,7 +515,7 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
           {role === 'manager' && (
             <>
               <TextInput
-                label="PIN ya nyirinyubako (6 digits)"
+                label={t('landlordPinLabel')}
                 value={formData.landlord_pin}
                 onChangeText={v => handleInputChange('landlord_pin', v)}
                 keyboardType="number-pad"

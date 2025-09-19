@@ -13,8 +13,8 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { supabase } from '../src/lib/supabase'
-import { formatDate, formatCurrency } from '../src/lib/helpers'
+import { supabase } from '@/lib/supabase'
+import { formatDate, formatCurrency } from '@/lib/helpers'
 import { useLanguage } from '@/lib/languageContext'
 
 interface Payment {

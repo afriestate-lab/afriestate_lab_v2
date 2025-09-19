@@ -951,14 +951,14 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           {/* Inputs */}
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
             <TouchableOpacity onPress={() => setIdentifierType('phone')} style={{ marginRight: 16 }}>
-              <Text style={{ fontWeight: identifierType === 'phone' ? 'bold' : 'normal', color: '#333' }}>{currentLanguage === 'en' ? 'Phone' : 'Telefone'}</Text>
+              <Text style={{ fontWeight: identifierType === 'phone' ? 'bold' : 'normal', color: '#333' }}>{t('phone')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setIdentifierType('email')}>
-              <Text style={{ fontWeight: identifierType === 'email' ? 'bold' : 'normal', color: '#333' }}>{currentLanguage === 'en' ? 'Email' : 'Imeri'}</Text>
+              <Text style={{ fontWeight: identifierType === 'email' ? 'bold' : 'normal', color: '#333' }}>{t('email')}</Text>
             </TouchableOpacity>
           </View>
           <TextInput
-            label={identifierType === 'phone' ? (currentLanguage === 'en' ? 'Phone Number' : 'Numero ya telefone') : (currentLanguage === 'en' ? 'Email' : 'Imeri')}
+            label={identifierType === 'phone' ? t('phoneNumber') : t('email')}
             value={identifier}
             onChangeText={setIdentifier}
             keyboardType={identifierType === 'phone' ? 'phone-pad' : 'email-address'}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTN MoMo API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #667eea; color: white; cursor: pointer; }
+        button:hover { background: #5a67d8; }
+        .result { background: #f0f9ff; padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .error { background: #fef2f2; color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 MTN MoMo API User Creator</h1>
+        <p>Create API User and Key for MTN MoMo integration</p>
+        
+        <input type="text" id="subscriptionKey" placeholder="Subscription Key" value="26dcf9a019924b9aa43f84d6b3dd016e">
+        <input type="text" id="callbackHost" placeholder="Callback Host" value="https://icumbi.com/api/momo/callback">
+        <button onclick="createCredentials()">Create API User & Key</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function createCredentials() {
+            const subscriptionKey = document.getElementById('subscriptionKey').value;
+            const callbackHost = document.getElementById('callbackHost').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!subscriptionKey || !callbackHost) {
+                resultDiv.innerHTML = '<div class="result error">Please fill in all fields</div>';
+                return;
+            }
+            
+            const referenceId = generateUUID();
+            resultDiv.innerHTML = '<div class="result">Creating API User...</div>';
+            
+            try {
+                // Step 1: Create API User (using CORS proxy)
+                const userResponse = await fetch('https://cors-anywhere.herokuapp.com/https://sandbox.momodeveloper.mtn.com/v1_0/apiuser', {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'X-Reference-Id': referenceId,
+                        'Ocp-Apim-Subscription-Key': subscriptionKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ providerCallbackHost: callbackHost })
+                });
+                
+                if (userResponse.status !== 201) {
+                    throw new Error(`API User creation failed: ${userResponse.status}`);
+                }
+                
+                resultDiv.innerHTML = '<div class="result">API User created! Creating API Key...</div>';
+                
+                // Wait for API user to be ready
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Step 2: Create API Key (using CORS proxy)
+                const keyResponse = await fetch(`https://cors-anywhere.herokuapp.com/https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/${referenceId}/apikey`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Ocp-Apim-Subscription-Key': subscriptionKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ providerCallbackHost: callbackHost })
+                });
+                
+                if (!keyResponse.ok) {
+                    throw new Error(`API Key creation failed: ${keyResponse.status}`);
+                }
+                
+                const keyData = await keyResponse.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h3>✅ Success! Your MTN MoMo Credentials:</h3>
+                        <p><strong>Reference ID:</strong> ${referenceId}</p>
+                        <p><strong>API User ID:</strong> ${referenceId}</p>
+                        <p><strong>API Key:</strong> ${keyData.apiKey}</p>
+                        <p><strong>Environment:</strong> ${keyData.targetEnvironment || 'sandbox'}</p>
+                        
+                        <h4>Add to your src/config.ts:</h4>
+                        <pre>API_USER_ID: '${referenceId}',
+API_KEY: '${keyData.apiKey}',</pre>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+    </script>
+</body>
+</html>

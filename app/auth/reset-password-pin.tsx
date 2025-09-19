@@ -488,7 +488,7 @@ export default function ResetPasswordPinScreen() {
         disabled={isIdentifierLoading || !identifier.trim()}
         style={styles.button}
       >
-        {currentLanguage === 'en' ? 'Send Verification PIN' : 'Ohereza Umubare w\'kwemeza'}
+        {t('sendVerificationCode')}
       </Button>
     </View>
   );
@@ -496,7 +496,7 @@ export default function ResetPasswordPinScreen() {
   const renderPinStep = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>
-        {currentLanguage === 'en' ? 'Verify PIN' : 'Emeza Umubare'}
+        {t('verifyPin')}
       </Text>
       
       <Text style={styles.stepDescription}>

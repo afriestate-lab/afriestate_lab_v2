@@ -13,8 +13,8 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { supabase } from '../src/lib/supabase'
-import { formatDate } from '../src/lib/helpers'
+import { supabase } from '@/lib/supabase'
+import { formatDate } from '@/lib/helpers'
 
 interface Tenant {
   id: string

@@ -399,14 +399,14 @@ function AddScreen() {
       <TouchableOpacity onPress={showAddOptions} style={styles.iconContainer}>
         <Ionicons name="add-circle" size={80} color={theme.primary} />
       </TouchableOpacity>
-      <Text style={[styles.screenText, { color: theme.text }]}>Ongeraho</Text>
+      <Text style={[styles.screenText, { color: theme.text }]}>{t('add')}</Text>
       {user && user.user_metadata?.role === 'tenant' ? (
         <Text style={[styles.subText, { color: theme.textSecondary }]}>
-          Kanda kuri &ldquo;+&rdquo; kugira ngo ukongere igihe cyangwa ubone menu yose iboneka kuri inyubako ukoze.
+          {t('tenantAddInstructions')}
         </Text>
       ) : (
         <Text style={[styles.subText, { color: theme.textSecondary }]}>
-          Kanda kuri &ldquo;+&rdquo; kugira ngo wongeraho inyubako, ubutumwa, cyangwa indi makuru.
+          {t('landlordAddInstructions')}
         </Text>
       )}
       {user && (
@@ -421,7 +421,7 @@ function AddScreen() {
           }}
         >
           <Text style={{ color: 'white', fontWeight: '600', fontSize: 16 }}>
-            Hitamo icyo ushaka kongeraho
+            {t('selectWhatToAdd')}
           </Text>
         </TouchableOpacity>
       )}
@@ -885,22 +885,26 @@ function CustomTabBar({ state, descriptors, navigation, onShowSignIn }: BottomTa
   )
 }
 
-// Language Selection Wrapper Component
-function LanguageSelectionWrapper({ children }: { children: React.ReactNode }) {
-  const { changeLanguage } = useLanguage()
-
-  const handleLanguageSelected = async (language: 'rw' | 'en') => {
-    try {
-      await changeLanguage(language)
-    } catch (error) {
-      console.error('Error setting language:', error)
-    }
-  }
-
+// Tab Navigator Wrapper Component
+function TabNavigatorWrapper({ onShowSignIn }: { onShowSignIn: () => void }) {
+  const { t } = useLanguage()
+  
   return (
-    <LanguageSelectionOverlay onLanguageSelected={handleLanguageSelected}>
-      {children}
-    </LanguageSelectionOverlay>
+    <Tab.Navigator
+      initialRouteName="Home"
+      tabBar={props => <CustomTabBar {...props} onShowSignIn={onShowSignIn} />}
+      screenOptions={{ headerShown: false }}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('home') }} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: t('dashboard') }} />
+      <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
+      <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: t('messages') }} />
+      <Tab.Screen 
+        name="Profile" 
+        children={(props) => <ProfileScreen {...props} onShowSignIn={onShowSignIn} />}
+        options={{ tabBarLabel: t('profile') }} 
+      />
+    </Tab.Navigator>
   )
 }
 
@@ -913,23 +917,8 @@ export default function RootLayout() {
       <PaperProvider>
         <LanguageProvider>
           <ThemeProvider>
-            <LanguageSelectionWrapper>
-              <AuthProvider>
-                <Tab.Navigator
-                  initialRouteName="Home"
-                  tabBar={props => <CustomTabBar {...props} onShowSignIn={() => setShowSignIn(true)} />}
-                  screenOptions={{ headerShown: false }}
-                >
-                  <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Ahabanza' }} />
-                  <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Dashibodi' }} />
-                  <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
-                  <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: 'Ubutumwa' }} />
-                  <Tab.Screen 
-                    name="Profile" 
-                    children={(props) => <ProfileScreen {...props} onShowSignIn={() => setShowSignIn(true)} />}
-                    options={{ tabBarLabel: 'Konti' }} 
-                  />
-                </Tab.Navigator>
+            <AuthProvider>
+              <TabNavigatorWrapper onShowSignIn={() => setShowSignIn(true)} />
                 <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
                   <SignInScreen 
                     onSuccess={() => setShowSignIn(false)} 
@@ -952,7 +941,6 @@ export default function RootLayout() {
                 </Modal>
               </AuthProvider>
               <StatusBarWrapper />
-            </LanguageSelectionWrapper>
           </ThemeProvider>
         </LanguageProvider>
       </PaperProvider>

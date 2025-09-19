@@ -19,6 +19,9 @@ import {
 } from 'react-native-paper'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
+import { mtnMomoService } from '@/lib/mtnMomoService'
+import { getMTNMoMoErrorMessage, isRetryableError } from '@/lib/mtnMomoErrors'
+import { useLanguage } from '@/lib/languageContext'
 
 const { width, height } = Dimensions.get('window')
 
@@ -34,9 +37,10 @@ interface PaymentProcessorProps {
 }
 
 interface PaymentState {
-  step: 'processing' | 'success' | 'error'
+  step: 'processing' | 'success' | 'error' | 'waiting_confirmation'
   message: string
   transactionId?: string
+  externalId?: string
 }
 
 export default function PaymentProcessor({
@@ -49,6 +53,7 @@ export default function PaymentProcessor({
   paymentMethod,
   userPhone
 }: PaymentProcessorProps) {
+  const { t } = useLanguage()
   const theme = useTheme()
   const [paymentState, setPaymentState] = useState<PaymentState>({
     step: 'processing',
@@ -125,41 +130,115 @@ export default function PaymentProcessor({
 
 
   const processMTNMoMo = async () => {
-    setPaymentState({
-      step: 'processing',
-      message: 'Gukora ubwishyu na MTN Mobile Money...'
-    })
+    try {
+      // Check if MTN MoMo service is configured
+      if (!mtnMomoService.isConfigured()) {
+        const configStatus = mtnMomoService.getConfigurationStatus()
+        throw new Error(`MTN MoMo API not configured. Missing: ${configStatus.missingConfig.join(', ')}`)
+      }
 
-    // Validate phone number
-    if (!phoneNumber.trim()) {
-      throw new Error('Uzuza nimero ya telefoni ya MTN')
+      // Validate phone number
+      if (!phoneNumber.trim()) {
+        throw new Error('Uzuza nimero ya telefoni ya MTN')
+      }
+
+      if (!mtnMomoService.validatePhoneNumber(phoneNumber)) {
+        throw new Error('Nimero ya telefoni ntiyemewe. Hitamo nimero ya MTN yemewe')
+      }
+
+      setPaymentState({
+        step: 'processing',
+        message: 'Gutegura ubwishyu na MTN Mobile Money...'
+      })
+
+      // Generate external ID for tracking
+      const externalId = mtnMomoService.generateExternalId()
+
+      // Create payment request
+      const paymentResponse = await mtnMomoService.requestPayment({
+        amount: amount,
+        phoneNumber: phoneNumber,
+        externalId: externalId,
+        payerMessage: `Ubwishyu bwa ${propertyName}`,
+        payeeNote: `Icumbi - ${propertyName}`
+      })
+
+      setPaymentState({
+        step: 'waiting_confirmation',
+        message: 'Tegereza kohereza *182*7*1# hanyuma ukurikire amabwiriza',
+        externalId: externalId
+      })
+
+      // Start polling for payment status
+      pollPaymentStatus(externalId)
+
+    } catch (error) {
+      console.error('MTN MoMo Payment Error:', error)
+      const errorMessage = getMTNMoMoErrorMessage(error)
+      setPaymentState({
+        step: 'error',
+        message: errorMessage
+      })
+    }
+  }
+
+  const pollPaymentStatus = async (externalId: string) => {
+    const maxAttempts = 30 // Poll for 5 minutes (10 seconds * 30)
+    let attempts = 0
+
+    const poll = async () => {
+      try {
+        attempts++
+        const status = await mtnMomoService.getPaymentStatus(externalId)
+        
+        if (status.status === 'SUCCESSFUL') {
+          setPaymentState({
+            step: 'success',
+            message: 'Ubwishyu bwa MTN MoMo bwemezwe!',
+            transactionId: status.financialTransactionId,
+            externalId: externalId
+          })
+          
+          setTimeout(() => {
+            onSuccess()
+          }, 2000)
+          return
+        }
+        
+        if (status.status === 'FAILED') {
+          setPaymentState({
+            step: 'error',
+            message: `Ubwishyu ntibwashoboye: ${status.reason || 'Ikosa ridasobanuye'}`
+          })
+          return
+        }
+        
+        // If still pending and we haven't exceeded max attempts, continue polling
+        if (status.status === 'PENDING' && attempts < maxAttempts) {
+          setTimeout(poll, 10000) // Poll every 10 seconds
+        } else if (attempts >= maxAttempts) {
+          setPaymentState({
+            step: 'error',
+            message: 'Ubwishyu ntibwemezwe mu gihe cyagenewe. Ongera ugerageze.'
+          })
+        }
+      } catch (error) {
+        console.error('Payment status polling error:', error)
+        const errorMessage = getMTNMoMoErrorMessage(error)
+        
+        if (isRetryableError(error) && attempts < maxAttempts) {
+          setTimeout(poll, 10000) // Retry after 10 seconds
+        } else {
+          setPaymentState({
+            step: 'error',
+            message: errorMessage
+          })
+        }
+      }
     }
 
-    setPaymentState({
-      step: 'processing',
-      message: 'Kohereza *182*7*1# hanyuma ukurikire amabwiriza'
-    })
-
-    // SIMULATION MODE: Simulate USSD prompt and processing
-    await new Promise(resolve => setTimeout(resolve, 3000))
-    
-    setPaymentState({
-      step: 'processing',
-      message: 'Tegereza ubwishyu bwemezwe...'
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 3000))
-    
-    const transactionId = `SIM-MTN-${Date.now()}`
-    setPaymentState({
-      step: 'success',
-      message: 'Ubwishyu bwa MTN MoMo bwemezwe! (Simulation)',
-      transactionId
-    })
-    
-    setTimeout(() => {
-      onSuccess()
-    }, 2000)
+    // Start polling after 5 seconds
+    setTimeout(poll, 5000)
   }
 
   const processAirtelMoney = async () => {
@@ -340,13 +419,13 @@ export default function PaymentProcessor({
   const renderProcessingStep = () => (
     <View style={styles.stepContainer}>
       <ActivityIndicator size="large" color="#667eea" style={styles.loader} />
-      <Text style={styles.stepTitle}>Gukora ubwishyu...</Text>
+      <Text style={styles.stepTitle}>{t('paymentProcessing')}</Text>
       <Text style={styles.stepMessage}>{paymentState.message}</Text>
       
       {(paymentMethod === 'airtel_money' || paymentMethod === 'mtn_momo') && (
         <View style={styles.phoneInputContainer}>
           <TextInput
-            label={`Nimero ya ${paymentMethod === 'mtn_momo' ? 'MTN' : 'Airtel'}`}
+            label={t('phoneNumber')}
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             style={styles.phoneInput}
@@ -360,13 +439,13 @@ export default function PaymentProcessor({
             style={{ marginTop: 12 }}
             onPress={() => {
               if (!phoneNumber.trim()) {
-                setPaymentState({ step: 'error', message: 'Uzuza nimero ya telefoni' } as any)
+                setPaymentState({ step: 'error', message: t('enterPhoneNumber') } as any)
                 return
               }
               processPayment()
             }}
           >
-            Tangira Kwishyura
+            {t('startPayment')}
           </Button>
         </View>
       )}
@@ -378,12 +457,12 @@ export default function PaymentProcessor({
       <View style={styles.successIcon}>
         <Ionicons name="checkmark-circle" size={80} color="#10b981" />
       </View>
-      <Text style={styles.stepTitle}>Ubwishyu bwemezwe!</Text>
+      <Text style={styles.stepTitle}>{t('paymentCompleted')}</Text>
       <Text style={styles.stepMessage}>{paymentState.message}</Text>
       
       {paymentState.transactionId && (
         <View style={styles.transactionDetails}>
-          <Text style={styles.transactionLabel}>Nimero y&apos;ubwishyu:</Text>
+          <Text style={styles.transactionLabel}>{t('transactionId')}</Text>
           <Text style={styles.transactionId}>{paymentState.transactionId}</Text>
         </View>
       )}
@@ -423,10 +502,50 @@ export default function PaymentProcessor({
     </View>
   )
 
+  const renderWaitingConfirmationStep = () => (
+    <View style={styles.stepContainer}>
+      <ActivityIndicator size="large" color="#ffd700" style={styles.loader} />
+      <Text style={styles.stepTitle}>Tegereza ubwishyu...</Text>
+      <Text style={styles.stepMessage}>{paymentState.message}</Text>
+      
+      {paymentState.externalId && (
+        <View style={styles.transactionDetails}>
+          <Text style={styles.transactionLabel}>Nimero y&apos;ubwishyu:</Text>
+          <Text style={styles.transactionId}>{paymentState.externalId}</Text>
+        </View>
+      )}
+      
+      <View style={styles.buttonContainer}>
+        <Button
+          mode="outlined"
+          onPress={() => {
+            setPaymentState({
+              step: 'processing',
+              message: 'Gutegura ubwishyu...'
+            })
+            processPayment()
+          }}
+          style={styles.retryButton}
+        >
+          Ongera ugerageze
+        </Button>
+        <Button
+          mode="contained"
+          onPress={onClose}
+          style={styles.closeButton}
+        >
+          Funga
+        </Button>
+      </View>
+    </View>
+  )
+
   const renderCurrentStep = () => {
     switch (paymentState.step) {
       case 'processing':
         return renderProcessingStep()
+      case 'waiting_confirmation':
+        return renderWaitingConfirmationStep()
       case 'success':
         return renderSuccessStep()
       case 'error':

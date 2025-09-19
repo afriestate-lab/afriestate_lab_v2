@@ -29,7 +29,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import PaymentProcessor from './payment-processor'
 import DatePicker from './date-picker'
-import { supabase } from '../src/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 const { width, height } = Dimensions.get('window')
 

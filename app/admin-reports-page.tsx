@@ -12,8 +12,8 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { supabase } from '../src/lib/supabase'
-import { formatCurrency, formatDate } from '../src/lib/helpers'
+import { supabase } from '@/lib/supabase'
+import { formatCurrency, formatDate } from '@/lib/helpers'
 
 const { width } = Dimensions.get('window')
 

@@ -52,7 +52,6 @@ export interface Translations {
   myProfile: string
   personalInfo: string
   fullName: string
-  phone: string
   role: string
   subscription: string
   paymentMode: string
@@ -205,6 +204,84 @@ export interface Translations {
   actionComplete: string
   actionArchive: string
   actionRestore: string
+
+  // Payment Modal
+  selectProperty: string
+  selectRoom: string
+  selectDates: string
+  selectPaymentMethod: string
+  paymentReceived: string
+  room: string
+  checkInDate: string
+  checkOutDate: string
+  selectCheckInDate: string
+  selectCheckOutDate: string
+  paymentProcessing: string
+  payWith: string
+  payWithMTN: string
+  payWithAirtel: string
+  payWithBank: string
+  paymentSuccessNote: string
+  paymentSuccessInfo: string
+  finish: string
+  searchProperty: string
+  perMonth: string
+  monthlyPrice: string
+  duration: string
+  occupied: string
+  notAvailable: string
+  checkInDateLabel: string
+  checkOutDateLabel: string
+  durationLabel: string
+  totalLabel: string
+  paymentDetails: string
+  noPropertiesDescription: string
+  noRoomsDescription: string
+  paymentInfo: string
+  trySearching: string
+  allRoomsOccupied: string
+  transactionId: string
+  paymentMethodLabel: string
+  tenantAddInstructions: string
+  landlordAddInstructions: string
+  selectWhatToAdd: string
+  status: string
+  addPropertyTitle: string
+  addTenantTitle: string
+  addPaymentTitle: string
+  addManagerTitle: string
+  occupancyRate: string
+  monthlyRevenue: string
+  maintenance: string
+  landlordPinLabel: string
+  enterFullName: string
+  enterEmail: string
+  invalidEmail: string
+  enterPhoneNumber: string
+  phone: string
+  sendVerificationCode: string
+  verifyPin: string
+  startPayment: string
+  sendMessageToLandlord: string
+  enterYourName: string
+  enterYourPhone: string
+  fillAllFields: string
+  paymentFailedRetry: string
+  paymentSuccessMessage: string
+  searchProperties: string
+  loadingDetails: string
+  enterCheckInOutDates: string
+  enterYourQuestions: string
+  payForProperty: string
+  closeDialog: string
+  goToDashboardButton: string
+  sendMessageDescription: string
+  noRoomsAvailable: string
+  noRoomsFound: string
+  loginBeforeAsk: string
+  loginBeforeAskMessage: string
+  closeButton: string
+  loginButton: string
 
   // Alerts
   alertTitle: string
@@ -389,7 +466,6 @@ export const translations: Record<Language, Translations> = {
     myProfile: 'Konti yawe',
     personalInfo: 'Amakuru yawe',
     fullName: 'Amazina',
-    phone: 'Telefoni',
     role: 'Uruhare',
     subscription: 'Kwishyura',
     paymentMode: 'Uko wishyura',
@@ -475,7 +551,7 @@ export const translations: Record<Language, Translations> = {
     paymentDue: 'Ishyura rigomba',
     paymentOverdue: 'Ishyura rishize',
     paymentPending: 'Ishyura rihagaze',
-    paymentCompleted: 'Ishyura ryagenze',
+    paymentCompleted: 'Kwishyuriwe – Bitegereje koherezwa',
     paymentFailed: 'Ishyura ryarangiriye',
     paymentRefunded: 'Ishyura ryasubijwe',
 
@@ -544,6 +620,84 @@ export const translations: Record<Language, Translations> = {
     actionArchive: 'Bika',
     actionRestore: 'Subira',
 
+    // Payment Modal
+    selectProperty: 'Hitamo Inyubako',
+    selectRoom: 'Hitamo Icyumba',
+    selectDates: 'Hitamo Itariki',
+    selectPaymentMethod: 'Hitamo Uburyo bwo Kwishyura',
+    paymentReceived: 'Ubwishyu Bwakiriwe!',
+    room: 'Icyumba',
+    checkInDate: 'Hitamo itariki yo kwinjira',
+    checkOutDate: 'Hitamo itariki yo gusohoka',
+    selectCheckInDate: 'Hitamo Itariki yo Kwinjira',
+    selectCheckOutDate: 'Hitamo Itariki yo Gusohoka',
+    paymentProcessing: 'Kwishyura...',
+    payWith: 'Ishyura',
+    payWithMTN: 'Kwishyura ukoresheje MTN MoMo',
+    payWithAirtel: 'Kwishyura ukoresheje Airtel Money',
+    payWithBank: 'Kwishyura ukoresheje ikarita ya bank',
+    paymentSuccessNote: 'Menya:',
+    paymentSuccessInfo: 'Amafaranga yawe azohererezwa ku munini w\'inyubako nyuma yo kwemezwa n\'ubuyobozi.\n\nUzabona ubumenyi bwihariye mu buryo bwa dashbord yawe.',
+    finish: 'Soza',
+    searchProperty: 'Shaka inyubako ushaka gukoreramo\nkandi ukore ubukode',
+    perMonth: 'ukwezi',
+    monthlyPrice: 'Igiciro cy\'ukwezi:',
+    duration: 'Igikoresho cy\'ukwezi:',
+    occupied: 'Yarafashwe',
+    notAvailable: 'Ntibishoboka kugura',
+    checkInDateLabel: 'Itariki yo Kwinjira:',
+    checkOutDateLabel: 'Itariki yo Gusohoka:',
+    durationLabel: 'Igikoresho:',
+    totalLabel: 'Igitangwa:',
+    paymentDetails: 'Igikoresho cy\'ubwishyu',
+    noPropertiesDescription: 'Nta nyubako ifite ibyumba bihari.\nOngera ushake cyangwa uragubirire.',
+    noRoomsDescription: 'Nta byumba bihari kugura kuri iyi nyubako. Gerageza gushakisha ikindi inyubako cyangwa subira nyuma.',
+    paymentInfo: 'Amakuru y\'ubwishyu',
+    trySearching: 'Gerageza gushakisha ikindi',
+    allRoomsOccupied: 'Ibyumba byose byarafashwe',
+    transactionId: 'Nomero y\'ikwibutso:',
+    paymentMethodLabel: 'Uburyo bwo kwishyura:',
+    tenantAddInstructions: 'Kanda kuri "+" kugira ngo ukongere igihe cyangwa ubone menu yose iboneka kuri inyubako ukoze.',
+    landlordAddInstructions: 'Kanda kuri "+" kugira ngo wongeraho inyubako, ubutumwa, cyangwa indi makuru.',
+    selectWhatToAdd: 'Hitamo icyo ushaka kongeraho',
+    status: 'Uko bihagaze:',
+    addPropertyTitle: 'Ongeraho Inyubako',
+    addTenantTitle: 'Ongeraho Umukodesha',
+    addPaymentTitle: 'Ongeraho Ubwishyu',
+    addManagerTitle: 'Ongeraho Umuyobozi',
+    occupancyRate: 'Ikigereranyo',
+    monthlyRevenue: 'Injiza z\'ukwezi',
+    maintenance: 'Bisuzumwa',
+    landlordPinLabel: 'PIN ya nyirinyubako (6 digits)',
+    enterFullName: 'Andika amazina yawe yuzuye.',
+    enterEmail: 'Andika imeri yawe.',
+    invalidEmail: 'Imeri wanditse ntiyemewe. Andika imeri nyayo.',
+    enterPhoneNumber: 'Andika numero ya telefone.',
+    phone: 'Telefoni',
+    sendVerificationCode: 'Ohereza Umubare w\'kwemeza',
+    verifyPin: 'Emeza Umubare',
+    startPayment: 'Tangira Kwishyura',
+    sendMessageToLandlord: 'Ohereza ubutumwa kuri landlord kugira ngo ubaze ibibazo byawe',
+    enterYourName: 'Andika amazina yawe',
+    enterYourPhone: 'Andika telefoni yawe',
+    fillAllFields: 'Uzuza amakuru yose',
+    paymentFailedRetry: 'Ubwishyu ntibwashoboye kwemezwa. Ongera ugerageze.',
+    paymentSuccessMessage: 'Ubwishyu bwawe bwakiriwe neza. Ubu ni umenye wa cyumba!',
+    searchProperties: 'Shakira inyubako...',
+    loadingDetails: 'Gukura ibisobanuro...',
+    enterCheckInOutDates: 'Uzuza itariki zo kwinjira no gusohoka',
+    enterYourQuestions: 'Andika ibibazo byawe',
+    payForProperty: 'Kwishyura inyubako',
+    closeDialog: 'Funga',
+    goToDashboardButton: 'Jya kuri Dashibodi',
+    sendMessageDescription: 'Kugira ngo wohereze ubutumwa, jya kuri Dashibodi hanyuma hitamo "Ubutumwa".',
+    noRoomsAvailable: 'Nta byumba bihari',
+    noRoomsFound: 'Nta byumba bibonetse',
+    loginBeforeAsk: 'Injira mbere yo kubaza',
+    loginBeforeAskMessage: 'Ugomba kwinjira mbere yo kubaza ibibazo cyangwa gufata booking.',
+    closeButton: 'Funga',
+    loginButton: 'Injira',
+
     // Alerts
     alertTitle: 'Kumenyesha',
     alertMessage: 'Ubutumwa',
@@ -583,7 +737,7 @@ export const translations: Record<Language, Translations> = {
     appFooter: 'Icumbi © 2025 — "Ubukode bworoshye, ubuzima bwiza."',
     loadingProperties: 'Gukura inyubako...',
     noRooms: 'Nta byumba',
-    fullyOccupied: 'Yarafashwe',
+    fullyOccupied: 'Byarafashwe byose',
     allAvailable: 'Byose bihari',
     roomsAvailable: 'bihari',
     pay: 'Ishyura',
@@ -725,7 +879,6 @@ export const translations: Record<Language, Translations> = {
     myProfile: 'My Profile',
     personalInfo: 'Personal Information',
     fullName: 'Full Name',
-    phone: 'Phone',
     role: 'Role',
     subscription: 'Subscription',
     paymentMode: 'Payment Mode',
@@ -811,7 +964,7 @@ export const translations: Record<Language, Translations> = {
     paymentDue: 'Payment Due',
     paymentOverdue: 'Payment Overdue',
     paymentPending: 'Payment Pending',
-    paymentCompleted: 'Payment Completed',
+    paymentCompleted: 'Payment completed – Awaiting transfer',
     paymentFailed: 'Payment Failed',
     paymentRefunded: 'Payment Refunded',
 
@@ -879,6 +1032,84 @@ export const translations: Record<Language, Translations> = {
     actionComplete: 'Complete',
     actionArchive: 'Archive',
     actionRestore: 'Restore',
+
+    // Payment Modal
+    selectProperty: 'Select Property',
+    selectRoom: 'Select Room',
+    selectDates: 'Select Dates',
+    selectPaymentMethod: 'Select Payment Method',
+    paymentReceived: 'Payment Received!',
+    room: 'Room',
+    checkInDate: 'Select check-in date',
+    checkOutDate: 'Select check-out date',
+    selectCheckInDate: 'Select Check-in Date',
+    selectCheckOutDate: 'Select Check-out Date',
+    paymentProcessing: 'Processing...',
+    payWith: 'Pay',
+    payWithMTN: 'Pay using MTN MoMo',
+    payWithAirtel: 'Pay using Airtel Money',
+    payWithBank: 'Pay using bank card',
+    paymentSuccessNote: 'Note:',
+    paymentSuccessInfo: 'Your payment will be transferred to the property owner after approval by management.\n\nYou will see detailed information on your dashboard.',
+    finish: 'Finish',
+    searchProperty: 'Find the property you want to work in\nand make bookings',
+    perMonth: 'per month',
+    monthlyPrice: 'Monthly price:',
+    duration: 'Duration in months:',
+    occupied: 'Occupied',
+    notAvailable: 'Not available for booking',
+    checkInDateLabel: 'Check-in Date:',
+    checkOutDateLabel: 'Check-out Date:',
+    durationLabel: 'Duration:',
+    totalLabel: 'Total:',
+    paymentDetails: 'Payment Details',
+    noPropertiesDescription: 'No properties with available rooms found.\nTry searching again or wait.',
+    noRoomsDescription: 'No rooms available for booking in this property. Try searching for another property or come back later.',
+    paymentInfo: 'Payment Information',
+    trySearching: 'Try searching for another',
+    allRoomsOccupied: 'All rooms are occupied',
+    transactionId: 'Transaction ID:',
+    paymentMethodLabel: 'Payment method:',
+    tenantAddInstructions: 'Tap "+" to extend time or see all menu available for the property you booked.',
+    landlordAddInstructions: 'Tap "+" to add properties, messages, or other information.',
+    selectWhatToAdd: 'Select what you want to add',
+    status: 'Status:',
+    addPropertyTitle: 'Add Property',
+    addTenantTitle: 'Add Tenant',
+    addPaymentTitle: 'Add Payment',
+    addManagerTitle: 'Add Manager',
+    occupancyRate: 'Occupancy Rate',
+    monthlyRevenue: 'Monthly Revenue',
+    maintenance: 'Maintenance',
+    landlordPinLabel: 'Landlord PIN (6 digits)',
+    enterFullName: 'Please enter your full name.',
+    enterEmail: 'Please enter your email.',
+    invalidEmail: 'Invalid email. Please enter a valid email.',
+    enterPhoneNumber: 'Please enter your phone number.',
+    phone: 'Phone',
+    sendVerificationCode: 'Send Verification Code',
+    verifyPin: 'Verify PIN',
+    startPayment: 'Start Payment',
+    sendMessageToLandlord: 'Send a message to the landlord to ask your questions',
+    enterYourName: 'Enter your name',
+    enterYourPhone: 'Enter your phone number',
+    fillAllFields: 'Please fill in all required fields',
+    paymentFailedRetry: 'Payment could not be processed. Please try again.',
+    paymentSuccessMessage: 'Your payment has been received successfully. This is your room key!',
+    searchProperties: 'Search properties...',
+    loadingDetails: 'Loading details...',
+    enterCheckInOutDates: 'Please enter check-in and check-out dates',
+    enterYourQuestions: 'Enter your questions',
+    payForProperty: 'Pay for property',
+    closeDialog: 'Close',
+    goToDashboardButton: 'Go to Dashboard',
+    sendMessageDescription: 'To send a message, go to Dashboard and select "Messages".',
+    noRoomsAvailable: 'No rooms available',
+    noRoomsFound: 'No rooms found',
+    loginBeforeAsk: 'Sign in before asking',
+    loginBeforeAskMessage: 'You need to sign in before asking questions or making bookings.',
+    closeButton: 'Close',
+    loginButton: 'Sign In',
 
     // Alerts
     alertTitle: 'Alert',

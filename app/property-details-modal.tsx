@@ -322,7 +322,7 @@ export default function PropertyDetailsModal({
 
   const handleInquirySubmit = async () => {
     if (!inquiryData.name || !inquiryData.phone || !inquiryData.message) {
-      Alert.alert('Error', 'Uzuza ibisabwa byose')
+      Alert.alert(t('error'), t('fillAllFields'))
       return
     }
 
@@ -330,7 +330,7 @@ export default function PropertyDetailsModal({
       // For now, just show success message
       Alert.alert(
         'Success', 
-        'Ubutumwa bwawe bwatanzwe neza. Tuzakumenyesha vuba.',
+        t('messageSentSuccess'),
         [{ text: 'OK', onPress: () => setShowInquiryForm(false) }]
       )
               setInquiryData({ name: '', phone: '', message: '' })
@@ -341,7 +341,7 @@ export default function PropertyDetailsModal({
 
   const handleBookingSubmit = async () => {
     if (!bookingData.checkIn || !bookingData.checkOut) {
-      Alert.alert('Error', 'Uzuza itariki zo kwinjira no gusohoka')
+      Alert.alert(t('error'), t('enterCheckInOutDates'))
       return
     }
 
@@ -473,7 +473,7 @@ export default function PropertyDetailsModal({
     
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ibikoresho</Text>
+        <Text style={styles.sectionTitle}>{t('propertyFeatures')}</Text>
         <View style={styles.amenitiesGrid}>
           {amenities.map((amenity, index) => (
             <View key={index} style={styles.amenityItem}>
@@ -502,27 +502,27 @@ export default function PropertyDetailsModal({
     }, {});
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ibyumba byose</Text>
+        <Text style={styles.sectionTitle}>{t('rooms')}</Text>
         {Object.entries(grouped).map(([floor, floorRooms]) => (
           <View key={floor} style={{marginBottom: 12}}>
-            <Text style={styles.floorTitle}>Igorofa {floor}</Text>
+            <Text style={styles.floorTitle}>{t('floors')} {floor}</Text>
             <View style={styles.roomsContainer}>
               {floorRooms.map((room: any, idx: number) => (
                 <Card key={idx} style={[styles.roomCard, {backgroundColor: '#f8fafc'}]}>
                   <Card.Content>
                     <View style={styles.roomHeader}>
-                      <Text style={styles.roomNumber}>Icyumba {room.room_number}</Text>
+                      <Text style={styles.roomNumber}>{t('room')} {room.room_number}</Text>
                       <Text style={{
                         fontWeight: 'bold',
                         fontSize: 14,
                         color: room.status === 'vacant' ? '#10b981' : '#ef4444',
                         marginLeft: 8
                       }}>
-                        {room.status === 'vacant' ? 'Irafunguye' : 'Yarafashwe'}
+                        {room.status === 'vacant' ? t('available') : t('occupied')}
                       </Text>
                     </View>
                     <Text style={styles.roomPrice}>
-                      RWF {room.rent_amount?.toLocaleString() || '0'} / ukwezi
+                      RWF {room.rent_amount?.toLocaleString() || '0'} / {t('perMonth')}
                     </Text>
                   </Card.Content>
                 </Card>
@@ -541,30 +541,30 @@ export default function PropertyDetailsModal({
       <View style={styles.inquiryForm}>
         <View style={styles.formHeader}>
           <Ionicons name="chatbubble-ellipses" size={24} color="#10b981" />
-          <Text style={styles.formTitle}>Kubaza ibibazo</Text>
+          <Text style={styles.formTitle}>{t('ask')}</Text>
         </View>
         <Text style={styles.formSubtitle}>
-          Ohereza ubutumwa kuri landlord kugira ngo ubaze ibibazo byawe
+          {t('sendMessageToLandlord')}
         </Text>
         
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Amazina *</Text>
+          <Text style={styles.inputLabel}>{t('fullName')} *</Text>
           <TextInput
             style={styles.textInput}
             value={inquiryData.name}
             onChangeText={(text) => setInquiryData({ ...inquiryData, name: text })}
-            placeholder="Andika amazina yawe"
+            placeholder={t('enterYourName')}
             autoCapitalize="words"
           />
         </View>
         
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Telefoni *</Text>
+          <Text style={styles.inputLabel}>{t('phoneNumber')} *</Text>
           <TextInput
             style={styles.textInput}
             value={inquiryData.phone}
             onChangeText={(text) => setInquiryData({ ...inquiryData, phone: text })}
-            placeholder="Andika telefoni yawe"
+            placeholder={t('enterYourPhone')}
             keyboardType="phone-pad"
             maxLength={15}
           />
@@ -573,7 +573,7 @@ export default function PropertyDetailsModal({
 
         
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Ubutumwa *</Text>
+          <Text style={styles.inputLabel}>{t('message')} *</Text>
           <TextInput
             style={[styles.textInput, styles.messageInput]}
             value={inquiryData.message}
@@ -605,7 +605,7 @@ export default function PropertyDetailsModal({
             icon="send"
             disabled={!inquiryData.name || !inquiryData.phone || !inquiryData.message}
           >
-            Ohereza
+            {t('sendMessage')}
           </Button>
         </View>
       </View>
@@ -665,7 +665,7 @@ export default function PropertyDetailsModal({
             style={[styles.textInput, styles.messageInput]}
             value={bookingData.specialRequests}
             onChangeText={(text) => setBookingData({ ...bookingData, specialRequests: text })}
-            placeholder="Andika ibibazo byawe"
+            placeholder={t('enterYourQuestions')}
             multiline
             numberOfLines={3}
             textAlignVertical="top"
@@ -710,7 +710,7 @@ export default function PropertyDetailsModal({
       <Portal>
         <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#10b981" />
-          <Text style={styles.loadingText}>Gukura ibisobanuro...</Text>
+          <Text style={styles.loadingText}>{t('loadingDetails')}</Text>
         </Modal>
       </Portal>
     )
@@ -753,13 +753,13 @@ export default function PropertyDetailsModal({
                 if (available > 0) {
                   return (
                     <View style={{alignSelf: 'flex-start', backgroundColor: '#dcfce7', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 4, marginTop: 6, marginBottom: 6}}>
-                      <Text style={{color: '#10b981', fontWeight: 'bold', fontSize: 14}}>Irafunguye</Text>
+                      <Text style={{color: '#10b981', fontWeight: 'bold', fontSize: 14}}>{t('available')}</Text>
                     </View>
                   );
                 } else {
                   return (
                     <View style={{alignSelf: 'flex-start', backgroundColor: '#fee2e2', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 4, marginTop: 6, marginBottom: 6}}>
-                      <Text style={{color: '#ef4444', fontWeight: 'bold', fontSize: 14}}>Yarafashwe</Text>
+                      <Text style={{color: '#ef4444', fontWeight: 'bold', fontSize: 14}}>{t('occupied')}</Text>
                     </View>
                   );
                 }
@@ -886,7 +886,7 @@ export default function PropertyDetailsModal({
             style={[styles.bottomButton, showBookingForm && styles.activeButton]}
             icon="calendar"
             accessible={true}
-            accessibilityLabel="Gufata booking"
+            accessibilityLabel={t('bookNow')}
           >
             {!user ? '🔒 Booking' : 'Booking'}
           </Button>
@@ -921,7 +921,7 @@ export default function PropertyDetailsModal({
             ]}
             icon="credit-card"
             accessible={true}
-            accessibilityLabel="Kwishyura inyubako"
+            accessibilityLabel={t('payForProperty')}
           >
             {!user ? t('bookNowLocked') : t('bookNow')}
           </Button>

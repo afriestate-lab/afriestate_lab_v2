@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency, uploadImageToStorage } from '@/lib/helpers'
+import { useLanguage } from '@/lib/languageContext'
 
 interface AddPropertyFormProps {
   onBack: () => void
@@ -26,6 +27,7 @@ interface Floor {
 }
 
 export default function AddPropertyForm({ onBack, onSuccess }: AddPropertyFormProps) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -493,7 +495,7 @@ export default function AddPropertyForm({ onBack, onSuccess }: AddPropertyFormPr
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#4F46E5" />
         </TouchableOpacity>
-        <Text style={styles.title}>Ongeraho Inyubako</Text>
+        <Text style={styles.title}>{t('addPropertyTitle')}</Text>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>

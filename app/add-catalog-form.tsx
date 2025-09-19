@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, Alert } from 'react-native'
 import { Text, Button, Card, TextInput, SegmentedButtons, Checkbox, ActivityIndicator } from 'react-native-paper'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { supabase } from '../src/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 interface AddCatalogFormProps {
   onBack: () => void

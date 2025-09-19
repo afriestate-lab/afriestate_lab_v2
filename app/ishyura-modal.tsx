@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, ActivityIndicator } from 'react-native'
 import { Modal, Portal, Card, Button, Surface, Divider, ProgressBar } from 'react-native-paper'
 import { Ionicons } from '@expo/vector-icons'
-import { supabase } from '../src/lib/supabase'
-import { formatCurrency } from '../src/lib/helpers'
+import { supabase } from '@/lib/supabase'
+import { formatCurrency } from '@/lib/helpers'
+import { useLanguage } from '@/lib/languageContext'
 
 // Types
 interface Room {
@@ -42,28 +43,33 @@ interface IshyuraModalProps {
   selectedProperty?: Property | null
 }
 
-const paymentMethods: PaymentMethodOption[] = [
-  {
-    id: 'mtn_momo',
-    name: 'MTN Mobile Money',
-    icon: 'phone-portrait',
-    description: 'Kwishyura ukoresheje MTN MoMo'
-  },
-  {
-    id: 'airtel_money',
-    name: 'Airtel Money',
-    icon: 'card',
-    description: 'Kwishyura ukoresheje Airtel Money'
-  },
-  {
-    id: 'bank_card',
-    name: 'Ikarita ya Bank',
-    icon: 'business',
-    description: 'Kwishyura ukoresheje ikarita ya bank'
-  }
-]
+// Payment methods will be generated dynamically inside the component to use translations
 
 export default function IshyuraModal({ visible, onDismiss, onSuccess, user, selectedProperty }: IshyuraModalProps) {
+  const { t } = useLanguage()
+  
+  // Payment methods with translations
+  const paymentMethods: PaymentMethodOption[] = [
+    {
+      id: 'mtn_momo',
+      name: 'MTN Mobile Money',
+      icon: 'phone-portrait',
+      description: t('payWithMTN')
+    },
+    {
+      id: 'airtel_money',
+      name: 'Airtel Money',
+      icon: 'card',
+      description: t('payWithAirtel')
+    },
+    {
+      id: 'bank_card',
+      name: t('paymentMethod'),
+      icon: 'business',
+      description: t('payWithBank')
+    }
+  ]
+  
   // Flow state management
   const [currentStep, setCurrentStep] = useState<'property' | 'room' | 'dates' | 'payment' | 'success'>('property')
   const [isLoading, setIsLoading] = useState(false)
@@ -503,7 +509,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
 
   const handlePaymentSubmit = async () => {
     if (!selectedPaymentMethod || !phoneNumber.trim() || !selectedRoom || !selectedPropertyState) {
-      Alert.alert('Hari ikibazo', 'Uzuza amakuru yose')
+      Alert.alert(t('error'), t('fillAllFields'))
       return
     }
 
@@ -593,7 +599,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
 
     } catch (error) {
       console.error('❌ [MOBILE_ISHYURA] Payment simulation failed:', error)
-      Alert.alert('Ikosa', 'Ubwishyu ntibwashoboye kwemezwa. Ongera ugerageze.')
+      Alert.alert(t('error'), t('paymentFailedRetry'))
     } finally {
       setIsLoading(false)
     }
@@ -635,12 +641,12 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 'property': return 'Hitamo Inyubako'
-      case 'room': return 'Hitamo Icyumba'  
-      case 'dates': return 'Hitamo Itariki'
-      case 'payment': return 'Hitamo Uburyo bwo Kwishyura'
-      case 'success': return 'Ubwishyu Bwakiriwe!'
-      default: return 'Ishyura'
+      case 'property': return t('selectProperty')
+      case 'room': return t('selectRoom')  
+      case 'dates': return t('selectDates')
+      case 'payment': return t('selectPaymentMethod')
+      case 'success': return t('paymentReceived')
+      default: return t('payWith')
     }
   }
 
@@ -738,10 +744,10 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                     <Ionicons name="business" size={40} color="#14b8a6" />
                   </View>
                   <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1f2937', marginBottom: 8 }}>
-                    Hitamo Inyubako
+                    {t('selectProperty')}
                   </Text>
                   <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center', lineHeight: 24 }}>
-                    Shaka inyubako ushaka gukoreramo{'\n'}kandi ukore ubukode
+                    {t('searchProperty')}
                   </Text>
                 </View>
 
@@ -766,10 +772,10 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                       <Ionicons name="business" size={50} color="#d1d5db" />
                     </View>
                     <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 8 }}>
-                      Nta nyubako ibonetse
+                      {t('noPropertiesFound')}
                     </Text>
                     <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
-                      Nta nyubako ifite ibyumba bihari.{'\n'}Ongera ushake cyangwa uragubirire.
+                      {t('noPropertiesDescription')}
                     </Text>
                     <Button 
                       mode="contained" 
@@ -863,11 +869,11 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                                 let bgColor = '#f3f4f6';
 
                                 if (totalRooms === 0) {
-                                  statusText = 'Nta byumba';
+                                  statusText = t('noRoomsAvailable');
                                   statusColor = '#ef4444';
                                   bgColor = '#fef2f2';
                                 } else if (availableRooms === 0) {
-                                  statusText = 'Byarafashwe byose';
+                                  statusText = t('fullyOccupied');
                                   statusColor = '#ef4444'; 
                                   bgColor = '#fef2f2';
                                 } else if (availableRooms === totalRooms) {
@@ -921,7 +927,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                 <View style={{ alignItems: 'center', marginBottom: 24 }}>
                   <Ionicons name="home" size={48} color="#14b8a6" style={{ marginBottom: 8 }} />
                   <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 4 }}>
-                    Hitamo Icyumba
+                    {t('selectRoom')}
                   </Text>
                   <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center' }}>
                     {selectedPropertyState.name}
@@ -940,16 +946,16 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                   let propertyStatus = '';
                   let statusColor = '#6b7280';
                   if (totalRooms === 0) {
-                    propertyStatus = 'Nta byumba biboneka';
+                    propertyStatus = t('noRoomsFound');
                     statusColor = '#ef4444';
                   } else if (availableRooms === 0) {
-                    propertyStatus = 'Byarafashwe byose';
+                    propertyStatus = t('fullyOccupied');
                     statusColor = '#ef4444';
                   } else if (availableRooms === totalRooms) {
-                    propertyStatus = 'Byose bihari gukodesha';
+                    propertyStatus = t('allAvailable');
                     statusColor = '#10b981';
                   } else {
-                    propertyStatus = `${availableRooms} bihari mu ${totalRooms}`;
+                    propertyStatus = `${availableRooms} ${t('available')} mu ${totalRooms}`;
                     statusColor = '#f59e0b';
                   }
                   
@@ -1004,10 +1010,10 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                   <View style={{ alignItems: 'center', padding: 40 }}>
                     <Ionicons name="home-outline" size={48} color="#9ca3af" />
                     <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
-                      Nta byumba biboneka kuri iyi nyubako
+                      {t('noRoomsFound')}
                     </Text>
                     <Text style={{ marginTop: 8, fontSize: 14, color: '#9ca3af', textAlign: 'center' }}>
-                      Gerageza gushakisha ikindi
+                      {t('trySearching')}
                     </Text>
                   </View>
                 ) : (
@@ -1039,14 +1045,14 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                                     fontWeight: '500', 
                                     color: room.status === 'occupied' ? '#dc2626' : '#1f2937' 
                                   }}>
-                                    Icyumba {room.room_number}
+                                    {t('room')} {room.room_number}
                                   </Text>
                                   <Text style={{ 
                                     fontSize: 14, 
                                     fontWeight: '600', 
                                     color: room.status === 'occupied' ? '#dc2626' : '#14b8a6' 
                                   }}>
-                                    {room.status === 'occupied' ? 'Yarafashwe' : `${formatCurrency(room.rent_amount)} / ukwezi`}
+                                    {room.status === 'occupied' ? t('occupied') : `${formatCurrency(room.rent_amount)} / ${t('perMonth')}`}
                                   </Text>
                                   {room.status === 'occupied' ? (
                                     <Text style={{ fontSize: 12, color: '#dc2626', marginTop: 2 }}>
@@ -1076,11 +1082,11 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                           <Ionicons name="alert-circle" size={20} color="#dc2626" />
                           <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '600', color: '#dc2626' }}>
-                            Ibyumba byose byarafashwe
+                            {t('allRoomsOccupied')}
                           </Text>
                         </View>
                         <Text style={{ fontSize: 12, color: '#dc2626', lineHeight: 16 }}>
-                          Nta byumba bihari kugura kuri iyi nyubako. Gerageza gushakisha ikindi inyubako cyangwa subira nyuma.
+                          {t('noRoomsDescription')}
                         </Text>
                       </Card>
                     )}
@@ -1104,10 +1110,10 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                 <View style={{ alignItems: 'center', marginBottom: 24 }}>
                   <Ionicons name="calendar" size={48} color="#14b8a6" style={{ marginBottom: 8 }} />
                   <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 4 }}>
-                    Hitamo Itariki
+                    {t('selectDates')}
                   </Text>
                   <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center' }}>
-                    Icyumba {selectedRoom.room_number} - {formatCurrency(selectedRoom.rent_amount)} / ukwezi
+                    {t('room')} {selectedRoom.room_number} - {formatCurrency(selectedRoom.rent_amount)} / {t('perMonth')}
                   </Text>
                 </View>
 
@@ -1136,7 +1142,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                         }}
                       >
                         <Text style={{ fontSize: 16, color: checkInDate ? '#1f2937' : '#9ca3af' }}>
-                          {checkInDate || 'Hitamo itariki yo kwinjira'}
+                          {checkInDate || t('checkInDate')}
                         </Text>
                         <Ionicons name="calendar" size={20} color="#6b7280" />
                       </TouchableOpacity>
@@ -1160,7 +1166,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                         }}
                       >
                         <Text style={{ fontSize: 16, color: checkOutDate ? '#1f2937' : '#9ca3af' }}>
-                          {checkOutDate || 'Hitamo itariki yo gusohoka'}
+                          {checkOutDate || t('checkOutDate')}
                         </Text>
                         <Ionicons name="calendar" size={20} color="#6b7280" />
                       </TouchableOpacity>
@@ -1175,11 +1181,11 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                   </Text>
                   <View style={{ gap: 8 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Text style={{ color: '#6b7280' }}>Inyubako:</Text>
+                      <Text style={{ color: '#6b7280' }}>{t('property')}:</Text>
                       <Text style={{ fontWeight: '500' }}>{selectedPropertyState.name}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Text style={{ color: '#6b7280' }}>Icyumba:</Text>
+                      <Text style={{ color: '#6b7280' }}>{t('room')}:</Text>
                       <Text style={{ fontWeight: '500' }}>{selectedRoom.room_number}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -1192,11 +1198,11 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                       <Text style={{ color: '#6b7280' }}>Igikoresho:</Text>
-                      <Text style={{ fontWeight: '500' }}>{durationMonths} ukwezi</Text>
+                      <Text style={{ fontWeight: '500' }}>{durationMonths} {t('perMonth')}</Text>
                     </View>
                     <Divider style={{ marginVertical: 8 }} />
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Text style={{ fontWeight: '600', fontSize: 16 }}>Igitangwa:</Text>
+                      <Text style={{ fontWeight: '600', fontSize: 16 }}>{t('totalLabel')}</Text>
                       <Text style={{ fontWeight: '600', fontSize: 16, color: '#14b8a6' }}>
                         {formatCurrency(paymentAmount)}
                       </Text>
@@ -1240,7 +1246,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                   }}
                 >
                   <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16, textAlign: 'center' }}>
-                    Hitamo Itariki yo Kwinjira
+                    {t('selectCheckInDate')}
                   </Text>
                   
                   <View style={{ gap: 12 }}>
@@ -1325,7 +1331,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                   }}
                 >
                   <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16, textAlign: 'center' }}>
-                    Hitamo Itariki yo Gusohoka
+                    {t('selectCheckOutDate')}
                   </Text>
                   
                   <View style={{ gap: 12 }}>
@@ -1423,10 +1429,10 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                 <View style={{ alignItems: 'center', marginBottom: 24 }}>
                   <Ionicons name="card" size={48} color="#14b8a6" style={{ marginBottom: 8 }} />
                   <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 4 }}>
-                    Hitamo Uburyo bwo Kwishyura
+                    {t('selectPaymentMethod')}
                   </Text>
                   <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center' }}>
-                    Icyumba {selectedRoom.room_number} - {formatCurrency(paymentAmount)}
+                    {t('room')} {selectedRoom.room_number} - {formatCurrency(paymentAmount)}
                   </Text>
                 </View>
 
@@ -1437,20 +1443,20 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                   </Text>
                   <View style={{ gap: 8 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Text style={{ color: '#6b7280' }}>Inyubako:</Text>
+                      <Text style={{ color: '#6b7280' }}>{t('property')}:</Text>
                       <Text style={{ fontWeight: '500' }}>{selectedPropertyState.name}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Text style={{ color: '#6b7280' }}>Icyumba:</Text>
+                      <Text style={{ color: '#6b7280' }}>{t('room')}:</Text>
                       <Text style={{ fontWeight: '500' }}>{selectedRoom.room_number}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Text style={{ color: '#6b7280' }}>Igiciro cy'ukwezi:</Text>
+                      <Text style={{ color: '#6b7280' }}>{t('monthlyPrice')}</Text>
                       <Text style={{ fontWeight: '500' }}>{formatCurrency(paymentAmount)}</Text>
                     </View>
                     <Divider style={{ marginVertical: 8 }} />
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Text style={{ fontWeight: '600', fontSize: 16 }}>Igitangwa:</Text>
+                      <Text style={{ fontWeight: '600', fontSize: 16 }}>{t('totalLabel')}</Text>
                       <Text style={{ fontWeight: '600', fontSize: 16, color: '#14b8a6' }}>
                         {formatCurrency(paymentAmount)}
                       </Text>
@@ -1461,12 +1467,12 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                 {/* Date Selection */}
                 <View style={{ marginBottom: 20 }}>
                   <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8 }}>
-                    Igikoresho cy'ubwishyu
+                    {t('paymentDetails')}
                   </Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
                     <View style={{ flex: 1, marginRight: 10 }}>
                       <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>
-                        Igikoresho cy'ubwishyu
+                        {t('paymentDetails')}
                       </Text>
                       <TextInput
                         value={checkInDate}
@@ -1485,7 +1491,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                     </View>
                     <View style={{ flex: 1, marginLeft: 10 }}>
                       <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>
-                        Igikoresho cy'ubwishyu
+                        {t('paymentDetails')}
                       </Text>
                       <TextInput
                         value={checkOutDate}
@@ -1504,19 +1510,19 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                     </View>
                   </View>
                   <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', marginTop: 8 }}>
-                    Igikoresho cy'ukwezi: {durationMonths}
+                    {t('duration')} {durationMonths}
                   </Text>
                 </View>
 
                 {/* Phone Number Input */}
                 <View style={{ marginBottom: 20 }}>
                   <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8 }}>
-                    Nimero ya telefoni
+                    {t('phoneNumber')}
                   </Text>
                   <TextInput
                     value={phoneNumber}
                     onChangeText={setPhoneNumber}
-                    placeholder="078xxxxxxx"
+                    placeholder={t('enterPhoneNumber')}
                     keyboardType="phone-pad"
                     style={{
                       borderWidth: 1,
@@ -1532,7 +1538,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                 {/* Payment Methods */}
                 <View style={{ marginBottom: 20 }}>
                   <Text style={{ fontSize: 16, fontWeight: '500', color: '#1f2937', marginBottom: 16 }}>
-                    Hitamo uburyo bwo kwishyura
+                    {t('selectPaymentMethod')}
                   </Text>
                   <View style={{ gap: 12 }}>
                     {paymentMethods.map((method) => (
@@ -1589,7 +1595,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                     buttonColor="#14b8a6"
                     style={{ flex: 2 }}
                   >
-                    {isLoading ? 'Kwishyura...' : `Ishyura ${formatCurrency(paymentAmount)}`}
+                    {isLoading ? t('paymentProcessing') : `${t('payWith')} ${formatCurrency(paymentAmount)}`}
                   </Button>
                 </View>
               </View>
@@ -1611,20 +1617,20 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                 </View>
 
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937', marginBottom: 8, textAlign: 'center' }}>
-                  Ubwishyu Bwakiriwe!
+                  {t('paymentReceived')}
                 </Text>
                 <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 24 }}>
-                  Ubwishyu bwawe bwakiriwe neza. Ubu ni umenye wa cyumba!
+                  {t('paymentSuccessMessage')}
                 </Text>
 
                 {/* Transaction Details */}
                 <Card style={{ width: '100%', padding: 16, marginBottom: 24, backgroundColor: '#ffffff' }}>
                   <Text style={{ fontSize: 16, fontWeight: '600', color: '#1f2937', marginBottom: 16 }}>
-                    Amakuru y'ubwishyu
+                    {t('paymentInfo')}
                   </Text>
                   <View style={{ gap: 12 }}>
                     <View style={{ flexDirection: 'column', gap: 4 }}>
-                      <Text style={{ color: '#6b7280', fontSize: 12 }}>Nomero y'ikwibutso:</Text>
+                      <Text style={{ color: '#6b7280', fontSize: 12 }}>{t('transactionId')}</Text>
                       <Text style={{ fontFamily: 'monospace', fontWeight: '500', fontSize: 11, flexWrap: 'wrap' }}>
                         {transactionData.transactionId}
                       </Text>
@@ -1642,22 +1648,22 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                       </Text>
                     </View>
                     <View style={{ flexDirection: 'column', gap: 4 }}>
-                      <Text style={{ color: '#6b7280', fontSize: 12 }}>Inyubako:</Text>
+                      <Text style={{ color: '#6b7280', fontSize: 12 }}>{t('property')}:</Text>
                       <Text style={{ fontWeight: '500', fontSize: 12, flexWrap: 'wrap' }}>{transactionData.property}</Text>
                     </View>
                     <View style={{ flexDirection: 'column', gap: 4 }}>
-                      <Text style={{ color: '#6b7280', fontSize: 12 }}>Icyumba:</Text>
+                      <Text style={{ color: '#6b7280', fontSize: 12 }}>{t('room')}:</Text>
                       <Text style={{ fontWeight: '500', fontSize: 12, flexWrap: 'wrap' }}>{transactionData.room}</Text>
                     </View>
                     <View style={{ flexDirection: 'column', gap: 4 }}>
-                      <Text style={{ color: '#6b7280', fontSize: 12 }}>Uburyo bwo kwishyura:</Text>
+                      <Text style={{ color: '#6b7280', fontSize: 12 }}>{t('paymentMethodLabel')}</Text>
                       <Text style={{ fontWeight: '500', fontSize: 12, flexWrap: 'wrap' }}>{transactionData.paymentMethod}</Text>
                     </View>
                     <Divider style={{ marginVertical: 8 }} />
                     <View style={{ flexDirection: 'column', gap: 4 }}>
-                      <Text style={{ color: '#6b7280', fontSize: 12 }}>Uko bihagaze:</Text>
+                      <Text style={{ color: '#6b7280', fontSize: 12 }}>{t('status')}</Text>
                       <Text style={{ fontWeight: '500', color: '#ea580c', fontSize: 12, flexWrap: 'wrap' }}>
-                        Kwishyuriwe – Bitegereje koherezwa
+                        {t('paymentCompleted')}
                       </Text>
                     </View>
                   </View>
@@ -1665,8 +1671,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
 
                 <Card style={{ width: '100%', padding: 12, marginBottom: 24, backgroundColor: '#eff6ff' }}>
                   <Text style={{ fontSize: 11, color: '#1e40af', textAlign: 'center', lineHeight: 16 }}>
-                    <Text style={{ fontWeight: '600' }}>Menya:</Text> Amafaranga yawe azohererezwa ku munini w'inyubako nyuma yo kwemezwa n'ubuyobozi.{'\n\n'}
-                    Uzabona ubumenyi bwihariye mu buryo bwa dashbord yawe.
+                    <Text style={{ fontWeight: '600' }}>{t('paymentSuccessNote')}</Text> {t('paymentSuccessInfo')}
                   </Text>
                 </Card>
 
@@ -1676,7 +1681,7 @@ export default function IshyuraModal({ visible, onDismiss, onSuccess, user, sele
                   buttonColor="#14b8a6"
                   style={{ width: '100%' }}
                 >
-                  Soza
+                  {t('finish')}
                 </Button>
               </View>
             )}

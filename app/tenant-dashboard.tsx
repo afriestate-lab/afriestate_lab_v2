@@ -1558,7 +1558,7 @@ export default function TenantDashboard() {
               color={activeTab === 'overview' ? theme.primary : theme.textSecondary} 
             />
             <Text style={[styles.navLabel, activeTab === 'overview' && styles.activeNavLabel, { color: activeTab === 'overview' ? theme.primary : theme.text }]}>
-              Ahabanza
+              {t('home')}
             </Text>
           </TouchableOpacity>
           
