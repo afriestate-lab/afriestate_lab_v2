@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { StatusBar } from 'expo-status-bar'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { translations } from '@/lib/translations'
+import { useLanguage } from '@/lib/languageContext'
 
 const { width, height } = Dimensions.get('window')
 
@@ -22,7 +23,36 @@ interface LanguageSelectionOverlayProps {
 
 export default function LanguageSelectionOverlay({ onLanguageSelected, children }: LanguageSelectionOverlayProps) {
   const [selectedLanguage, setSelectedLanguage] = useState<'rw' | 'en' | null>(null)
-  const [showLanguageSelection, setShowLanguageSelection] = useState(true)
+  const [showLanguageSelection, setShowLanguageSelection] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const { changeLanguage } = useLanguage()
+
+  // Check if language has already been selected
+  React.useEffect(() => {
+    const checkLanguagePreference = async () => {
+      try {
+        const savedLanguage = await AsyncStorage.getItem('userLanguage')
+        console.log('🔍 [LANGUAGE_SELECTION] Checking saved language:', savedLanguage)
+        
+        if (savedLanguage === 'rw' || savedLanguage === 'en') {
+          // Language already selected, don't show selection
+          console.log('✅ [LANGUAGE_SELECTION] Language already selected:', savedLanguage)
+          setShowLanguageSelection(false)
+        } else {
+          // No language selected, show selection
+          console.log('ℹ️ [LANGUAGE_SELECTION] No language selected, showing selection dialog')
+          setShowLanguageSelection(true)
+        }
+      } catch (error) {
+        console.error('❌ [LANGUAGE_SELECTION] Error checking language preference:', error)
+        // On error, show language selection
+        setShowLanguageSelection(true)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    checkLanguagePreference()
+  }, [])
 
   const handleLanguageSelect = (language: 'rw' | 'en') => {
     setSelectedLanguage(language)
@@ -32,26 +62,51 @@ export default function LanguageSelectionOverlay({ onLanguageSelected, children 
     if (!selectedLanguage) return
 
     try {
-      // Save language selection to AsyncStorage
-      await AsyncStorage.setItem('userLanguage', selectedLanguage)
+      console.log('🌍 [LANGUAGE_SELECTION] Changing language to:', selectedLanguage)
       
-      // Call the callback to set the language
+      // Use the language context's changeLanguage function to properly update the language
+      await changeLanguage(selectedLanguage)
+      
+      console.log('✅ [LANGUAGE_SELECTION] Language change completed')
+      
+      // Call the callback to notify parent component
       onLanguageSelected(selectedLanguage)
       
       // Hide the language selection overlay
       setShowLanguageSelection(false)
+      
+      console.log('🎯 [LANGUAGE_SELECTION] Language selection dialog hidden')
     } catch (error) {
-      console.error('Error saving language preference:', error)
+      console.error('❌ [LANGUAGE_SELECTION] Error saving language preference:', error)
       onLanguageSelected(selectedLanguage)
       setShowLanguageSelection(false)
     }
   }
 
+  // Show loading state while checking language preference
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>Checking language preference...</Text>
+        </View>
+      </View>
+    )
+  }
+
+  // Debug logging
+  console.log('🔍 [LANGUAGE_SELECTION] Current state:', {
+    isLoading,
+    showLanguageSelection,
+    selectedLanguage
+  })
+
   return (
     <View style={styles.container}>
       {/* Render the main app content behind */}
       {children}
-      
+
       {/* Language Selection Overlay */}
       {showLanguageSelection && (
         <View style={styles.overlayContainer}>
@@ -158,6 +213,17 @@ export default function LanguageSelectionOverlay({ onLanguageSelected, children 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#374151',
+    fontWeight: '500',
   },
   overlayContainer: {
     position: 'absolute',

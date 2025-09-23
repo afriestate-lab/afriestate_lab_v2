@@ -23,6 +23,8 @@ import { useTheme } from './_layout'
 import { useLanguage } from '@/lib/languageContext'
 import IcumbiLogo from './components/IcumbiLogo'
 import LanguageSelector from './components/LanguageSelector'
+import RoleGuard from '@/components/RoleGuard'
+import { UserRole } from '@/lib/roleGuard'
 
 const chartConfig = {
   backgroundGradientFrom: '#f8fafc',
@@ -272,7 +274,7 @@ const ChartCard = ({
   )
 }
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const { theme } = useTheme()
   const { t } = useLanguage()
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -1655,6 +1657,18 @@ export default function AdminDashboard() {
         </View>
       </Modal>
     </SafeAreaView>
+  )
+}
+
+// Export the component wrapped with RoleGuard
+export default function AdminDashboard() {
+  return (
+    <RoleGuard 
+      allowedRoles={['admin']} 
+      screenName="admin-dashboard"
+    >
+      <AdminDashboardContent />
+    </RoleGuard>
   )
 }
 

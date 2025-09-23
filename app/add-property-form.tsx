@@ -223,9 +223,9 @@ export default function AddPropertyForm({ onBack, onSuccess }: AddPropertyFormPr
 
   const AMENITIES = [
     // General
-    { group: 'Ibikoresho Rusange', items: [
-      'Amashanyarazi',
-      'Amazi meza',
+    { group: t('generalAmenities'), items: [
+      t('electricity'),
+      t('cleanWater'),
       'Ikigega cy’amazi',
       'Sisitemu ya Septique cyangwa Sewer',
       'Internet (fiber/cable)',

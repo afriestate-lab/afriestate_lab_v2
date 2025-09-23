@@ -17,6 +17,7 @@ import AddActionModal from './add-action-modal'
 import { LanguageProvider, useLanguage } from '@/lib/languageContext'
 import IcumbiLogo from './components/IcumbiLogo'
 import LanguageSelectionOverlay from './language-selection'
+import { getCurrentUserRole, UserRole, redirectToRoleDashboard } from '@/lib/roleGuard'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -208,69 +209,18 @@ function AuthGuard({ children, requireAuth = true }: { children: React.ReactNode
   return <>{children}</>
 }
 
-// Dashboard Screen with Role Detection
+// Dashboard Screen with Enhanced Role Detection and Deep Link Protection
 function DashboardScreen() {
-  const [userRole, setUserRole] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<UserRole | null>(null)
   const [loading, setLoading] = useState(true)
   const { theme } = useTheme()
 
   const checkUserRole = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        setUserRole('guest')
-        setLoading(false)
-        return
-      }
-
-      console.log('🔍 [ROLE_CHECK] Checking role for user:', user.id)
-      console.log('🔍 [ROLE_CHECK] User metadata role:', user.user_metadata?.role)
-      console.log('🔍 [ROLE_CHECK] User email:', user.email)
-
-      // HARDCODED ADMIN CHECK - Force admin role for admin@icumbi.com
-      if (user.email === 'admin@icumbi.com') {
-        console.log('🔧 [ROLE_CHECK] Hardcoded admin detected - forcing admin role')
-        setUserRole('admin')
-        setLoading(false)
-        return
-      }
-
-      // Check for admin mode flag in AsyncStorage (for hardcoded admin credentials)
-      try {
-        const adminMode = await AsyncStorage.getItem('admin_mode')
-        if (adminMode === 'true') {
-          console.log('🔧 [ROLE_CHECK] Admin mode flag detected - forcing admin role')
-          setUserRole('admin')
-          // Clear the flag after use
-          await AsyncStorage.removeItem('admin_mode')
-          return
-        }
-      } catch (storageError) {
-        console.log('⚠️ [ROLE_CHECK] Error checking admin mode flag:', storageError)
-      }
-
-      // First check the users table for the definitive role
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('role, full_name')
-        .eq('id', user.id)
-        .single()
-
-      if (error) {
-        console.log('❌ [ROLE_CHECK] User not found in users table:', error)
-        setUserRole('guest')
-      } else {
-              console.log('✅ [ROLE_CHECK] User role from database:', userData?.role)
-      console.log('✅ [ROLE_CHECK] User name:', userData?.full_name)
-      
-      // Special case: Force tenant role for known tenant user
-      if (user.id === '08fd1661-dc25-44c5-82f1-b28e9dfc1ea8') {
-        console.log('🔧 [ROLE_CHECK] Special case: Forcing tenant role for Hakizimana jack')
-        setUserRole('tenant')
-      } else {
-        setUserRole(userData?.role || 'guest')
-      }
-      }
+      setLoading(true)
+      const role = await getCurrentUserRole()
+      setUserRole(role)
+      console.log('🎯 [DASHBOARD_ROUTING] User role:', role)
     } catch (error) {
       console.error('❌ [ROLE_CHECK] Error checking user role:', error)
       setUserRole('guest')
@@ -291,39 +241,33 @@ function DashboardScreen() {
     )
   }
 
-  console.log('🎯 [DASHBOARD_ROUTING] User role:', userRole)
-
-  // Show tenant dashboard for tenant users
-  if (userRole === 'tenant') {
-    console.log('✅ [DASHBOARD_ROUTING] Routing to TenantDashboard')
-    return <TenantDashboard />
+  // Enhanced role-based routing with proper access control
+  switch (userRole) {
+    case 'tenant':
+      console.log('✅ [DASHBOARD_ROUTING] Routing to TenantDashboard')
+      return <TenantDashboard />
+    
+    case 'admin':
+      console.log('✅ [DASHBOARD_ROUTING] Routing to AdminDashboard')
+      const AdminDashboard = require('./admin-dashboard').default
+      return <AdminDashboard />
+    
+    case 'landlord':
+    case 'manager':
+      console.log('✅ [DASHBOARD_ROUTING] Routing to LandlordDashboard')
+      return <LandlordDashboard />
+    
+    case 'guest':
+    default:
+      console.log('✅ [DASHBOARD_ROUTING] Routing to Welcome Screen (guest)')
+      return (
+        <View style={[styles.screen, { backgroundColor: theme.background }]}>
+          <Text style={[styles.screenText, { color: theme.text }]}>
+            Nta bucukumbuzi bwemerewe busanganywe
+          </Text>
+        </View>
+      )
   }
-
-
-
-  // Show admin dashboard for admin users
-  if (userRole === 'admin') {
-    console.log('✅ [DASHBOARD_ROUTING] Routing to AdminDashboard')
-    const AdminDashboard = require('./admin-dashboard').default
-    return <AdminDashboard />
-  }
-
-  // Show landlord dashboard for landlords and managers
-  if (userRole === 'landlord' || userRole === 'manager') {
-    console.log('✅ [DASHBOARD_ROUTING] Routing to LandlordDashboard')
-    return <LandlordDashboard />
-  }
-
-  // Show welcome screen for guests
-  console.log('✅ [DASHBOARD_ROUTING] Routing to Welcome Screen (guest)')
-    return (
-    <View style={[styles.screen, { backgroundColor: theme.background }]}>
-      <Text style={[styles.screenText, { color: theme.text }]}>Welcome to Icumbi!</Text>
-      <Text style={[styles.subText, { color: theme.textSecondary }]}>
-        To continue, view our properties on the Home tab or go to your Profile to see your information.
-</Text>
-    </View>
-  )
 }
 
 function AddScreen() {
@@ -787,13 +731,20 @@ function HomeScreen() {
   )
 }
 
-function CustomTabBar({ state, descriptors, navigation, onShowSignIn }: BottomTabBarProps & { onShowSignIn: () => void }) {
+function CustomTabBar({ state, descriptors, navigation, onShowSignIn, userRole }: BottomTabBarProps & { onShowSignIn: () => void; userRole: UserRole | null }) {
   const { user } = useAuth()
   const { theme } = useTheme()
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   
   return (
     <View style={[styles.tabBar, { backgroundColor: theme.tabBar }]}>
+      {/* Language indicator */}
+      <View style={styles.languageIndicator}>
+        <Text style={[styles.languageText, { color: theme.textSecondary }]}>
+          {currentLanguage === 'rw' ? '🇷🇼 RW' : '🇺🇸 EN'}
+        </Text>
+      </View>
+      
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key]
         const label =
@@ -888,17 +839,51 @@ function CustomTabBar({ state, descriptors, navigation, onShowSignIn }: BottomTa
 // Tab Navigator Wrapper Component
 function TabNavigatorWrapper({ onShowSignIn }: { onShowSignIn: () => void }) {
   const { t } = useLanguage()
+  const [userRole, setUserRole] = useState<UserRole | null>(null)
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const role = await getCurrentUserRole()
+        setUserRole(role)
+      } catch (error) {
+        console.error('Error checking user role:', error)
+        setUserRole('guest')
+      } finally {
+        setLoading(false)
+      }
+    }
+    checkRole()
+  }, [])
+  
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Gukura...</Text>
+      </View>
+    )
+  }
   
   return (
     <Tab.Navigator
       initialRouteName="Home"
-      tabBar={props => <CustomTabBar {...props} onShowSignIn={onShowSignIn} />}
+      tabBar={props => <CustomTabBar {...props} onShowSignIn={onShowSignIn} userRole={userRole} />}
       screenOptions={{ headerShown: false }}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('home') }} />
       <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: t('dashboard') }} />
-      <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
-      <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: t('messages') }} />
+      
+      {/* Show Add tab only for landlords, managers, and admins */}
+      {(userRole === 'landlord' || userRole === 'manager' || userRole === 'admin') && (
+        <Tab.Screen name="Add" component={AddScreen} options={{ tabBarLabel: '' }} />
+      )}
+      
+      {/* Show Messages tab for all authenticated users */}
+      {userRole !== 'guest' && (
+        <Tab.Screen name="Messages" component={MessagesScreen} options={{ tabBarLabel: t('messages') }} />
+      )}
+      
       <Tab.Screen 
         name="Profile" 
         children={(props) => <ProfileScreen {...props} onShowSignIn={onShowSignIn} />}
@@ -918,7 +903,12 @@ export default function RootLayout() {
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
-              <TabNavigatorWrapper onShowSignIn={() => setShowSignIn(true)} />
+              <LanguageSelectionOverlay onLanguageSelected={(language) => {
+                // Language is now properly updated through the language context
+                console.log('Language selected:', language)
+              }}>
+                <TabNavigatorWrapper onShowSignIn={() => setShowSignIn(true)} />
+              </LanguageSelectionOverlay>
                 <Modal visible={showSignIn} animationType="slide" onRequestClose={() => setShowSignIn(false)}>
                   <SignInScreen 
                     onSuccess={() => setShowSignIn(false)} 
@@ -964,6 +954,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 8,
+    position: 'relative',
+  },
+  languageIndicator: {
+    position: 'absolute',
+    top: 4,
+    right: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  languageText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
   tabItem: {
     flex: 1,

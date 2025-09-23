@@ -70,7 +70,15 @@ const amenityIcons: { [key: string]: keyof typeof Ionicons.glyphMap } = {
   'Washing Machine': 'shirt',
   'Igikoni': 'restaurant',
   'Ubwitugu': 'shield-checkmark',
-  'Amashanyarazi': 'flash',
+  // Map both English and Kinyarwanda amenity names to icons
+  'Amashanyarazi': 'flash', // Kinyarwanda for Electricity
+  'Amazi meza': 'water', // Kinyarwanda for Clean Water
+  'Ikigega cy\'amazi': 'water', // Kinyarwanda for Water Tank
+  'Sisitemu ya Septique cyangwa Sewer': 'water', // Kinyarwanda for Septic System
+  'Internet (fiber/cable)': 'wifi',
+  'Gazi': 'flame', // Kinyarwanda for Gas
+  'Backup power (generator/inverter/solar)': 'battery-charging',
+  'Igitaka cyateyeho tiles': 'home', // Kinyarwanda for Tiled Floor
   'Amazi': 'water',
   'default': 'checkmark-circle'
 }

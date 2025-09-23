@@ -197,6 +197,17 @@ export interface Translations {
   actionDelete: string
   actionAdd: string
   actionSave: string
+
+  // Amenities
+  generalAmenities: string
+  electricity: string
+  cleanWater: string
+  waterTank: string
+  septicSystem: string
+  internet: string
+  gas: string
+  backupPower: string
+  tiledFloor: string
   actionCancel: string
   actionConfirm: string
   actionApprove: string
@@ -620,6 +631,17 @@ export const translations: Record<Language, Translations> = {
     actionArchive: 'Bika',
     actionRestore: 'Subira',
 
+    // Amenities
+    generalAmenities: 'Ibikoresho Rusange',
+    electricity: 'Amashanyarazi',
+    cleanWater: 'Amazi meza',
+    waterTank: 'Ikigega cy\'amazi',
+    septicSystem: 'Sisitemu ya Septique cyangwa Sewer',
+    internet: 'Internet (fiber/cable)',
+    gas: 'Gazi',
+    backupPower: 'Backup power (generator/inverter/solar)',
+    tiledFloor: 'Igitaka cyateyeho tiles',
+
     // Payment Modal
     selectProperty: 'Hitamo Inyubako',
     selectRoom: 'Hitamo Icyumba',
@@ -1032,6 +1054,17 @@ export const translations: Record<Language, Translations> = {
     actionComplete: 'Complete',
     actionArchive: 'Archive',
     actionRestore: 'Restore',
+
+    // Amenities
+    generalAmenities: 'General Amenities',
+    electricity: 'Electricity',
+    cleanWater: 'Clean Water',
+    waterTank: 'Water Tank',
+    septicSystem: 'Septic System or Sewer',
+    internet: 'Internet (fiber/cable)',
+    gas: 'Gas',
+    backupPower: 'Backup Power (generator/inverter/solar)',
+    tiledFloor: 'Tiled Floor',
 
     // Payment Modal
     selectProperty: 'Select Property',

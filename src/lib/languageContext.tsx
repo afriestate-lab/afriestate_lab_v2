@@ -6,6 +6,7 @@ interface LanguageContextType {
   currentLanguage: Language
   changeLanguage: (language: Language) => void
   t: (key: keyof typeof translations.rw) => string
+  isLanguageLoaded: boolean
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -24,17 +25,28 @@ interface LanguageProviderProps {
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en') // Default to English
+  const [isLanguageLoaded, setIsLanguageLoaded] = useState(false)
 
   // Load saved language preference on app start
   useEffect(() => {
     const loadLanguagePreference = async () => {
       try {
         const savedLanguage = await AsyncStorage.getItem('userLanguage')
+        console.log('🔍 [LANGUAGE_CONTEXT] Loading language preference:', savedLanguage)
+        
         if (savedLanguage === 'rw' || savedLanguage === 'en') {
           setCurrentLanguage(savedLanguage)
+          console.log('✅ [LANGUAGE_CONTEXT] Language loaded from storage:', savedLanguage)
+        } else {
+          console.log('ℹ️ [LANGUAGE_CONTEXT] No saved language found, using default: en')
+          setCurrentLanguage('en') // Explicitly set to English
         }
       } catch (error) {
-        console.error('Error loading language preference:', error)
+        console.error('❌ [LANGUAGE_CONTEXT] Error loading language preference:', error)
+        setCurrentLanguage('en') // Fallback to English on error
+      } finally {
+        setIsLanguageLoaded(true)
+        console.log('🔄 [LANGUAGE_CONTEXT] Language context initialized, currentLanguage:', currentLanguage)
       }
     }
     loadLanguagePreference()
@@ -44,19 +56,27 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     try {
       await AsyncStorage.setItem('userLanguage', language)
       setCurrentLanguage(language)
+      console.log('✅ Language changed to:', language)
+      console.log('🔄 Language context updated, UI should re-render with new language')
     } catch (error) {
-      console.error('Error saving language preference:', error)
+      console.error('❌ Error saving language preference:', error)
     }
   }
 
   const t = (key: keyof typeof translations.rw): string => {
-    return translations[currentLanguage][key] || key
+    const translation = translations[currentLanguage][key] || key
+    // Debug: Log when translations are being used
+    if (key === 'home' || key === 'dashboard') {
+      console.log(`🔤 [TRANSLATION] ${key} -> ${translation} (language: ${currentLanguage})`)
+    }
+    return translation
   }
 
   const value: LanguageContextType = {
     currentLanguage,
     changeLanguage,
     t,
+    isLanguageLoaded,
   }
 
   return (

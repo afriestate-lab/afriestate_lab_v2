@@ -23,6 +23,8 @@ import { useLanguage } from '@/lib/languageContext'
 import LeaseExtensionFlow from './components/LeaseExtensionFlow'
 import IcumbiLogo from './components/IcumbiLogo'
 import LanguageSelector from './components/LanguageSelector'
+import RoleGuard from '@/components/RoleGuard'
+import { UserRole } from '@/lib/roleGuard'
 
 // Local type definitions
 interface TenantUser {
@@ -210,7 +212,7 @@ const isOverdue = (dueDateString: string): boolean => {
 
 type TabType = 'overview' | 'bookings' | 'payments' | 'messages' | 'announcements' | 'extend'
 
-export default function TenantDashboard() {
+function TenantDashboardContent() {
   const { theme } = useTheme()
   const { t } = useLanguage()
   const [tenantUser, setTenantUser] = useState<TenantUser | null>(null)
@@ -1858,6 +1860,18 @@ export default function TenantDashboard() {
         }}
       />
     </SafeAreaView>
+  )
+}
+
+// Export the component wrapped with RoleGuard
+export default function TenantDashboard() {
+  return (
+    <RoleGuard 
+      allowedRoles={['tenant']} 
+      screenName="tenant-dashboard"
+    >
+      <TenantDashboardContent />
+    </RoleGuard>
   )
 }
 
