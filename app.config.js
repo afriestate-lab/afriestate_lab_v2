@@ -15,27 +15,6 @@ export default {
     assetBundlePatterns: [
       "**/*"
     ],
-    ios: {
-      bundleIdentifier: "com.icumbi.app",
-      supportsTablet: true,
-      infoPlist: {
-        NSCameraUsageDescription: "Icumbi needs camera access to take property photos.",
-        NSPhotoLibraryUsageDescription: "Icumbi needs photo library access to choose property images.",
-      }
-    },
-    android: {
-      package: "com.icumbi.app",
-      versionCode: 2,
-      adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff"
-      },
-      permissions: [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ]
-    },
     web: {
       favicon: "./assets/favicon.png",
       bundler: "metro"

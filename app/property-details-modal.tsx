@@ -10,7 +10,6 @@ import {
   Alert,
   ActivityIndicator,
   StatusBar,
-  Platform,
   Linking,
   TextInput
 } from 'react-native'
@@ -998,7 +997,7 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 20,
+    top: 20,
     right: 16,
     flexDirection: 'row',
   },
@@ -1214,7 +1213,7 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: 'white',
     padding: 16,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 16, // Account for home indicator on iOS
+    paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
     flexDirection: 'row',

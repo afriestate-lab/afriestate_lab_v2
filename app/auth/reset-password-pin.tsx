@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Dimensions, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { Text, TextInput, Button, HelperText, ProgressBar } from 'react-native-paper';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -643,7 +643,7 @@ export default function ResetPasswordPinScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior="height"
     >
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}

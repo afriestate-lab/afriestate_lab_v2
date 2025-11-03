@@ -7,7 +7,6 @@ import {
   Dimensions,
   Alert,
   KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
   TouchableOpacity,
   Keyboard
@@ -635,7 +634,7 @@ export default function BookingModal({ visible, onClose, property }: BookingModa
     >
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="height"
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.container}>

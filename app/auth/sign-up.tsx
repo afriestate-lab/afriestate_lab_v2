@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Dimensions, Image, Modal as RNModal, Pressable, FlatList, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableOpacity, Dimensions, Image, Modal as RNModal, Pressable, FlatList, Alert, ScrollView } from 'react-native';
 import { Text, TextInput, Button, HelperText, ActivityIndicator } from 'react-native-paper';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -410,8 +410,8 @@ export default function SignUpScreen({ onSuccess, onClose, onShowSignIn }: { onS
   return (
     <KeyboardAvoidingView
       style={styles.outer}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+      behavior={undefined}
+      keyboardVerticalOffset={0}
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>

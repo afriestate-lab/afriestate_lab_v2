@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Alert, Modal, ScrollView, Linking } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Modal, ScrollView, Linking } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 // NavigationContainer is automatically provided by Expo Router
@@ -942,13 +942,13 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#18181b',
-    height: Platform.OS === 'ios' ? 80 : 64,
+    height: 64,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+    paddingBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.08,
