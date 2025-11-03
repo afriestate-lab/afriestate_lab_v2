@@ -529,7 +529,7 @@ export default function ResetPasswordPinScreen() {
         disabled={isPinLoading || pin.length !== 5}
         style={styles.button}
       >
-        {currentLanguage === 'en' ? 'Verify PIN' : 'Emeza Umubare'}
+        {t('verifyPin')}
       </Button>
 
       {/* Resend PIN */}
@@ -540,8 +540,8 @@ export default function ResetPasswordPinScreen() {
       >
         <Text style={[styles.resendText, resendCountdown > 0 && styles.resendTextDisabled]}>
           {resendCountdown > 0 
-            ? `${currentLanguage === 'en' ? 'Resend in' : 'Kongera mu'} ${resendCountdown}s`
-            : (currentLanguage === 'en' ? 'Resend PIN' : 'Kongera kohereza')
+            ? `${t('resendIn')} ${resendCountdown}s`
+            : t('resendPin')
           }
         </Text>
       </TouchableOpacity>
@@ -551,7 +551,7 @@ export default function ResetPasswordPinScreen() {
         style={styles.backButton}
       >
         <Text style={styles.backText}>
-          {currentLanguage === 'en' ? '← Back' : '← Subira inyuma'}
+          ← {t('back')}
         </Text>
       </TouchableOpacity>
     </View>
@@ -560,18 +560,15 @@ export default function ResetPasswordPinScreen() {
   const renderPasswordStep = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>
-        {currentLanguage === 'en' ? 'New Password' : 'Ijambo ry\'ibanga rishya'}
+        {t('newPassword')}
       </Text>
       
       <Text style={styles.stepDescription}>
-        {currentLanguage === 'en' 
-          ? 'Create a strong password for your account'
-          : 'Kora ijambo ry\'ibanga rikomeye ku konti yawe'
-        }
+        {t('createStrongPassword')}
       </Text>
 
       <TextInput
-        label={currentLanguage === 'en' ? 'New Password' : 'Ijambo ry\'ibanga rishya'}
+        label={t('newPassword')}
         value={newPassword}
         onChangeText={setNewPassword}
         secureTextEntry={!showPassword}
@@ -595,16 +592,16 @@ export default function ResetPasswordPinScreen() {
             style={styles.strengthBar}
           />
           <Text style={styles.strengthText}>
-            {passwordStrength < 0.4 ? (currentLanguage === 'en' ? 'Weak' : 'Ntoya') :
-             passwordStrength < 0.6 ? (currentLanguage === 'en' ? 'Fair' : 'Hagati') :
-             passwordStrength < 0.8 ? (currentLanguage === 'en' ? 'Good' : 'Neza') : 
-             (currentLanguage === 'en' ? 'Strong' : 'Cyiza cyane')}
+            {passwordStrength < 0.4 ? t('passwordWeak') :
+             passwordStrength < 0.6 ? t('passwordFair') :
+             passwordStrength < 0.8 ? t('passwordGood') : 
+             t('passwordStrong')}
           </Text>
         </View>
       )}
 
       <TextInput
-        label={currentLanguage === 'en' ? 'Confirm Password' : 'Emeza ijambo ry\'ibanga'}
+        label={t('confirmPassword')}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry={!showConfirmPassword}

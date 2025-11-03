@@ -46,6 +46,17 @@ export interface Translations {
   registerError: string
   logoutConfirm: string
   logoutSuccess: string
+  dontHaveAccount: string
+  createAccount: string
+  resendPin: string
+  resendIn: string
+  newPassword: string
+  createStrongPassword: string
+  passwordWeak: string
+  passwordFair: string
+  passwordGood: string
+  passwordStrong: string
+  selectDatePlaceholder: string
 
   // Profile
   myAccount: string
@@ -471,6 +482,17 @@ export const translations: Record<Language, Translations> = {
     registerError: 'Hari ikibazo mu kwiyandikisha',
     logoutConfirm: 'Uremeza ko ushaka gusohoka?',
     logoutSuccess: 'Wasohotse neza',
+    dontHaveAccount: 'Nta konti ufite? ',
+    createAccount: 'Fungura konti',
+    resendPin: 'Kongera kohereza',
+    resendIn: 'Kongera mu',
+    newPassword: 'Ijambo ry\'ibanga rishya',
+    createStrongPassword: 'Kora ijambo ry\'ibanga rikomeye ku konti yawe',
+    passwordWeak: 'Ntoya cyane',
+    passwordFair: 'Hagati',
+    passwordGood: 'Neza',
+    passwordStrong: 'Cyiza cyane',
+    selectDatePlaceholder: 'Hitamo itariki',
 
     // Profile
     myAccount: 'Konti yawe',
@@ -895,6 +917,17 @@ export const translations: Record<Language, Translations> = {
     registerError: 'Error registering',
     logoutConfirm: 'Are you sure you want to sign out?',
     logoutSuccess: 'Successfully signed out',
+    dontHaveAccount: 'Don\'t have an account? ',
+    createAccount: 'Create Account',
+    resendPin: 'Resend PIN',
+    resendIn: 'Resend in',
+    newPassword: 'New Password',
+    createStrongPassword: 'Create a strong password for your account',
+    passwordWeak: 'Weak',
+    passwordFair: 'Fair',
+    passwordGood: 'Good',
+    passwordStrong: 'Strong',
+    selectDatePlaceholder: 'Select date',
 
     // Profile
     myAccount: 'My Account',

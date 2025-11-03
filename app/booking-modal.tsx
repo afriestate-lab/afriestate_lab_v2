@@ -29,6 +29,7 @@ import { router } from 'expo-router'
 import PaymentProcessor from './payment-processor'
 import DatePicker from './date-picker'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/lib/languageContext'
 
 const { width, height } = Dimensions.get('window')
 
@@ -103,6 +104,7 @@ const paymentMethods = [
 
 export default function BookingModal({ visible, onClose, property }: BookingModalProps) {
   const theme = useTheme()
+  const { t } = useLanguage()
   const [step, setStep] = useState(0)
   const [userDetails, setUserDetails] = useState<UserDetails>({
     fullName: '',
@@ -271,9 +273,9 @@ export default function BookingModal({ visible, onClose, property }: BookingModa
           <View style={styles.dateInputContent}>
             <Ionicons name="calendar" size={20} color="#667eea" />
             <View style={styles.dateInputText}>
-              <Text style={styles.dateInputLabel}>Itariki yo kwinjira</Text>
+              <Text style={styles.dateInputLabel}>{t('checkInDateLabel')}</Text>
               <Text style={styles.dateInputValue}>
-                {checkInDate || 'Hitamo itariki'}
+                {checkInDate || t('selectDatePlaceholder')}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
@@ -287,9 +289,9 @@ export default function BookingModal({ visible, onClose, property }: BookingModa
           <View style={styles.dateInputContent}>
             <Ionicons name="calendar" size={20} color="#667eea" />
             <View style={styles.dateInputText}>
-              <Text style={styles.dateInputLabel}>Itariki yo gusohokamo</Text>
+              <Text style={styles.dateInputLabel}>{t('checkOutDateLabel')}</Text>
               <Text style={styles.dateInputValue}>
-                {checkOutDate || 'Hitamo itariki'}
+                {checkOutDate || t('selectDatePlaceholder')}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9ca3af" />

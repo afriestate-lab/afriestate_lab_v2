@@ -3,10 +3,12 @@ import { View, StyleSheet, KeyboardAvoidingView, Dimensions, ScrollView, Alert }
 import { Text, TextInput, Button, HelperText, ProgressBar } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/lib/languageContext';
 
 const { width } = Dimensions.get('window');
 
 export default function ResetPasswordScreen() {
+  const { t } = useLanguage();
   const params = useLocalSearchParams();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -211,9 +213,9 @@ export default function ResetPasswordScreen() {
                     style={styles.strengthBar}
                   />
                   <Text style={styles.strengthText}>
-                    {passwordStrength < 0.4 ? 'Ntoya cyane' :
-                     passwordStrength < 0.6 ? 'Hagati' :
-                     passwordStrength < 0.8 ? 'Neza' : 'Cyiza cyane'}
+                    {passwordStrength < 0.4 ? t('passwordWeak') :
+                     passwordStrength < 0.6 ? t('passwordFair') :
+                     passwordStrength < 0.8 ? t('passwordGood') : t('passwordStrong')}
                   </Text>
                 </View>
               )}

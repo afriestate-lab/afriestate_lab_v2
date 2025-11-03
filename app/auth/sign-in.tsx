@@ -915,7 +915,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           <View style={styles.logoContainer}>
             <IcumbiLogo width={60} height={60} />
           </View>
-          <Text style={styles.title}>{currentLanguage === 'en' ? 'Welcome' : 'Murakaza neza'}</Text>
+          <Text style={styles.title}>{t('welcome')}</Text>
           {/* Role Dropdown */}
           <TouchableOpacity style={styles.dropdown} onPress={() => setRoleModal(true)}>
             <Text style={styles.dropdownText}>{ROLES.find(r => r.value === role)?.label}</Text>
@@ -1003,7 +1003,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
           
           {/* Sign Up Link */}
           <View style={styles.signupRow}>
-            <Text style={styles.signupText}>{currentLanguage === 'en' ? "Don't have an account? " : 'Nta konti ufite? '}</Text>
+            <Text style={styles.signupText}>{t('dontHaveAccount')}</Text>
             <TouchableOpacity 
               style={styles.signupTouchable}
               activeOpacity={0.7}
@@ -1025,7 +1025,7 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
                 }
               }}
             >
-                <Text style={styles.signupLink}>{currentLanguage === 'en' ? 'Create Account' : 'Fungura konti'}</Text>
+                <Text style={styles.signupLink}>{t('createAccount')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1180,8 +1180,8 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
                     >
                       <Text style={[styles.resendText, resendCountdown > 0 && styles.resendTextDisabled]}>
                         {resendCountdown > 0 
-                          ? `${currentLanguage === 'en' ? 'Resend in' : 'Kongera mu'} ${resendCountdown}s`
-                          : (currentLanguage === 'en' ? 'Resend PIN' : 'Kongera kohereza')
+                          ? `${t('resendIn')} ${resendCountdown}s`
+                          : t('resendPin')
                         }
                       </Text>
                     </TouchableOpacity>
@@ -1231,16 +1231,16 @@ export default function SignInScreen({ onSuccess, onClose, onShowSignUp }: { onS
                           style={styles.strengthBar}
                         />
                         <Text style={styles.strengthText}>
-                          {getPasswordStrength(newPassword) < 0.4 ? (currentLanguage === 'en' ? 'Weak' : 'Ntoya') :
-                           getPasswordStrength(newPassword) < 0.6 ? (currentLanguage === 'en' ? 'Fair' : 'Hagati') :
-                           getPasswordStrength(newPassword) < 0.8 ? (currentLanguage === 'en' ? 'Good' : 'Neza') : 
-                           (currentLanguage === 'en' ? 'Strong' : 'Cyiza cyane')}
+                          {getPasswordStrength(newPassword) < 0.4 ? t('passwordWeak') :
+                           getPasswordStrength(newPassword) < 0.6 ? t('passwordFair') :
+                           getPasswordStrength(newPassword) < 0.8 ? t('passwordGood') : 
+                           t('passwordStrong')}
                         </Text>
                       </View>
                     )}
 
                     <TextInput
-                      label={currentLanguage === 'en' ? 'Confirm Password' : 'Emeza ijambo ry\'ibanga'}
+                      label={t('confirmPassword')}
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
                       secureTextEntry={!showConfirmPassword}
