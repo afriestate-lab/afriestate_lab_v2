@@ -1,4 +1,4 @@
-// Privacy Link Handler for Icumbi Website
+// Privacy Link Handler for Afri Estate Website
 // Add this script to your existing website to handle privacy link clicks
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -286,14 +286,14 @@ function AddScreen() {
     } else {
       Alert.alert(
         'Choose what to add',
-        'What would you like to add to Icumbi?',
+        'What would you like to add to Afri Estate?',
         [
           { 
             text: 'Property',
             onPress: () => {
               Alert.alert(
                 'Add Property',
-                'To add a property, you need to go to the Icumbi.com website or use the landlord dashboard.',
+                'To add a property, you need to go to the Afri Estate website or use the landlord dashboard.',
                 [
                   { text: t('closeDialog'), style: 'cancel' },
                   { 
@@ -659,7 +659,7 @@ function ProfileScreen({ onShowSignIn }: { onShowSignIn: () => void }) {
           <IcumbiLogo width={24} height={24} />
           <View style={styles.footerTextContainer}>
             <Text style={[styles.footerText, { color: theme.textTertiary }]}>
-              Icumbi © 2025 — "Easy rentals, better life." -{' '}
+              Afri Estate © 2025 — "Easy rentals, better life." -{' '}
             </Text>
             <TouchableOpacity 
               style={styles.privacyLinkContainer}
@@ -690,7 +690,7 @@ function ProfileScreen({ onShowSignIn }: { onShowSignIn: () => void }) {
           </View>
           <ScrollView style={styles.privacyModalContent}>
             <Text style={styles.privacyModalText}>
-              Welcome to Icumbi ("we," "our," or "us"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the Icumbi mobile application ("App").
+              Welcome to Afri Estate ("we," "our," or "us"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the Afri Estate mobile application ("App").
             </Text>
             <Text style={styles.privacyModalText}>
               By using our App, you agree to the collection and use of information in accordance with this policy. If you do not agree with this policy, please do not use our App.
@@ -710,7 +710,7 @@ function ProfileScreen({ onShowSignIn }: { onShowSignIn: () => void }) {
             <Text style={styles.privacyModalSectionTitle}>4. Contact Information</Text>
             <Text style={styles.privacyModalText}>
               For questions about this Privacy Policy, please contact us:{'\n'}
-              Email: support@icumbi.com{'\n'}
+              Email: support@afriestate.com{'\n'}
               Phone: +250 780 0566 266{'\n'}
               Address: Kigali, Rwanda
             </Text>

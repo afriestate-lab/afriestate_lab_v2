@@ -38,7 +38,7 @@ export async function sendEmailWithGmail(
 
     // Create email message
     const message = {
-      from: `"Icumbi Support" <${smtpConfig.auth.user}>`,
+      from: `"Afri Estate Support" <${smtpConfig.auth.user}>`,
       to: to,
       subject: subject,
       text: textBody,
@@ -75,13 +75,13 @@ export async function sendResetPinEmail(
 ): Promise<{ success: boolean; message_id?: string; error?: string }> {
   try {
     const subject = language === 'rw' 
-      ? 'Umubare w\'uguhindura ijambo ry\'ibanga - Icumbi'
-      : 'Password Reset PIN - Icumbi';
+      ? 'Umubare w\'uguhindura ijambo ry\'ibanga - Afri Estate'
+      : 'Password Reset PIN - Afri Estate';
 
     const htmlBody = language === 'rw' ? `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #667eea;">Icumbi</h1>
+          <h1 style="color: #667eea;">Afri Estate</h1>
         </div>
         
         <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 20px;">
@@ -109,14 +109,14 @@ export async function sendResetPinEmail(
         </div>
         
         <div style="text-align: center; color: #9ca3af; font-size: 14px;">
-          <p>Icumbi © 2025 — "Ubukode bworoshye, ubuzima bwiza."</p>
+          <p>Afri Estate © 2025 — "Ubukode bworoshye, ubuzima bwiza."</p>
           <p>Kigali, Rwanda</p>
         </div>
       </div>
     ` : `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #667eea;">Icumbi</h1>
+          <h1 style="color: #667eea;">Afri Estate</h1>
         </div>
         
         <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 20px;">
@@ -144,14 +144,14 @@ export async function sendResetPinEmail(
         </div>
         
         <div style="text-align: center; color: #9ca3af; font-size: 14px;">
-          <p>Icumbi © 2025 — "Easy rentals, better life."</p>
+          <p>Afri Estate © 2025 — "Easy rentals, better life."</p>
           <p>Kigali, Rwanda</p>
         </div>
       </div>
     `;
 
     const textBody = language === 'rw' ? `
-      Icumbi - Ubusaba bwo guhindura ijambo ry'ibanga
+      Afri Estate - Ubusaba bwo guhindura ijambo ry'ibanga
 
       Mwemeye, ${fullName},
 
@@ -161,10 +161,10 @@ export async function sendResetPinEmail(
 
       Niba ntiwigeze gusaba guhindura ijambo ry'ibanga, nyamuneka ureka ubutumwa ubu.
 
-      Icumbi © 2025 — "Ubukode bworoshye, ubuzima bwiza."
+      Afri Estate © 2025 — "Ubukode bworoshye, ubuzima bwiza."
       Kigali, Rwanda
     ` : `
-      Icumbi - Password Reset Request
+      Afri Estate - Password Reset Request
 
       Hello ${fullName},
 
@@ -174,7 +174,7 @@ export async function sendResetPinEmail(
 
       If you didn't request a password reset, please ignore this email.
 
-      Icumbi © 2025 — "Easy rentals, better life."
+      Afri Estate © 2025 — "Easy rentals, better life."
       Kigali, Rwanda
     `;
 

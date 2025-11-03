@@ -61,7 +61,7 @@ export class MTNMoMoApiUserTestSuite {
       const id1 = mtnMomoApiUserService.generateReferenceId()
       const id2 = mtnMomoApiUserService.generateReferenceId()
       
-      if (id1 && id2 && id1 !== id2 && id1.startsWith('ICUMBI_') && id2.startsWith('ICUMBI_')) {
+      if (id1 && id2 && id1 !== id2 && id1.startsWith('AFRIESTATE_') && id2.startsWith('AFRIESTATE_')) {
         this.addResult('Reference ID Generation', 'PASS', 'Reference IDs generated successfully and are unique')
       } else {
         this.addResult('Reference ID Generation', 'FAIL', 'Reference ID generation failed or IDs are not unique')

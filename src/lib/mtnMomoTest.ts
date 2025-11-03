@@ -127,7 +127,7 @@ export class MTNMoMoTestSuite {
       const id1 = mtnMomoService.generateExternalId()
       const id2 = mtnMomoService.generateExternalId()
       
-      if (id1 && id2 && id1 !== id2 && id1.startsWith('ICUMBI_') && id2.startsWith('ICUMBI_')) {
+      if (id1 && id2 && id1 !== id2 && id1.startsWith('AFRIESTATE_') && id2.startsWith('AFRIESTATE_')) {
         this.addResult('External ID Generation', 'PASS', 'External IDs generated successfully and are unique')
       } else {
         this.addResult('External ID Generation', 'FAIL', 'External ID generation failed or IDs are not unique')
@@ -164,7 +164,7 @@ export class MTNMoMoTestSuite {
         amount,
         phoneNumber,
         externalId,
-        payerMessage: 'Test Payment - Icumbi',
+        payerMessage: 'Test Payment - Afri Estate',
         payeeNote: 'Test Payment'
       })
 

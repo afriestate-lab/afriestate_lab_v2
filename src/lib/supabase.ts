@@ -22,7 +22,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     headers: {
-      'X-Client-Info': 'icumbi-mobile-client'
+      'X-Client-Info': 'afri-estate-mobile-client'
     }
   },
   // Add network timeout and retry settings

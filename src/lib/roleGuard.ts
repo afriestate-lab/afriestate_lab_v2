@@ -91,8 +91,8 @@ export const getCurrentUserRole = async (): Promise<UserRole> => {
     console.log('🔍 [ROLE_CHECK] Checking role for user:', user.id)
     console.log('🔍 [ROLE_CHECK] User email:', user.email)
 
-    // HARDCODED ADMIN CHECK - Force admin role for admin@icumbi.com
-    if (user.email === 'admin@icumbi.com') {
+    // HARDCODED ADMIN CHECK - Force admin role for admin@afriestate.com
+    if (user.email === 'admin@afriestate.com') {
       console.log('🔧 [ROLE_CHECK] Hardcoded admin detected - forcing admin role')
       return 'admin'
     }

@@ -75,13 +75,13 @@ const isValid = mtnMomoService.validatePhoneNumber('0780123456')
 const paymentResponse = await mtnMomoService.requestPayment({
   amount: 50000,
   phoneNumber: '0780123456',
-  externalId: 'ICUMBI_123456789',
+  externalId: 'AFRIESTATE_123456789',
   payerMessage: 'Rent payment for Property A',
-  payeeNote: 'Icumbi - Property A'
+  payeeNote: 'Afri Estate - Property A'
 })
 
 // Check payment status
-const status = await mtnMomoService.getPaymentStatus('ICUMBI_123456789')
+const status = await mtnMomoService.getPaymentStatus('AFRIESTATE_123456789')
 ```
 
 ### Methods

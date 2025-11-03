@@ -1,4 +1,4 @@
-// Mobile-specific helper functions for the Icumbi app
+// Mobile-specific helper functions for the Afri Estate app
 import { supabase } from './supabase'
 import * as FileSystem from 'expo-file-system'
 

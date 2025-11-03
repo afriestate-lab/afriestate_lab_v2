@@ -158,7 +158,7 @@ export class MTNMoMoApiUserService {
    * Generate a unique reference ID for API user creation
    */
   generateReferenceId(): string {
-    return `ICUMBI_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    return `AFRIESTATE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   /**

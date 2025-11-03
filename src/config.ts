@@ -1,7 +1,7 @@
 // Configuration for the mobile app
 export const config = {
   // API Configuration - Use production for now to avoid network issues
-  API_URL: 'https://icumbi.com',
+  API_URL: 'https://afriestate.com',
   
   // Environment
   APP_ENV: 'production',
@@ -19,8 +19,8 @@ export const config = {
     ENVIRONMENT: process.env.EXPO_PUBLIC_MTN_MOMO_ENVIRONMENT || 'sandbox',
     COLLECTION_PRIMARY_KEY: process.env.EXPO_PUBLIC_MTN_MOMO_COLLECTION_PRIMARY_KEY || '26dcf9a019924b9aa43f84d6b3dd016e',
     COLLECTION_SECONDARY_KEY: process.env.EXPO_PUBLIC_MTN_MOMO_COLLECTION_SECONDARY_KEY || 'f30c4de14fbc4f15981cc3409faf0d81',
-    CALLBACK_URL: process.env.EXPO_PUBLIC_MTN_MOMO_CALLBACK_URL || 'https://icumbi.com/api/momo/callback',
-    REDIRECT_URL: process.env.EXPO_PUBLIC_MTN_MOMO_REDIRECT_URL || 'https://icumbi.com/payment/momo/success',
+    CALLBACK_URL: process.env.EXPO_PUBLIC_MTN_MOMO_CALLBACK_URL || 'https://afriestate.com/api/momo/callback',
+    REDIRECT_URL: process.env.EXPO_PUBLIC_MTN_MOMO_REDIRECT_URL || 'https://afriestate.com/payment/momo/success',
   }
 }
 

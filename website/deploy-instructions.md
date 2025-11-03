@@ -3,7 +3,7 @@
 ## 🎯 What We've Created
 
 ✅ **Complete website with Privacy link in footer**
-✅ **Professional design matching Icumbi branding**
+✅ **Professional design matching Afri Estate branding**
 ✅ **Responsive layout for all devices**
 ✅ **Privacy policy page at `/privacy`**
 
@@ -42,7 +42,7 @@
 
 ### Main Website (`/`)
 - Professional landing page
-- Icumbi branding and colors
+- Afri Estate branding and colors
 - Feature highlights
 - **Footer with Privacy link**
 
@@ -56,20 +56,20 @@
 
 The footer now includes:
 ```
-Icumbi © 2025 - 'Easy rentals, better life.'
+Afri Estate © 2025 - 'Easy rentals, better life.'
 Privacy | Terms | Contact | Support
 ```
 
 ## ✅ Result
 
 Once deployed:
-- `https://icumbi.com` → Main website with Privacy link
-- `https://icumbi.com` → Main website
+- `https://afriestate.com` → Main website with Privacy link
+- `https://afriestate.com` → Main website
 - **Perfect for Google Play Console!**
 
 ## 🎯 For Google Play Console
 
 Use this URL in your app submission:
-**`https://icumbi.com`**
+**`https://afriestate.com`**
 
 This will work perfectly for your app store submission! 

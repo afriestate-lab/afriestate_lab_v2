@@ -3,13 +3,13 @@
 const config = {
   baseUrl: 'https://sandbox.momodeveloper.mtn.com',
   subscriptionKey: '26dcf9a019924b9aa43f84d6b3dd016e',
-  callbackUrl: 'https://icumbi.com/api/momo/callback'
+  callbackUrl: 'https://afriestate.com/api/momo/callback'
 };
 
 async function createApiUser() {
   try {
     // Generate unique reference ID
-    const referenceId = `ICUMBI_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const referenceId = `AFRIESTATE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     console.log('🚀 Creating MTN MoMo API User...');
     console.log('Reference ID:', referenceId);

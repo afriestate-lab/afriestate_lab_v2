@@ -73,7 +73,7 @@ export const IcumbiLogo: React.FC<IcumbiLogoProps> = ({
           fontWeight="bold"
           fill="#4A90E2"
         >
-          ICUMBI
+          AFRI ESTATE
         </text>
       )}
     </Svg>

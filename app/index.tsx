@@ -614,7 +614,7 @@ export default function PropertiesScreen() {
         <View style={styles.headerLogo}>
           <IcumbiLogo width={40} height={40} />
           <Text variant="headlineMedium" style={[styles.headerTitle, { color: theme.primary }]}>
-            Icumbi
+            Afri Estate
           </Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -894,11 +894,11 @@ export default function PropertiesScreen() {
             <Text style={styles.privacyModalTitle}>Privacy Policy & Terms</Text>
           </View>
           <ScrollView style={styles.privacyModalContent}>
-            <Text style={styles.privacyModalTitle}>Privacy Policy for Icumbi Mobile App</Text>
+            <Text style={styles.privacyModalTitle}>Privacy Policy for Afri Estate Mobile App</Text>
             <Text style={styles.privacyModalSubtitle}>Last Updated: August 18, 2025</Text>
             
             <Text style={styles.privacyModalText}>
-              Welcome to Icumbi ("we," "our," or "us"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the Icumbi mobile application ("App").
+              Welcome to Afri Estate ("we," "our," or "us"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the Afri Estate mobile application ("App").
             </Text>
             
             <Text style={styles.privacyModalSectionTitle}>1. Information We Collect</Text>
@@ -969,7 +969,7 @@ export default function PropertiesScreen() {
             
             <Text style={styles.privacyModalText}>
               <Text style={styles.bold}>Data Deletion:</Text>{'\n'}
-              You may request deletion of your account and personal information by contacting us at support@icumbi.com. We will process your request within 30 days.
+              You may request deletion of your account and personal information by contacting us at support@afriestate.com. We will process your request within 30 days.
             </Text>
             
             <Text style={styles.privacyModalSectionTitle}>4. Your Rights and Choices</Text>
@@ -984,7 +984,7 @@ export default function PropertiesScreen() {
             <Text style={styles.privacyModalSectionTitle}>5. Terms and Conditions</Text>
             <Text style={styles.privacyModalText}>
               <Text style={styles.bold}>Acceptance of Terms:</Text>{'\n'}
-              By downloading, installing, or using the Icumbi app, you agree to comply with and be bound by these Terms and Conditions.
+              By downloading, installing, or using the Afri Estate app, you agree to comply with and be bound by these Terms and Conditions.
             </Text>
             
             <Text style={styles.privacyModalText}>
@@ -1019,10 +1019,10 @@ export default function PropertiesScreen() {
               If you have questions about this Privacy Policy or our data practices, please contact us:
             </Text>
             <Text style={styles.privacyModalContactInfo}>
-              Email: support@icumbi.com{'\n'}
+              Email: support@afriestate.com{'\n'}
               Phone: +250 780 0566 266{'\n'}
               Address: Kigali, Rwanda{'\n'}
-              Website: https://icumbi.com
+              Website: https://afriestate.com
             </Text>
             
             <Text style={styles.privacyModalText}>
@@ -1032,7 +1032,7 @@ export default function PropertiesScreen() {
             
             <Text style={styles.privacyModalText}>
               <Text style={styles.bold}>Consent:</Text>{'\n'}
-              By using the Icumbi mobile app, you consent to the collection, use, and sharing of your information as described in this Privacy Policy.
+              By using the Afri Estate mobile app, you consent to the collection, use, and sharing of your information as described in this Privacy Policy.
             </Text>
           </ScrollView>
         </View>

@@ -1,6 +1,6 @@
-# Icumbi Mobile App
+# Afri Estate Web App
 
-A comprehensive React Native mobile application for property management, built with Expo and Supabase.
+A comprehensive property management web application built with Expo Router, React Native Web, and Supabase.
 
 ## 🚀 Features
 
@@ -13,35 +13,33 @@ A comprehensive React Native mobile application for property management, built w
 - **Manager Portal**: Property management and tenant coordination
 - **Admin Panel**: System administration and user management
 - **Real-time Updates**: Live data synchronization with Supabase
-- **Offline Support**: Cached data for offline functionality
 - **Multi-language Support**: English and Kinyarwanda localization
 
 ## 📱 Tech Stack
 
-- **Framework**: React Native with Expo
-- **Navigation**: React Navigation v6
+- **Framework**: Expo Router with React Native Web
+- **Navigation**: Expo Router (file-based routing)
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **UI Components**: React Native Paper
 - **State Management**: React Context API
 - **TypeScript**: Full type safety
 - **Payment Integration**: MTN MoMo, Airtel Money, Bank Transfer, Cards
+- **Deployment**: Vercel
 
 ## 🛠️ Prerequisites
 
 - Node.js (v18 or higher)
 - npm or yarn
 - Expo CLI
-- iOS Simulator (for iOS development)
-- Android Studio (for Android development)
 - Supabase account
 
 ## 📦 Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/MRobert045/Icumbi.mobile-app.git
-   cd Icumbi.mobile-app
+   git clone <your-repo-url>
+   cd afriestate_lab_v2
    ```
 
 2. **Install dependencies**
@@ -50,44 +48,42 @@ A comprehensive React Native mobile application for property management, built w
    ```
 
 3. **Environment Setup**
-   The `.env` file is already configured with the necessary environment variables:
+   Create a `.env` file with the necessary environment variables:
    - `EXPO_PUBLIC_SUPABASE_URL`: Your Supabase project URL
    - `EXPO_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
    - `EXPO_PUBLIC_API_URL`: Your API endpoint
    - Additional configuration for payments and services
 
+   See `env.example` for a complete list.
+
 4. **Start the development server**
    ```bash
-   npx expo start
+   npm start
+   # or
+   npm run web
    ```
 
-5. **Run on device/simulator**
-   - Scan QR code with Expo Go app (iOS/Android)
-   - Press `i` for iOS simulator
-   - Press `a` for Android emulator
+5. **Open in browser**
+   - The app will open automatically at `http://localhost:8081`
+   - Or press `w` to open in web browser
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-The app uses the following environment variables (already configured in `.env`):
+The app uses the following environment variables (configure in `.env`):
 
 ```env
 # Supabase Configuration
-EXPO_PUBLIC_SUPABASE_URL=https://sgektsymnqkyqcethveh.supabase.co
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # API Configuration
-EXPO_PUBLIC_API_URL=https://icumbi.com
-EXPO_PUBLIC_APP_URL=https://icumbi.com
+EXPO_PUBLIC_API_URL=https://afriestate.com
+EXPO_PUBLIC_APP_URL=https://afriestate.com
 
 # App Environment
 EXPO_PUBLIC_APP_ENV=production
-
-# Admin Configuration
-EXPO_PUBLIC_SUPER_ADMIN_EMAIL=mugisha@icumbi.com
-EXPO_PUBLIC_SUPER_ADMIN_NAME=Icumbi Developers
-EXPO_PUBLIC_SUPER_ADMIN_PHONE=+250780566973
 ```
 
 ### Supabase Setup
@@ -107,11 +103,11 @@ The app supports multiple payment methods:
 - **Cards**: Credit/Debit card payments
 - **Cash**: Manual payment recording
 
-## 📱 App Structure
+## 📁 App Structure
 
 ```
-mobile-app/
-├── app/                    # Main app screens and components
+afriestate_lab_v2/
+├── app/                    # Main app screens and components (Expo Router)
 │   ├── auth/              # Authentication screens
 │   ├── components/        # Reusable components
 │   └── _layout.tsx       # Root layout and navigation
@@ -120,8 +116,8 @@ mobile-app/
 │   ├── types/            # TypeScript type definitions
 │   └── config/           # App configuration
 ├── assets/               # Images, icons, and static files
-├── ios/                  # iOS-specific configuration
-└── android/              # Android-specific configuration
+├── website/              # Static website files
+└── dist/                 # Web build output
 ```
 
 ## 🔐 Authentication
@@ -203,45 +199,30 @@ The app supports multiple authentication methods:
 
 ### Development
 ```bash
-npx expo start
+npm start
 ```
 
-### Production Build
+### Build for Production
 ```bash
-# iOS
-npx expo run:ios
-
-# Android
-npx expo run:android
+npm run build:web
 ```
 
-### EAS Build (Recommended)
-```bash
-# Install EAS CLI
-npm install -g @expo/eas-cli
+This creates a `dist/` folder with the static web build.
 
-# Login to Expo
-eas login
+### Deploy to Vercel
 
-# Configure EAS
-eas build:configure
+1. **Connect your repository to Vercel**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Import your Git repository
 
-# Build for production
-eas build --platform ios
-eas build --platform android
-```
+2. **Configure Environment Variables**
+   - Add all `EXPO_PUBLIC_*` variables in Vercel project settings
 
-## 📱 Testing
+3. **Deploy**
+   - Push to your main branch (auto-deploy)
+   - Or use `vercel --prod`
 
-### Manual Testing
-1. Install Expo Go on your device
-2. Scan the QR code from `npx expo start`
-3. Test all user flows and features
-
-### Automated Testing
-```bash
-npm test
-```
+See `VERCEL_DEPLOYMENT.md` for detailed instructions.
 
 ## 🔧 Troubleshooting
 
@@ -258,14 +239,10 @@ npm test
    npm install
    ```
 
-3. **iOS build issues**
+3. **Build errors**
    ```bash
-   cd ios && pod install
-   ```
-
-4. **Android build issues**
-   ```bash
-   cd android && ./gradlew clean
+   npm run clean:cache
+   npm run build:web
    ```
 
 ### Environment Issues
@@ -282,7 +259,7 @@ npm test
 
 ## 📄 License
 
-This project is proprietary software developed for Icumbi property management platform.
+This project is proprietary software developed for Afri Estate property management platform.
 
 ## 👥 Contributing
 
@@ -291,18 +268,20 @@ For internal development only. Please contact the development team for access an
 ## 📞 Support
 
 For technical support or questions:
-- Email: mugisha@icumbi.com
-- Phone: +250780566973
+- Email: support@afriestate.com
+- Phone: +250 780 0566 266
 
 ## 🔄 Version History
 
-- **v1.0.0**: Initial release with core functionality
-- Multi-role authentication
-- Property management system
-- Payment integration
-- Real-time updates
-- Offline support
+- **v2.0.0**: Web-focused release
+  - Full web support
+  - Vercel deployment ready
+  - Optimized for web performance
+  - Multi-role authentication
+  - Property management system
+  - Payment integration
+  - Real-time updates
 
 ---
 
-**Built with ❤️ by the Icumbi Development Team** 
+**Built with ❤️ by the Afri Estate Development Team**

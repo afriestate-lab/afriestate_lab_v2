@@ -1,5 +1,5 @@
 const linking = {
-  prefixes: ['icumbi://', 'https://icumbi.com'],
+  prefixes: ['afri-estate://', 'https://afriestate.com'],
   config: {
     screens: {
       // Public screens (no authentication required)
