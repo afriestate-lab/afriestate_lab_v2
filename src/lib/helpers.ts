@@ -1,6 +1,5 @@
-// Mobile-specific helper functions for the Afri Estate app
+// Web-specific helper functions for the Afri Estate app
 import { supabase } from './supabase'
-import * as FileSystem from 'expo-file-system'
 
 export interface TenantUser {
   id: string
@@ -301,21 +300,21 @@ export const isValidRwandaPhone = (phone: string): boolean => {
 } 
 
 /**
- * Upload image to Supabase Storage and return public URL
- * @param uri - Local file URI from image picker
+ * Upload image to Supabase Storage and return public URL (Web version)
+ * @param file - File object from input
  * @param bucket - Storage bucket name
  * @param path - File path in bucket
  * @returns Promise<string> - Public URL of uploaded image
  */
 export const uploadImageToStorage = async (
-  uri: string,
+  file: File | Blob,
   bucket: string = 'property-images',
   path?: string
 ): Promise<string> => {
   try {
     // Validate input
-    if (!uri) {
-      throw new Error('No image URI provided')
+    if (!file) {
+      throw new Error('No file provided')
     }
 
     // Generate unique filename if path not provided
@@ -323,35 +322,7 @@ export const uploadImageToStorage = async (
     const randomId = Math.random().toString(36).substring(7)
     const filename = path || `property-${timestamp}-${randomId}.jpg`
     
-    console.log('Uploading image:', { uri, filename, bucket })
-    
-    // Read file using expo-file-system for better compatibility
-    let base64Data: string
-    try {
-      console.log('Reading file from URI:', uri)
-      base64Data = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      })
-      console.log('File read successfully, size:', base64Data.length, 'characters')
-    } catch (fileError) {
-      console.error('Failed to read image file:', fileError)
-      throw new Error(`Failed to read image file: ${fileError instanceof Error ? fileError.message : 'Unknown error'}`)
-    }
-    
-    // Validate file size
-    if (!base64Data || base64Data.length === 0) {
-      throw new Error('Image file is empty or corrupted')
-    }
-    
-    // Convert base64 to blob
-    const byteCharacters = atob(base64Data)
-    const byteNumbers = new Array(byteCharacters.length)
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i)
-    }
-    const byteArray = new Uint8Array(byteNumbers)
-    const blob = new Blob([byteArray], { type: 'image/jpeg' })
-    console.log('Image blob size:', blob.size, 'bytes', 'type:', blob.type)
+    console.log('Uploading image:', { filename, bucket })
     
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -367,20 +338,14 @@ export const uploadImageToStorage = async (
 
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(objectPath, blob, {
-        contentType: blob.type || 'image/jpeg',
+      .upload(objectPath, file, {
+        contentType: file.type || 'image/jpeg',
         cacheControl: '3600',
         upsert: false
       })
     
     if (error) {
       console.error('Upload error:', error)
-      console.error('Upload error details:', {
-        message: error.message,
-        name: error.name,
-        cause: error.cause,
-        stack: error.stack
-      })
       throw new Error(`Failed to upload image: ${error.message}`)
     }
     
@@ -397,15 +362,6 @@ export const uploadImageToStorage = async (
     console.error('Image upload failed:', error)
     throw new Error(`Failed to upload image to storage: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-}
-
-/**
- * Check if a URL is a local file URI
- * @param url - URL to check
- * @returns boolean
- */
-export const isLocalFileUri = (url: string): boolean => {
-  return url.startsWith('file://') || url.startsWith('content://')
 }
 
 /**

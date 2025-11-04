@@ -1,28 +1,29 @@
-import 'react-native-url-polyfill/auto'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database.types'
+import { localStorageAdapter } from './supabase-browser'
 
-// Supabase configuration - using hardcoded values for production
-const supabaseUrl = 'https://sgektsymnqkyqcethveh.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnZWt0c3ltbnFreXFjZXRodmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNjk2MjEsImV4cCI6MjA2NTg0NTYyMX0.9-GgphRm5dMkmuXmBzu2cORM50qj4bLJdngAqDpjErU'
+// Supabase configuration - using environment variables or fallback to hardcoded values
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://sgektsymnqkyqcethveh.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnZWt0c3ltbnFreXFjZXRodmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNjk2MjEsImV4cCI6MjA2NTg0NTYyMX0.9-GgphRm5dMkmuXmBzu2cORM50qj4bLJdngAqDpjErU'
 
-console.log('🔧 Supabase configuration loaded:', { 
-  url: supabaseUrl?.substring(0, 30) + '...',
-  hasKey: !!supabaseAnonKey 
-})
+if (typeof window !== 'undefined') {
+  console.log('🔧 Supabase configuration loaded:', { 
+    url: supabaseUrl?.substring(0, 30) + '...',
+    hasKey: !!supabaseAnonKey 
+  })
+}
 
-// Create Supabase client with React Native specific settings
+// Create Supabase client with web-specific settings
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: AsyncStorage,
+    storage: localStorageAdapter,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false, // Disabled for mobile
+    detectSessionInUrl: true, // Enabled for web to handle OAuth callbacks
   },
   global: {
     headers: {
-      'X-Client-Info': 'afri-estate-mobile-client'
+      'X-Client-Info': 'afri-estate-web-client'
     }
   },
   // Add network timeout and retry settings
@@ -122,8 +123,8 @@ export const queries = {
   }
 }
 
-// Mobile-specific utilities
-export const mobileUtils = {
+// Web-specific utilities (renamed from mobileUtils)
+export const webUtils = {
   // Check if user is online
   isOnline: async () => {
     try {
@@ -147,9 +148,9 @@ export const mobileUtils = {
   // Test network connectivity with detailed error reporting
   testConnectivity: async () => {
     try {
-      console.log('🔍 [MOBILE] Testing network connectivity...')
-      console.log('🔍 [MOBILE] Supabase URL:', supabaseUrl?.substring(0, 30) + '...')
-      console.log('🔍 [MOBILE] Environment variables loaded:', !!process.env.EXPO_PUBLIC_SUPABASE_URL)
+      console.log('🔍 [WEB] Testing network connectivity...')
+      console.log('🔍 [WEB] Supabase URL:', supabaseUrl?.substring(0, 30) + '...')
+      console.log('🔍 [WEB] Environment variables loaded:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
       
       // Test basic connectivity first with a simple query that doesn't require authentication
       const { data, error } = await supabase
@@ -157,19 +158,19 @@ export const mobileUtils = {
         .select('count', { count: 'exact', head: true })
       
       if (error) {
-        console.error('❌ [MOBILE] Network test failed:', error)
+        console.error('❌ [WEB] Network test failed:', error)
         // If it's an RLS error, the network is actually working
         if (error.code === '42501' || error.message?.includes('policy')) {
-          console.log('✅ [MOBILE] Network is working (RLS policy error is expected)')
+          console.log('✅ [WEB] Network is working (RLS policy error is expected)')
           return { success: true, note: 'Network working, RLS policy triggered' }
         }
         return { success: false, error: error.message || 'Unknown database error' }
       }
       
-      console.log('✅ [MOBILE] Network test successful')
+      console.log('✅ [WEB] Network test successful')
       return { success: true, count: data }
     } catch (error) {
-      console.error('❌ [MOBILE] Network test exception:', error)
+      console.error('❌ [WEB] Network test exception:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown network error'
       return { success: false, error: errorMessage }
     }
@@ -181,7 +182,7 @@ export const mobileUtils = {
       try {
         return await requestFn()
       } catch (error) {
-        console.log(`🔄 [MOBILE] Retry ${i + 1}/${maxRetries} failed:`, (error as Error).message)
+        console.log(`🔄 [WEB] Retry ${i + 1}/${maxRetries} failed:`, (error as Error).message)
         if (i === maxRetries - 1) throw error
         await new Promise(resolve => setTimeout(resolve, delay * (i + 1)))
       }

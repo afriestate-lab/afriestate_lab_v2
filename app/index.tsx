@@ -7,8 +7,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import IshyuraModal from './ishyura-modal'
 import PropertyDetailsModal from './property-details-modal'
-import { supabase, mobileUtils } from '@/lib/supabase'
-import { formatCurrency, isLocalFileUri, getFallbackPropertyImage } from '@/lib/helpers'
+import { supabase, webUtils } from '@/lib/supabase'
+import { formatCurrency, getFallbackPropertyImage } from '@/lib/helpers'
 import { BlurView } from 'expo-blur';
 import SignInScreen from './auth/sign-in'
 import SignUpScreen from './auth/sign-up'
@@ -115,7 +115,7 @@ export default function PropertiesScreen() {
       }
 
       // Use RPC function to bypass RLS recursion issues
-      const { data: propertiesData, error } = await mobileUtils.retryRequest(async () => {
+      const { data: propertiesData, error } = await webUtils.retryRequest(async () => {
         // Use different RPC functions based on sort order to avoid type conflicts
         if (sortOrder === 'price_low' || sortOrder === 'price_high') {
           return await supabase
@@ -165,16 +165,16 @@ export default function PropertiesScreen() {
           igiciro: property.price_range_min ? formatRWF(property.price_range_min) : 'Price on request',
           ifoto: (() => {
             // Check if featured_image_url exists and is not a local file URI
-            if (property.featured_image_url && !isLocalFileUri(property.featured_image_url)) {
+            if (property.featured_image_url && property.featured_image_url.startsWith('http')) {
               return property.featured_image_url
             }
             // Backward compatibility: some RPCs may return legacy image_url
-            if (property.image_url && !isLocalFileUri(property.image_url)) {
+            if (property.image_url && property.image_url.startsWith('http')) {
               return property.image_url
             }
             // Check if property_images array has valid URLs
             if (property.property_images && property.property_images.length > 0) {
-              const validImage = property.property_images.find((img: any) => img && !isLocalFileUri(img))
+              const validImage = property.property_images.find((img: any) => img && img.startsWith('http'))
               if (validImage) return validImage
             }
             // Return fallback image
@@ -225,7 +225,7 @@ export default function PropertiesScreen() {
       console.log('=== DEBUG: Checking authentication ===')
       
       // Test network connectivity first
-      const connectivityTest = await mobileUtils.testConnectivity()
+      const connectivityTest = await webUtils.testConnectivity()
       console.log('=== DEBUG: Network connectivity test ===', connectivityTest)
       
       if (!connectivityTest.success) {

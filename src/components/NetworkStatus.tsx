@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { ActivityIndicator } from 'react-native-paper'
-import { mobileUtils } from '@/lib/supabase'
+import { webUtils } from '@/lib/supabase'
 
 interface NetworkStatusProps {
   onStatusChange?: (isOnline: boolean) => void
@@ -14,7 +14,7 @@ export default function NetworkStatus({ onStatusChange }: NetworkStatusProps) {
   const checkNetworkStatus = async () => {
     setIsChecking(true)
     try {
-      const result = await mobileUtils.testConnectivity()
+      const result = await webUtils.testConnectivity()
       const online = result.success
       setIsOnline(online)
       onStatusChange?.(online)

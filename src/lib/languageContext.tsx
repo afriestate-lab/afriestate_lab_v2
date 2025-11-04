@@ -1,5 +1,6 @@
+'use client'
+
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Language, translations } from './translations'
 
 interface LanguageContextType {
@@ -27,11 +28,16 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en') // Default to English
   const [isLanguageLoaded, setIsLanguageLoaded] = useState(false)
 
-  // Load saved language preference on app start
+  // Load saved language preference on app start (client-side only)
   useEffect(() => {
-    const loadLanguagePreference = async () => {
+    const loadLanguagePreference = () => {
+      if (typeof window === 'undefined') {
+        setIsLanguageLoaded(true)
+        return
+      }
+      
       try {
-        const savedLanguage = await AsyncStorage.getItem('userLanguage')
+        const savedLanguage = window.localStorage.getItem('userLanguage')
         console.log('🔍 [LANGUAGE_CONTEXT] Loading language preference:', savedLanguage)
         
         if (savedLanguage === 'rw' || savedLanguage === 'en') {
@@ -52,14 +58,21 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     loadLanguagePreference()
   }, [])
 
-  const changeLanguage = async (language: Language) => {
+  const changeLanguage = (language: Language) => {
+    if (typeof window === 'undefined') {
+      setCurrentLanguage(language)
+      return
+    }
+    
     try {
-      await AsyncStorage.setItem('userLanguage', language)
+      window.localStorage.setItem('userLanguage', language)
       setCurrentLanguage(language)
       console.log('✅ Language changed to:', language)
       console.log('🔄 Language context updated, UI should re-render with new language')
     } catch (error) {
       console.error('❌ Error saving language preference:', error)
+      // Still update the state even if localStorage fails
+      setCurrentLanguage(language)
     }
   }
 

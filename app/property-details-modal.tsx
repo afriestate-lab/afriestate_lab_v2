@@ -17,7 +17,7 @@ import { Modal, Portal, Button, Card, Chip, Divider, IconButton } from 'react-na
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
-import { isLocalFileUri, getFallbackPropertyImage } from '@/lib/helpers'
+import { getFallbackPropertyImage } from '@/lib/helpers'
 import { BlurView } from 'expo-blur';
 import DatePicker from './date-picker';
 import { useLanguage } from '@/lib/languageContext';
@@ -165,14 +165,14 @@ export default function PropertyDetailsModal({
       let images: string[] = []
       
       // Add featured image if it's a valid URL (not local file URI)
-      if (propertyData.featured_image_url && !isLocalFileUri(propertyData.featured_image_url)) {
+      if (propertyData.featured_image_url && propertyData.featured_image_url.startsWith('http')) {
         images.push(propertyData.featured_image_url)
       }
       
       // Add property images array if they're valid URLs
       if (Array.isArray(propertyData.property_images)) {
         const validPropertyImages = propertyData.property_images.filter((img: any) => 
-          img && !isLocalFileUri(img)
+          img && img.startsWith('http')
         )
         images = images.concat(validPropertyImages)
       }
@@ -182,7 +182,7 @@ export default function PropertyDetailsModal({
         roomsData.forEach(room => {
           if (Array.isArray(room.images)) {
             const validRoomImages = room.images.filter((img: any) => 
-              img && !isLocalFileUri(img)
+              img && img.startsWith('http')
             )
             images = images.concat(validRoomImages)
           }
@@ -190,7 +190,7 @@ export default function PropertyDetailsModal({
       }
       
       // Fallback to property.ifoto if no valid images found
-      if (images.length === 0 && property.ifoto && !isLocalFileUri(property.ifoto)) {
+      if (images.length === 0 && property.ifoto && property.ifoto.startsWith('http')) {
         images = [property.ifoto]
       }
       
@@ -208,11 +208,11 @@ export default function PropertyDetailsModal({
           : property.igiciro,
         ifoto: (() => {
           // Use featured_image_url if it's a valid URL
-          if (propertyData.featured_image_url && !isLocalFileUri(propertyData.featured_image_url)) {
+          if (propertyData.featured_image_url && propertyData.featured_image_url.startsWith('http')) {
             return propertyData.featured_image_url
           }
           // Use property.ifoto if it's a valid URL
-          if (property.ifoto && !isLocalFileUri(property.ifoto)) {
+          if (property.ifoto && property.ifoto.startsWith('http')) {
             return property.ifoto
           }
           // Use fallback image

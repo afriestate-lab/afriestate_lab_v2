@@ -1,5 +1,4 @@
 import { supabase } from './supabase'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export type UserRole = 'tenant' | 'landlord' | 'manager' | 'admin' | 'guest'
 
@@ -97,16 +96,18 @@ export const getCurrentUserRole = async (): Promise<UserRole> => {
       return 'admin'
     }
 
-    // Check for admin mode flag in AsyncStorage (for hardcoded admin credentials)
-    try {
-      const adminMode = await AsyncStorage.getItem('admin_mode')
-      if (adminMode === 'true') {
-        console.log('🔧 [ROLE_CHECK] Admin mode flag detected - forcing admin role')
-        await AsyncStorage.removeItem('admin_mode')
-        return 'admin'
+    // Check for admin mode flag in localStorage (for hardcoded admin credentials)
+    if (typeof window !== 'undefined') {
+      try {
+        const adminMode = window.localStorage.getItem('admin_mode')
+        if (adminMode === 'true') {
+          console.log('🔧 [ROLE_CHECK] Admin mode flag detected - forcing admin role')
+          window.localStorage.removeItem('admin_mode')
+          return 'admin'
+        }
+      } catch (storageError) {
+        console.log('⚠️ [ROLE_CHECK] Error checking admin mode flag:', storageError)
       }
-    } catch (storageError) {
-      console.log('⚠️ [ROLE_CHECK] Error checking admin mode flag:', storageError)
     }
 
     // First check the users table for the definitive role
