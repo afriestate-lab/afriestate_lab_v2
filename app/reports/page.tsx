@@ -1,8 +1,9 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import RoleGuard from '@/components/web-role-guard'
 
-export default function ReportsPage() {
+function ReportsPageContent() {
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold mb-8">Reports</h1>
@@ -16,6 +17,14 @@ export default function ReportsPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function ReportsPage() {
+  return (
+    <RoleGuard allowedRoles={['landlord', 'manager', 'admin']} screenName="reports-page">
+      <ReportsPageContent />
+    </RoleGuard>
   )
 }
 

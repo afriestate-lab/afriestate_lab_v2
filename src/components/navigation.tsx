@@ -92,6 +92,10 @@ export function Navigation() {
     }
   }, [user])
 
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [pathname])
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/')

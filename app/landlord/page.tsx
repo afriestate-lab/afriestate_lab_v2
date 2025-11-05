@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import RoleGuard from '@/components/web-role-guard'
 
 type DashboardRole = 'landlord' | 'manager' | 'admin'
 
@@ -77,7 +78,7 @@ interface DashboardStats {
 
 const ALLOWED_ROLES: DashboardRole[] = ['landlord', 'manager', 'admin']
 
-export default function LandlordDashboard() {
+function LandlordDashboardContent() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { currentLanguage } = useLanguage()
@@ -732,5 +733,13 @@ async function fetchRevenueAndPayments(
     currentMonthRevenue,
     previousMonthRevenue,
   }
+}
+
+export default function LandlordDashboardPage() {
+  return (
+    <RoleGuard allowedRoles={['landlord', 'manager']} screenName="landlord-dashboard">
+      <LandlordDashboardContent />
+    </RoleGuard>
+  )
 }
 

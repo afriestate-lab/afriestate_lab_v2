@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import RoleGuard from '@/components/web-role-guard'
 
 interface TenantProfile {
   id: string
@@ -54,7 +55,7 @@ interface AnnouncementSummary {
   propertyName: string
 }
 
-export default function TenantDashboard() {
+function TenantDashboardContent() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { currentLanguage } = useLanguage()
@@ -522,6 +523,14 @@ function InfoRow({ label, value, helper }: { label: string; value: string; helpe
       <p className="text-sm font-medium text-foreground">{value}</p>
       {helper ? <p className="text-xs text-muted-foreground">{helper}</p> : null}
     </div>
+  )
+}
+
+export default function TenantDashboardPage() {
+  return (
+    <RoleGuard allowedRoles={['tenant']} screenName="tenant-dashboard">
+      <TenantDashboardContent />
+    </RoleGuard>
   )
 }
 

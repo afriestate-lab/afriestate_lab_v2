@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import RoleGuard from '@/components/web-role-guard'
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
@@ -101,6 +102,14 @@ export default function AdminDashboard() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function AdminDashboardPage() {
+  return (
+    <RoleGuard allowedRoles={['admin']} screenName="admin-dashboard">
+      <AdminDashboardContent />
+    </RoleGuard>
   )
 }
 

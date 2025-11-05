@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Separator } from '@/components/ui/separator'
 import Image from 'next/image'
+import RoleGuard from '@/components/web-role-guard'
 
 type RoomStatus = 'occupied' | 'vacant' | 'maintenance'
 
@@ -81,7 +82,7 @@ const statusColors: Record<RoomStatus, string> = {
   maintenance: 'bg-rose-500/15 text-rose-600 dark:text-rose-400',
 }
 
-export default function PropertiesPage() {
+function PropertiesPageContent() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { t, currentLanguage } = useLanguage()
@@ -696,6 +697,14 @@ function MetricCard({ label, description, value, extra }: MetricCardProps) {
         </CardContent>
       )}
     </Card>
+  )
+}
+
+export default function PropertiesPage() {
+  return (
+    <RoleGuard allowedRoles={['landlord', 'manager', 'admin']} screenName="properties-page">
+      <PropertiesPageContent />
+    </RoleGuard>
   )
 }
 

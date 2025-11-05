@@ -30,35 +30,47 @@ export default function SignInPage() {
     try {
       if (!role) {
         setError('Please select a role')
-        setLoading(false)
         return
       }
 
       if (!identifier || !password) {
         setError('Please fill in all fields')
-        setLoading(false)
         return
       }
 
       // Determine if identifier is email or phone
       let authEmail = identifier
       const isEmail = /^\S+@\S+\.\S+$/.test(identifier)
+      let tenantUserRecord: { auth_user_id: string; role?: string | null } | null = null
 
       if (!isEmail) {
         // Phone number - find user's email
         const cleanedPhone = identifier.replace(/\D/g, '')
         const { data: tenantUser } = await supabase
           .from('tenant_users')
-          .select('email')
+          .select('auth_user_id, email, role')
           .eq('phone_number', cleanedPhone)
           .single()
 
         if (tenantUser) {
           authEmail = tenantUser.email
+          tenantUserRecord = tenantUser
         } else {
           setError('No account found with this phone number')
-          setLoading(false)
           return
+        }
+      } else {
+        const normalizedEmail = identifier.toLowerCase().trim()
+        authEmail = normalizedEmail
+
+        const { data: tenantUser } = await supabase
+          .from('tenant_users')
+          .select('auth_user_id, email, role')
+          .eq('email', normalizedEmail)
+          .single()
+
+        if (tenantUser) {
+          tenantUserRecord = tenantUser
         }
       }
 
@@ -70,28 +82,63 @@ export default function SignInPage() {
 
       if (authError) {
         setError(authError.message)
-        setLoading(false)
         return
       }
 
       if (data?.user) {
-        // Redirect based on role
-        switch (role) {
-          case 'tenant':
-            router.push('/tenant')
-            break
-          case 'landlord':
-            router.push('/landlord')
-            break
-          case 'admin':
-            router.push('/admin')
-            break
-          default:
-            router.push('/')
+        type SupportedRole = 'tenant' | 'landlord' | 'manager' | 'admin'
+        let resolvedRole: SupportedRole | null = null
+
+        const { data: userRecord } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+
+        if (userRecord?.role) {
+          resolvedRole = userRecord.role as SupportedRole
         }
+
+        if (!resolvedRole) {
+          if (tenantUserRecord) {
+            resolvedRole = (tenantUserRecord.role as SupportedRole) || 'tenant'
+          } else {
+            const { data: tenantRecord } = await supabase
+              .from('tenant_users')
+              .select('role')
+              .eq('auth_user_id', data.user.id)
+              .single()
+
+            if (tenantRecord) {
+              resolvedRole = (tenantRecord.role as SupportedRole) || 'tenant'
+            }
+          }
+        }
+
+        if (!resolvedRole) {
+          await supabase.auth.signOut()
+          setError('Unable to determine your assigned role. Please contact support.')
+          return
+        }
+
+        if (resolvedRole !== role) {
+          await supabase.auth.signOut()
+          setError(`Your assigned role is ${resolvedRole}. Please sign in using that role.`)
+          return
+        }
+
+        const redirectMap: Record<SupportedRole, string> = {
+          tenant: '/tenant',
+          landlord: '/landlord',
+          manager: '/landlord',
+          admin: '/admin',
+        }
+
+        router.push(redirectMap[resolvedRole] ?? '/')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
       setLoading(false)
     }
   }

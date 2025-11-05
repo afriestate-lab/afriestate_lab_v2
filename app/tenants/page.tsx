@@ -3,8 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import RoleGuard from '@/components/web-role-guard'
 
-export default function TenantsPage() {
+function TenantsPageContent() {
   const router = useRouter()
 
   return (
@@ -23,6 +24,14 @@ export default function TenantsPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function TenantsPage() {
+  return (
+    <RoleGuard allowedRoles={['landlord', 'manager', 'admin']} screenName="tenants-page">
+      <TenantsPageContent />
+    </RoleGuard>
   )
 }
 
