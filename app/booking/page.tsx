@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { Calendar, Home, MapPin, Bed, DollarSign, CheckCircle2, ArrowLeft, ArrowRight, CreditCard, Phone, Building2, AlertCircle } from 'lucide-react'
 
 interface PropertySummary {
   id: string
@@ -49,7 +50,7 @@ const initialForm: BookingFormState = {
 function BookingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { t, currentLanguage } = useLanguage()
 
   const propertyId = searchParams.get('property')
@@ -62,6 +63,14 @@ function BookingPageContent() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      const redirectUrl = `/booking?property=${encodeURIComponent(propertyId || '')}`
+      router.push(`/auth/sign-in?redirect=${encodeURIComponent(redirectUrl)}`)
+    }
+  }, [user, authLoading, propertyId, router])
 
   const moveInMin = useMemo(() => {
     const today = new Date()
@@ -316,215 +325,289 @@ function BookingPageContent() {
 
   const propertyImage = property?.featured_image_url || property?.property_images?.[0] || getFallbackPropertyImage()
 
-  return (
-    <div className="container mx-auto max-w-5xl px-4 py-10">
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          ← {currentLanguage === 'rw' ? 'Subira inyuma' : 'Back'}
-        </Button>
-        <Button variant="outline" onClick={() => router.push('/')}>
-          {currentLanguage === 'rw' ? 'Sura izindi nyubako' : 'Browse more properties'}
-        </Button>
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">
+            {currentLanguage === 'rw' ? 'Gukura amakuru...' : 'Loading...'}
+          </p>
+        </div>
       </div>
+    )
+  }
 
-      <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle>
-              {propertyLoading
-                ? currentLanguage === 'rw'
-                  ? 'Ibiranga inyubako...'
-                  : 'Loading property details...'
-                : property?.name || (currentLanguage === 'rw' ? 'Inyubako idasobanutse' : 'Unknown property')}
-            </CardTitle>
-            <CardDescription>
-              {property?.city || property?.address
-                ? [property?.city, property?.address].filter(Boolean).join(' • ')
-                : currentLanguage === 'rw'
-                ? 'Aho iri ntarahita aboneka. Uzaza ubibarize.'
-                : 'Location will be confirmed with the landlord.'}
-            </CardDescription>
-          </CardHeader>
-          {propertyImage ? (
-            <Image
-              src={propertyImage}
-              alt={property?.name || 'Property photo'}
-              width={1200}
-              height={720}
-              className="h-64 w-full object-cover"
-            />
-          ) : null}
+  // Don't render if not authenticated (will redirect)
+  if (!user) {
+    return null
+  }
 
-          <CardContent className="space-y-4">
-            {propertyError ? (
-              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {propertyError}
-              </div>
-            ) : null}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            {currentLanguage === 'rw' ? 'Subira inyuma' : 'Back'}
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/')} className="gap-2">
+            <Home className="h-4 w-4" />
+            {currentLanguage === 'rw' ? 'Sura izindi nyubako' : 'Browse more properties'}
+          </Button>
+        </div>
 
-            {property?.description ? (
-              <p className="text-sm text-muted-foreground">{property.description}</p>
-            ) : null}
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {currentLanguage === 'rw' ? 'Ubwoko' : 'Unit type'}
-                </p>
-                <p className="text-sm font-medium text-foreground">{property?.property_type || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {currentLanguage === 'rw' ? 'Ibyumba biboneka' : 'Available rooms'}
-                </p>
-                <p className="text-sm font-medium text-foreground">
-                  {property?.available_rooms ?? currentLanguage === 'rw' ? 'Bishakishwa' : 'Check with landlord'}
-                </p>
-              </div>
-            </div>
-
-            {(property?.price_range_min || property?.price_range_max) && (
-              <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
-                <p className="font-medium text-foreground">
-                  {currentLanguage === 'rw' ? 'Agaciro kagereranyo' : 'Estimated monthly rent'}
-                </p>
-                <p className="text-muted-foreground">
-                  {property?.price_range_min && property?.price_range_max
-                    ? `${formatCurrency(property.price_range_min)} – ${formatCurrency(property.price_range_max)}`
-                    : property?.price_range_min
-                    ? formatCurrency(property.price_range_min)
-                    : property?.price_range_max
-                    ? formatCurrency(property.price_range_max)
-                    : '—'}
-                </p>
+        <div className="grid gap-8 lg:grid-cols-[1.2fr,1fr]">
+          {/* Property Details Card */}
+          <Card className="overflow-hidden shadow-lg border-0">
+            {propertyImage && (
+              <div className="relative h-80 w-full overflow-hidden">
+                <Image
+                  src={propertyImage}
+                  alt={property?.name || 'Property photo'}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Building2 className="h-5 w-5" />
+                    <h1 className="text-2xl font-bold">{property?.name || (currentLanguage === 'rw' ? 'Inyubako' : 'Property')}</h1>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm opacity-90">
+                    <MapPin className="h-4 w-4" />
+                    <span>{property?.city || property?.address || (currentLanguage === 'rw' ? 'Aho iri' : 'Location')}</span>
+                  </div>
+                </div>
+                {property?.available_rooms !== undefined && property.available_rooms !== null && property.available_rooms > 0 && (
+                  <span className="absolute top-4 right-4 px-3 py-1 rounded-full bg-green-500 text-white text-sm font-semibold shadow-lg">
+                    {property.available_rooms} {currentLanguage === 'rw' ? 'Bihari' : 'Available'}
+                  </span>
+                )}
               </div>
             )}
 
-            {property?.amenities && property.amenities.length > 0 ? (
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {currentLanguage === 'rw' ? 'Ibikoresho bihari' : 'Amenities'}
-                </p>
-                <ul className="mt-2 grid grid-cols-1 gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-                  {property.amenities.slice(0, 8).map((amenity) => (
-                    <li key={amenity}>• {amenity}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{currentLanguage === 'rw' ? 'Saba Icyumba' : 'Request a booking'}</CardTitle>
-            <CardDescription>
-              {currentLanguage === 'rw'
-                ? 'Twohereze ibisobanuro wifuza, tuzabihuza n’umukiriya wawe kandi tugusubize vuba.'
-                : 'Share your preferred move-in date and stay details. The landlord will follow up with confirmation.'}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            {submitError ? (
-              <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {submitError}
-              </div>
-            ) : null}
-
-            {submitSuccess ? (
-              <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                {currentLanguage === 'rw'
-                  ? 'Ibisabwa byawe byoherejwe! Uzabona igisubizo cya nyirinyubako vuba.'
-                  : 'Your booking request has been submitted! The landlord will get back to you shortly.'}
-              </div>
-            ) : null}
-
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="move-in-date">
-                  {currentLanguage === 'rw' ? 'Itariki wifuza kwinjiraho' : 'Preferred move-in date'}
-                </Label>
-                <Input
-                  id="move-in-date"
-                  type="date"
-                  min={moveInMin}
-                  value={formState.moveInDate}
-                  onChange={handleChange('moveInDate')}
-                  required
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="stay-length">
-                    {currentLanguage === 'rw' ? 'Amezi uteganya kumara' : 'How many months will you stay?'}
-                  </Label>
-                  <Input
-                    id="stay-length"
-                    type="number"
-                    min={1}
-                    value={formState.stayLength}
-                    onChange={handleChange('stayLength')}
-                  />
+            <CardContent className="p-6 space-y-6">
+              {propertyError && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  {propertyError}
                 </div>
+              )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="guests">
-                    {currentLanguage === 'rw' ? 'Umubare w’abantu bazatura' : 'How many guests?'}
-                  </Label>
-                  <Input
-                    id="guests"
-                    type="number"
-                    min={1}
-                    value={formState.guests}
-                    onChange={handleChange('guests')}
-                  />
+              {property?.description && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                    {currentLanguage === 'rw' ? 'Ibisobanuro' : 'Description'}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-foreground">{property.description}</p>
+                </div>
+              )}
+
+              {/* Property Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg border bg-slate-50 p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Home className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {currentLanguage === 'rw' ? 'Ubwoko' : 'Type'}
+                    </p>
+                  </div>
+                  <p className="text-lg font-semibold text-foreground">{property?.property_type || '—'}</p>
+                </div>
+                <div className="rounded-lg border bg-slate-50 p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Bed className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {currentLanguage === 'rw' ? 'Ibyumba' : 'Rooms'}
+                    </p>
+                  </div>
+                  <p className="text-lg font-semibold text-foreground">
+                    {property?.available_rooms ?? (currentLanguage === 'rw' ? 'Bishakishwa' : 'Check')}
+                  </p>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="notes">
-                  {currentLanguage === 'rw' ? 'Ibyifuzo byihariye' : 'Anything else we should know?'}
-                </Label>
-                <textarea
-                  id="notes"
-                  rows={4}
-                  value={formState.notes}
-                  onChange={handleChange('notes')}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  placeholder={currentLanguage === 'rw' ? 'Urugero: Ndashaka icyumba gifite igikoni.' : 'Example: I need a furnished room with fast internet.'}
-                />
+              {/* Price Range */}
+              {(property?.price_range_min || property?.price_range_max) && (
+                <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign className="h-5 w-5 text-primary" />
+                    <p className="font-semibold text-foreground">
+                      {currentLanguage === 'rw' ? 'Agaciro kagereranyo' : 'Estimated monthly rent'}
+                    </p>
+                  </div>
+                  <p className="text-2xl font-bold text-primary">
+                    {property?.price_range_min && property?.price_range_max
+                      ? `${formatCurrency(property.price_range_min)} – ${formatCurrency(property.price_range_max)}`
+                      : property?.price_range_min
+                      ? formatCurrency(property.price_range_min)
+                      : property?.price_range_max
+                      ? formatCurrency(property.price_range_max)
+                      : '—'}
+                  </p>
+                </div>
+              )}
+
+              {/* Amenities */}
+              {property?.amenities && property.amenities.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+                    {currentLanguage === 'rw' ? 'Ibikoresho bihari' : 'Amenities'}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {property.amenities.slice(0, 8).map((amenity, idx) => (
+                      <span key={idx} className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Booking Form Card */}
+          <Card className="shadow-lg border-0 sticky top-8 h-fit">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary text-primary-foreground">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">{currentLanguage === 'rw' ? 'Saba Icyumba' : 'Request a booking'}</CardTitle>
+                  <CardDescription className="mt-1">
+                    {currentLanguage === 'rw'
+                      ? 'Twohereze ibisobanuro wifuza'
+                      : 'Share your preferred move-in date'}
+                  </CardDescription>
+                </div>
               </div>
+            </CardHeader>
 
-              <Separator className="my-6" />
+            <CardContent className="p-6">
+              {submitError && (
+                <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  {submitError}
+                </div>
+              )}
 
-              <CardDescription className="text-xs text-muted-foreground">
-                {currentLanguage === 'rw'
-                  ? 'Ibisabwa byawe bizoherezwa kuri nyirinyubako. Ntiwishyura ubu kugeza igihe booking yemejwe.'
-                  : 'Your request will be shared with the property owner. No payment is processed at this stage.'}
-              </CardDescription>
+              {submitSuccess && (
+                <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  {currentLanguage === 'rw'
+                    ? 'Ibisabwa byawe byoherejwe! Uzabona igisubizo cya nyirinyubako vuba.'
+                    : 'Your booking request has been submitted! The landlord will get back to you shortly.'}
+                </div>
+              )}
 
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting
-                  ? currentLanguage === 'rw'
-                    ? 'Kohereza...'
-                    : 'Submitting...'
-                  : currentLanguage === 'rw'
-                  ? 'Ohereza ibisabwa'
-                  : 'Submit booking request'}
-              </Button>
-            </form>
-          </CardContent>
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="move-in-date" className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    {currentLanguage === 'rw' ? 'Itariki wifuza kwinjiraho' : 'Preferred move-in date'}
+                  </Label>
+                  <Input
+                    id="move-in-date"
+                    type="date"
+                    min={moveInMin}
+                    value={formState.moveInDate}
+                    onChange={handleChange('moveInDate')}
+                    required
+                    className="h-11"
+                  />
+                </div>
 
-          <CardFooter>
-            <p className="text-xs text-muted-foreground">
-              {currentLanguage === 'rw'
-                ? 'Niba ukeneye ubufasha bwihuse, hamagara itsinda ryacu kuri +250 780 056 626.'
-                : 'Need help right now? Call our support team at +250 780 056 626.'}
-            </p>
-          </CardFooter>
-        </Card>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="stay-length" className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      {currentLanguage === 'rw' ? 'Amezi' : 'Months'}
+                    </Label>
+                    <Input
+                      id="stay-length"
+                      type="number"
+                      min={1}
+                      value={formState.stayLength}
+                      onChange={handleChange('stayLength')}
+                      placeholder="12"
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="guests" className="flex items-center gap-2">
+                      <Bed className="h-4 w-4 text-muted-foreground" />
+                      {currentLanguage === 'rw' ? 'Abantu' : 'Guests'}
+                    </Label>
+                    <Input
+                      id="guests"
+                      type="number"
+                      min={1}
+                      value={formState.guests}
+                      onChange={handleChange('guests')}
+                      placeholder="1"
+                      className="h-11"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">
+                    {currentLanguage === 'rw' ? 'Ibyifuzo byihariye' : 'Additional notes (optional)'}
+                  </Label>
+                  <textarea
+                    id="notes"
+                    rows={4}
+                    value={formState.notes}
+                    onChange={handleChange('notes')}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary resize-none"
+                    placeholder={currentLanguage === 'rw' ? 'Urugero: Ndashaka icyumba gifite igikoni.' : 'Example: I need a furnished room with fast internet.'}
+                  />
+                </div>
+
+                <Separator className="my-6" />
+
+                <div className="rounded-lg bg-slate-50 p-4 border border-slate-200">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {currentLanguage === 'rw'
+                      ? 'Ibisabwa byawe bizoherezwa kuri nyirinyubako. Ntiwishyura ubu kugeza igihe booking yemejwe.'
+                      : 'Your request will be shared with the property owner. No payment is processed at this stage.'}
+                  </p>
+                </div>
+
+                <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={submitting}>
+                  {submitting ? (
+                    <>
+                      <span className="animate-spin mr-2">⏳</span>
+                      {currentLanguage === 'rw' ? 'Kohereza...' : 'Submitting...'}
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      {currentLanguage === 'rw' ? 'Ohereza ibisabwa' : 'Submit booking request'}
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+
+            <CardFooter className="bg-slate-50 border-t">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground w-full">
+                <Phone className="h-3 w-3" />
+                <span>
+                  {currentLanguage === 'rw'
+                    ? 'Niba ukeneye ubufasha: +250 780 056 626'
+                    : 'Need help? Call +250 780 056 626'}
+                </span>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   )

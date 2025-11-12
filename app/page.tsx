@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Search, MapPin, Home as HomeIcon, Bed, Calendar, DollarSign, AlertCircle } from 'lucide-react'
+import { Search, MapPin, Home as HomeIcon, Bed, Calendar, DollarSign, AlertCircle, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Property {
@@ -105,7 +105,8 @@ export default function HomePage() {
 
   const handleBookNow = (property: Property) => {
     if (!user) {
-      router.push('/auth/sign-in')
+      const redirectUrl = `/booking?property=${property.id}`
+      router.push(`/auth/sign-in?redirect=${encodeURIComponent(redirectUrl)}`)
       return
     }
     router.push(`/booking?property=${property.id}`)
@@ -126,39 +127,64 @@ export default function HomePage() {
     return getFallbackPropertyImage()
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Hero Section */}
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold mb-4">Find Your Perfect Home</h1>
-        <p className="text-muted-foreground text-lg">Easy rentals, better life</p>
-      </div>
+  const currentLanguage = t('home') === 'Ahabanza' ? 'rw' : 'en'
 
-      {/* Search and Filter */}
-      <div className="mb-8 space-y-4 md:flex md:items-center md:gap-4 md:space-y-0">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search properties..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header with Profile Access */}
+        {user && (
+          <div className="mb-6 flex justify-end">
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/profile')}
+              className="gap-2"
+            >
+              <User className="h-4 w-4" />
+              {currentLanguage === 'rw' ? 'Konti' : 'Profile'}
+            </Button>
+          </div>
+        )}
+
+        {/* Hero Section */}
+        <div className="mb-12 text-center">
+          <div className="inline-block mb-4">
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-4">
+              {currentLanguage === 'rw' ? 'Hitamo icumbi rikunogeye' : 'Find Your Perfect Home'}
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              {currentLanguage === 'rw' 
+                ? '🤗 inzu yo gukoreramo mu nyubako zikunzwe mu Rwanda ku giciro gito 😍'
+                : 'Easy rentals, better life. Discover quality properties in Rwanda at affordable prices.'}
+            </p>
           </div>
         </div>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full md:w-[200px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="price_low">Price: Low to High</SelectItem>
-            <SelectItem value="price_high">Price: High to Low</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+
+        {/* Search and Filter */}
+        <div className="mb-8 space-y-4 md:flex md:items-center md:gap-4 md:space-y-0">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder={currentLanguage === 'rw' ? 'Shakisha inyubako...' : 'Search properties...'}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-12 h-12 text-base shadow-sm"
+              />
+            </div>
+          </div>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full md:w-[220px] h-12">
+              <SelectValue placeholder={currentLanguage === 'rw' ? 'Gutondekanya' : 'Sort by'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">{currentLanguage === 'rw' ? 'Gishya cyane' : 'Newest First'}</SelectItem>
+              <SelectItem value="oldest">{currentLanguage === 'rw' ? 'Gishize' : 'Oldest First'}</SelectItem>
+              <SelectItem value="price_low">{currentLanguage === 'rw' ? 'Igiciro: Guke cyangwa Gikabije' : 'Price: Low to High'}</SelectItem>
+              <SelectItem value="price_high">{currentLanguage === 'rw' ? 'Igiciro: Gikabije cyangwa Guke' : 'Price: High to Low'}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
       {/* Properties Grid */}
       {loading ? (
@@ -166,9 +192,10 @@ export default function HomePage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       ) : properties.length === 0 ? (
-        <Card className="p-12 text-center">
-          <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">No properties found</p>
+        <Card className="p-12 text-center border-0 shadow-md">
+          <AlertCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">{currentLanguage === 'rw' ? 'Nta nyubako ziboneka' : 'No properties found'}</h3>
+          <p className="text-muted-foreground">{currentLanguage === 'rw' ? 'Gerageza gushakisha amagambo atandukanye' : 'Try searching with different terms'}</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -177,76 +204,100 @@ export default function HomePage() {
             const isAvailable = property.available_rooms > 0
 
             return (
-              <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="relative h-48 w-full">
+              <Card key={property.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md group">
+                <div className="relative h-64 w-full overflow-hidden">
                   <Image
                     src={imageUrl}
                     alt={property.name}
                     fill
-                    className="object-cover"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-3 right-3">
                     <span className={cn(
-                      "px-2 py-1 rounded text-xs font-medium",
+                      "px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm",
                       isAvailable
-                        ? "bg-green-500 text-white"
-                        : "bg-red-500 text-white"
+                        ? "bg-green-500/90 text-white"
+                        : "bg-red-500/90 text-white"
                     )}>
-                      {isAvailable ? `${property.available_rooms} Available` : 'Fully Occupied'}
+                      {isAvailable 
+                        ? `${property.available_rooms} ${currentLanguage === 'rw' ? 'Bihari' : 'Available'}`
+                        : currentLanguage === 'rw' ? 'Byuzuye' : 'Fully Occupied'}
                     </span>
                   </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <h3 className="text-lg font-bold mb-1 line-clamp-1">{property.name}</h3>
+                    <div className="flex items-center gap-1 text-sm opacity-90">
+                      <MapPin className="h-3.5 w-3.5" />
+                      <span className="line-clamp-1">{property.city}, {property.country}</span>
+                    </div>
+                  </div>
                 </div>
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{property.name}</CardTitle>
-                  <CardDescription className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {property.city}, {property.country}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Price Range</span>
-                      <span className="font-semibold">
+                <CardContent className="p-5">
+                  <div className="space-y-4">
+                    {/* Price */}
+                    <div className="flex items-center justify-between pb-3 border-b">
+                      <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                        {currentLanguage === 'rw' ? 'Agaciro' : 'Price Range'}
+                      </span>
+                      <span className="font-bold text-primary text-lg">
                         {property.price_range_min
-                          ? `${formatCurrency(property.price_range_min)} - ${formatCurrency(property.price_range_max || property.price_range_min)}`
-                          : 'Price on request'}
+                          ? `${formatCurrency(property.price_range_min)}${property.price_range_max && property.price_range_max !== property.price_range_min ? ` - ${formatCurrency(property.price_range_max)}` : ''}`
+                          : currentLanguage === 'rw' ? 'Bishakishwa' : 'Price on request'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
                         <Bed className="h-4 w-4" />
-                        {property.total_rooms} rooms
-                      </span>
-                      <span className="flex items-center gap-1">
+                        <span>{property.total_rooms} {currentLanguage === 'rw' ? 'ibyumba' : 'rooms'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
                         <HomeIcon className="h-4 w-4" />
-                        {property.property_type}
-                      </span>
+                        <span className="capitalize">{property.property_type}</span>
+                      </div>
                     </div>
+
+                    {/* Amenities */}
                     {property.amenities && property.amenities.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {property.amenities.slice(0, 3).map((amenity, idx) => (
-                          <span key={idx} className="px-2 py-1 bg-secondary text-xs rounded">
+                          <span key={idx} className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs rounded-full font-medium">
                             {amenity}
                           </span>
                         ))}
+                        {property.amenities.length > 3 && (
+                          <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs rounded-full font-medium">
+                            +{property.amenities.length - 3}
+                          </span>
+                        )}
                       </div>
                     )}
+
+                    {/* Actions */}
                     <div className="flex gap-2 pt-2">
                       <Button
                         variant="outline"
                         className="flex-1"
                         onClick={() => handlePropertyClick(property)}
                       >
-                        View Details
+                        {currentLanguage === 'rw' ? 'Reba' : 'View'}
                       </Button>
                       <Button
-                        className="flex-1"
+                        className="flex-1 bg-primary hover:bg-primary/90"
                         onClick={() => handleBookNow(property)}
                         disabled={!isAvailable}
                       >
-                        Book Now
+                        {!user ? (
+                          <>
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            {currentLanguage === 'rw' ? 'Injira' : 'Sign In'}
+                          </>
+                        ) : (
+                          currentLanguage === 'rw' ? 'Saba' : 'Book Now'
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -256,6 +307,7 @@ export default function HomePage() {
           })}
         </div>
       )}
+      </div>
 
       {/* Property Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
@@ -323,7 +375,14 @@ export default function HomePage() {
                   onClick={() => handleBookNow(selectedProperty)}
                   disabled={selectedProperty.available_rooms === 0}
                 >
-                  Book Now
+                  {!user ? (
+                    <>
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      {currentLanguage === 'rw' ? 'Injira kugira ngo ushobore gusaba' : 'Sign In to Book'}
+                    </>
+                  ) : (
+                    currentLanguage === 'rw' ? 'Saba' : 'Book Now'
+                  )}
                 </Button>
               </div>
             </>
